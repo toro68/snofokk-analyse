@@ -3,7 +3,7 @@
 
 import sqlite3
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 
 def init_db():
@@ -501,3 +501,82 @@ def analyze_settings(params, critical_periods_df, DEFAULT_PARAMS):
     except Exception as e:
         print(f"Feil i analyse av innstillinger: {str(e)}")
         return None
+
+def create_weather_table():
+    """Opprett værtabell hvis den ikke eksisterer"""
+    conn = sqlite3.connect('snowdrift_settings.db')
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS weather_cache (
+            location TEXT,
+            timestamp DATETIME,
+            temperature FLOAT,
+            precipitation FLOAT,
+            wind_speed FLOAT,
+            wind_direction TEXT,
+            PRIMARY KEY (location, timestamp)
+        )
+    ''')
+    
+    conn.commit()
+    conn.close()
+
+def get_cached_weather(location):
+    """Hent værdata fra cache hvis det finnes og er mindre enn 1 time gammelt"""
+    conn = sqlite3.connect('snowdrift_settings.db')
+    
+    one_hour_ago = (datetime.now() - timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')
+    
+    query = '''
+        SELECT * FROM weather_cache 
+        WHERE location = ? 
+        AND timestamp >= ?
+        ORDER BY timestamp DESC 
+        LIMIT 1
+    '''
+    
+    df = pd.read_sql_query(query, conn, params=(location, one_hour_ago))
+    conn.close()
+    
+    if len(df) > 0:
+        return df.iloc[0].to_dict()
+    return None
+
+def save_weather_data(location, weather_data):
+    """Lagre værdata i cache"""
+    conn = sqlite3.connect('snowdrift_settings.db')
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        INSERT INTO weather_cache (
+            location, 
+            timestamp, 
+            temperature, 
+            precipitation,
+            wind_speed,
+            wind_direction
+        ) VALUES (?, ?, ?, ?, ?, ?)
+    ''', (
+        location,
+        datetime.now(),
+        weather_data['temperature'],
+        weather_data.get('precipitation', 0),
+        weather_data.get('wind_speed', 0),
+        weather_data.get('wind_direction', '')
+    ))
+    
+    conn.commit()
+    conn.close()
+
+def cleanup_old_weather_data():
+    """Slett værdata eldre enn 24 timer"""
+    conn = sqlite3.connect('snowdrift_settings.db')
+    cursor = conn.cursor()
+    
+    one_day_ago = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
+    
+    cursor.execute('DELETE FROM weather_cache WHERE timestamp < ?', (one_day_ago,))
+    
+    conn.commit()
+    conn.close()

@@ -15,7 +15,11 @@ from db_utils import (
     delete_settings,
     load_settings_parameters,
     analyze_settings,
-    preprocess_critical_periods
+    preprocess_critical_periods,
+    create_weather_table,
+    get_cached_weather,
+    save_weather_data,
+    cleanup_old_weather_data
 )
 
 # API konfigurasjon
