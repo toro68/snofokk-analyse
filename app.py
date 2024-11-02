@@ -1,64 +1,30 @@
 import streamlit as st
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import requests
 import pandas as pd
 import numpy as np
 from datetime import datetime
 import plotly.express as px
 import logging
 from typing import Tuple, Dict, Any
+
+# Lokale imports
 from ml_utils import SnowDriftOptimizer
-
-# Enten legg til pylint-disable for å unngå feilmeldingen
-# pylint: disable=E0611
 from db_utils import (
-    init_db, 
-    save_settings, 
-    get_saved_settings, 
-    get_period_stats, 
-    delete_settings,
-    load_settings_parameters,
-    analyze_settings,
-    preprocess_critical_periods,
-    create_weather_table,
-    get_cached_weather,
-    save_weather_data,
-    cleanup_old_weather_data,
-    safe_dataframe_operations,
-    create_rolling_stats  # Lagt til denne linjen
+    init_db,
+    save_settings,
+    get_saved_settings,
+    delete_settings
 )
-# pylint: enable=E0611
-
-# API konfigurasjon
-CLIENT_ID = st.secrets["FROST_CLIENT_ID"]
-STATION_ID = "SN46220"
-
-# Standardparametre 
-DEFAULT_PARAMS = {
-    # Vindparametere
-    'wind_strong': 8.0,
-    'wind_moderate': 6.5,
-    'wind_gust': 15.0,
-    'wind_dir_change': 30.0,
-    
-    # Temperaturparametere
-    'temp_cold': -2.0,
-    'temp_cool': 0.0,
-    
-    # Snøparametere
-    'snow_high': 1.5,
-    'snow_moderate': 0.8,
-    'snow_low': 0.3,
-    
-    # Vekting
-    'wind_weight': 1.0,
-    'temp_weight': 1.0,
-    'snow_weight': 1.0,
-    
-    # Andre parametere
-    'min_duration': 2
-}
+from snofokk import (
+    fetch_frost_data,
+    calculate_snow_drift_risk,
+    analyze_settings,
+    create_rolling_stats,
+    identify_risk_periods,
+    analyze_wind_directions
+)
+from config import FROST_CLIENT_ID, FROST_STATION_ID, DEFAULT_PARAMS
 
 def format_settings_summary(params, num_critical_periods):
     """
@@ -91,6 +57,9 @@ def save_settings_ui(params, critical_periods):
     """UI-komponent for å lagre vellykkede innstillinger"""
     st.divider()
     st.subheader("📊 Analyse av gjeldende innstillinger")
+    
+    # Analyser innstillinger (fjernet DEFAULT_PARAMS argument)
+    analysis = analyze_settings(params, critical_periods)
     
     # Vis antall kritiske perioder og total varighet
     total_duration = critical_periods['duration'].sum()
@@ -134,34 +103,31 @@ def save_settings_ui(params, critical_periods):
     
     # Legg til AI-analyse
     with st.expander("🤖 AI-analyse av innstillingene"):
-        analysis = analyze_settings(params, critical_periods, DEFAULT_PARAMS)
-        
-        if analysis:
-            # Vis parameterendringer
-            if analysis['parameter_changes']:
-                st.write("**📊 Vesentlige endringer fra standard:**")
-                for change in analysis['parameter_changes']:
-                    st.write(f"- {change['description']}")
-            else:
-                st.info("Ingen vesentlige endringer fra standardinnstillinger")
+        # Vis parameterendringer
+        if analysis['parameter_changes']:
+            st.write("**📊 Vesentlige endringer fra standard:**")
+            for change in analysis['parameter_changes']:
+                st.write(f"- {change['description']}")
+        else:
+            st.info("Ingen vesentlige endringer fra standardinnstillinger")
 
-            # Vis påvirkningsanalyse
-            if analysis['impact_analysis']:
-                st.write("**🎯 Viktigste påvirkningsfaktorer:**")
-                for factor in analysis['impact_analysis']:
-                    st.write(f"- {factor['description']}")
+        # Vis påvirkningsanalyse
+        if analysis['impact_analysis']:
+            st.write("**🎯 Viktigste påvirkningsfaktorer:**")
+            for factor in analysis['impact_analysis']:
+                st.write(f"- {factor['description']}")
 
-            # Vis forslag til forbedringer
-            if analysis['suggestions']:
-                st.write("**💡 Forslag til justeringer:**")
-                for suggestion in analysis['suggestions']:
-                    st.write(f"- {suggestion}")
+        # Vis forslag til forbedringer
+        if analysis['suggestions']:
+            st.write("**💡 Forslag til justeringer:**")
+            for suggestion in analysis['suggestions']:
+                st.write(f"- {suggestion}")
 
-            # Vis meteorologisk kontekst
-            if analysis['meteorological_context']:
-                st.write("**🌤️ Meteorologisk kontekst:**")
-                for context in analysis['meteorological_context']:
-                    st.write(context)
+        # Vis meteorologisk kontekst
+        if analysis['meteorological_context']:
+            st.write("**🌤️ Meteorologisk kontekst:**")
+            for context in analysis['meteorological_context']:
+                st.write(context)
     
     # Lagringsseksjon
     st.divider()
@@ -213,276 +179,59 @@ def save_settings_ui(params, critical_periods):
             else:
                 st.error(message)
 
-def view_saved_settings():
-    """Viser lagrede innstillinger"""
-    try:
-        settings_df = get_saved_settings()
-        
-        if settings_df.empty:
-            st.warning("Ingen lagrede innstillinger funnet")
-            return
-            
-        st.subheader("Lagrede innstillinger")
-        st.write(f"Fant {len(settings_df)} innstillinger")
+def show_settings():
+    """Viser og håndterer innstillinger"""
+    st.header("⚙️ Innstillinger")
+    
+    # Hent lagrede innstillinger
+    settings_df = get_saved_settings()
+    
+    if not settings_df.empty:
+        st.subheader("📋 Lagrede innstillinger")
         
         for _, settings in settings_df.iterrows():
-            # Konverter timestamp til string i riktig format
-            timestamp_str = settings['timestamp'].strftime('%Y-%m-%d')
-            
-            container = st.container()
-            container.markdown(f"### {settings['name']} ({timestamp_str})")
-            
-            col1, col2 = container.columns(2)
-            
-            with col1:
-                st.write("**Beskrivelse:**")
-                st.write(settings['description'])
+            with st.expander(f"📊 {settings['name']} ({settings['timestamp'].strftime('%Y-%m-%d %H:%M')})"):
+                col1, col2 = st.columns(2)
                 
-                if 'critical_periods' in settings:
-                    st.write(f"**Kritiske perioder:** {settings['critical_periods']}")
-                if 'total_duration' in settings:
-                    st.write(f"**Total varighet:** {settings['total_duration']} timer")
-                if 'avg_risk_score' in settings:
-                    st.write(f"**Gjennomsnittlig risiko:** {settings['avg_risk_score']:.1f}")
-            
-            with col2:
-                st.write("**Parametre:**")
-                st.json(settings['parameters'])
+                with col1:
+                    st.write("**Beskrivelse:**")
+                    st.write(settings['description'])
+                    
+                    if settings.get('critical_periods'):
+                        st.metric("Antall kritiske perioder", settings['critical_periods'])
+                        st.metric("Total varighet", f"{settings.get('total_duration', 0)} timer")
+                        st.metric("Gjennomsnittlig risiko", f"{settings.get('avg_risk_score', 0):.1f}")
                 
-                if settings.get('changes'):
-                    st.write("**Endringer:**")
-                    st.json(settings['changes'])
-            
-            # Legg til knapper for handlinger
-            col3, col4 = container.columns(2)
-            with col3:
-                if st.button(f"Last inn {settings['name']}", key=f"load_{settings['id']}"):
-                    return settings['id']
-            with col4:
-                if st.button(f"Slett {settings['name']}", key=f"delete_{settings['id']}"):
-                    success, message = delete_settings(settings['id'])
-                    if success:
-                        st.success(message)
-                        st.rerun()
-                    else:
-                        st.error(message)
-            
-            st.markdown("---")
-            
-    except Exception as e:
-        st.error(f"Feil ved visning av innstillinger: {str(e)}")
-        st.exception(e)
-
-@st.cache_data(ttl=3600)  # Cache data for 1 time
-def fetch_frost_data(start_date='2023-11-01', end_date='2024-04-30'):
-    """
-    Henter utvidet værdatasett fra Frost API
-    
-    Nye elementer inkluderer:
-    - Bakketemperatur for bedre snøforholdsanalyse
-    - Luftfuktighet for snøkonsistens
-    - Utvidet temperatur- og vinddata
-    - Nedbørsvarighet for intensitetsberegning
-    """
-    try:
-        endpoint = 'https://frost.met.no/observations/v0.jsonld'
-        elements = [
-            # Eksisterende elementer
-            "surface_snow_thickness",
-            "wind_speed",
-            "max(wind_speed_of_gust PT1H)",
-            "wind_from_direction",
-            "air_temperature",
-            "sum(precipitation_amount PT1H)",
-            
-            # Nye elementer
-            "surface_temperature",          # Bakketemperatur
-            "min(air_temperature PT1H)",    # Minimum lufttemperatur
-            "max(air_temperature PT1H)",    # Maksimum lufttemperatur
-            "relative_humidity",            # Luftfuktighet
-            "dew_point_temperature",        # Duggpunkt
-            "sum(duration_of_precipitation PT1H)",  # Nedbørsvarighet
-            "max(wind_speed PT1H)"         # Maksimal vindhastighet
-        ]
-        
-        parameters = {
-            'sources': STATION_ID,
-            'elements': ','.join(elements),
-            'referencetime': f'{start_date}/{end_date}',
-            'timeresolutions': 'PT1H'
-        }
-        
-        r = requests.get(endpoint, parameters, auth=(CLIENT_ID, ''))
-        
-        if r.status_code != 200:
-            st.error(f"Feil ved henting av data: {r.text}")
-            return None
-            
-        data = r.json()
-        
-        observations = []
-        for item in data['data']:
-            timestamp = item['referenceTime']
-            obs_data = {'timestamp': timestamp}
-            for obs in item['observations']:
-                obs_data[obs['elementId']] = float(obs['value']) if obs['value'] is not None else None
-            observations.append(obs_data)
-        
-        df = pd.DataFrame(observations)
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        df.set_index('timestamp', inplace=True)
-        
-        # Legg til beregnede kolonner
-        df['temp_gradient'] = df['air_temperature'] - df['surface_temperature']
-        df['precip_intensity'] = df['sum(precipitation_amount PT1H)'] / df['sum(duration_of_precipitation PT1H)'].replace(0, np.nan)
-        
-        return df
-        
-    except Exception as e:
-        st.error(f"Feil i fetch_frost_data: {str(e)}")
-        return None
-
-# Fil: app.py
-# Kategori: Analysis Functions
-
-def calculate_snow_drift_risk(df, params):
-    """
-    Forbedret snøfokk-risikoberegning med utvidede værparametere
-    """
-    df = df.copy()
-    
-    # Grunnleggende beregninger (eksisterende)
-    df['snow_depth_change'] = df['surface_snow_thickness'].diff()
-    df['sustained_wind'] = df['wind_speed'].rolling(window=2).mean()
-    df['wind_dir_change'] = df['wind_from_direction'].diff().abs()
-    
-    # Nye beregninger med utvidede data
-    df['temp_stability'] = df['air_temperature'] - df['min(air_temperature PT1H)']
-    df['surface_cooling'] = df['air_temperature'] - df['surface_temperature']
-    df['humidity_factor'] = (df['relative_humidity'] > 90).astype(int)
-    
-    def calculate_risk_score(row):
-        score = 0
-        
-        # Vindforhold (utvidet)
-        has_wind = False
-        if row['sustained_wind'] >= params['wind_strong']:
-            score += 30 * params['wind_weight']
-            has_wind = True
-        elif row['sustained_wind'] >= params['wind_moderate']:
-            score += 20 * params['wind_weight']
-            has_wind = True
-            
-        # Temperaturforhold (forbedret)
-        has_cold_temp = False
-        if row['air_temperature'] <= params['temp_cold']:
-            score += 20 * params['temp_weight']
-            # Øk score hvis bakken er kaldere enn lufta
-            if row['surface_cooling'] > 2:
-                score += 5 * params['temp_weight']
-            has_cold_temp = True
-        elif row['air_temperature'] <= params['temp_cool']:
-            score += 10 * params['temp_weight']
-            has_cold_temp = True
-        
-        # Snøforhold (utvidet)
-        snow_score = 0
-        has_snow_conditions = False
-        
-        if abs(row['snow_depth_change']) >= params['snow_high']:
-            snow_score += 40 * params['snow_weight']
-            has_snow_conditions = True
-        elif abs(row['snow_depth_change']) >= params['snow_moderate']:
-            snow_score += 25 * params['snow_weight']
-            has_snow_conditions = True
-        elif abs(row['snow_depth_change']) >= params['snow_low']:
-            snow_score += 15 * params['snow_weight']
-            has_snow_conditions = True
-            
-        # Legg til snøscore hvis vi har vind
-        if has_wind:
-            score += snow_score
-        
-        # Nye forsterkende faktorer
-        if score > 30:
-            # Vindkast
-            if row['max(wind_speed_of_gust PT1H)'] >= params['wind_gust']:
-                score *= 1.2
-            # Vindretningsendring
-            if row['wind_dir_change'] >= params['wind_dir_change']:
-                score *= 1.1
-            # Høy luftfuktighet
-            if row['humidity_factor'] == 1:
-                score *= 1.1
-            # Ustabil temperatur
-            if row['temp_stability'] > 3:
-                score *= 1.1
-        
-        # Reduser score hvis ikke alle forhold er til stede
-        if not (has_wind and (has_cold_temp or has_snow_conditions)):
-            score *= 0.5
-        
-        return min(100, score)
-    
-    # Beregn risikoscore og nivåer
-    df['risk_score'] = df.apply(calculate_risk_score, axis=1)
-    df['risk_level'] = pd.cut(df['risk_score'], 
-                             bins=[-np.inf, 30, 50, 70, np.inf],
-                             labels=['Lav', 'Moderat', 'Høy', 'Kritisk'])
-    
-    # Identifiser perioder
-    periods_df = identify_risk_periods(df, min_duration=params['min_duration'])
-    
-    return df, periods_df
-
-def identify_risk_periods(df, min_duration=3):
-    """Identifiserer sammenhengende risikoperioder"""
-    df = df.copy()
-    
-    # Marker start på nye perioder
-    df['new_period'] = (
-        ((df['risk_score'] > 30) & (df['risk_score'].shift() <= 30)) |
-        ((df['risk_score'] > 30) & (df['risk_score'].shift().isna()))
-    ).astype(int)
-    
-    # Gi hver periode et unikt nummer
-    df['period_id'] = df['new_period'].cumsum()
-    
-    # Fjern periode_id hvor risk_score er lav
-    df.loc[df['risk_score'] <= 30, 'period_id'] = np.nan
-    
-    # Grupper sammenhengende perioder
-    periods = []
-    for period_id in df['period_id'].dropna().unique():
-        period_data = df[df['period_id'] == period_id].copy()
-        
-        if len(period_data) >= min_duration:
-            period_info = {
-                'start_time': period_data.index[0],
-                'end_time': period_data.index[-1],
-                'duration': len(period_data),
-                'max_risk_score': period_data['risk_score'].max(),
-                'avg_risk_score': period_data['risk_score'].mean(),
-                'max_wind': period_data['sustained_wind'].max(),
-                'max_gust': period_data['max(wind_speed_of_gust PT1H)'].max(),
-                'min_temp': period_data['air_temperature'].min(),
-                'total_precip': period_data['sum(precipitation_amount PT1H)'].sum(),
-                'max_snow_change': period_data['snow_depth_change'].abs().max(),
-                'risk_level': period_data['risk_level'].mode()[0],
-                'period_id': period_id
-            }
-            
-            wind_dirs = period_data['wind_from_direction'].dropna()
-            if not wind_dirs.empty:
-                rad = np.deg2rad(wind_dirs)
-                avg_sin = np.mean(np.sin(rad))
-                avg_cos = np.mean(np.cos(rad))
-                avg_dir = np.rad2deg(np.arctan2(avg_sin, avg_cos)) % 360
-                period_info['wind_direction'] = avg_dir
-            
-            periods.append(period_info)
-    
-    return pd.DataFrame(periods)
+                with col2:
+                    if settings.get('changes'):
+                        st.write("**Endringer fra standard:**")
+                        for change in settings['changes']:
+                            st.write(f"- {change}")
+                    
+                    if settings.get('parameters'):
+                        st.write("**Parameterinnstillinger:**")
+                        st.json(settings['parameters'])
+                
+                # Handlingsknapper
+                col3, col4 = st.columns(2)
+                with col3:
+                    if st.button("🔄 Last inn", key=f"load_{settings['id']}"):
+                        params = load_settings_parameters(settings['id'])
+                        if params:
+                            st.session_state['params'] = params
+                            st.success("Innstillinger lastet inn!")
+                            st.rerun()
+                
+                with col4:
+                    if st.button("🗑️ Slett", key=f"delete_{settings['id']}"):
+                        success, message = delete_settings(settings['id'])
+                        if success:
+                            st.success(message)
+                            st.rerun()
+                        else:
+                            st.error(message)
+    else:
+        st.info("Ingen lagrede innstillinger funnet")
 
 def plot_risk_analysis(df):
     """Lager interaktiv visualisering av risikoanalysen"""
@@ -586,9 +335,6 @@ def plot_risk_analysis(df):
     fig.update_yaxes(title_text="mm", row=5, col=1)
     
     return fig
-
-# Fil: app.py
-# Kategori: Visualization Functions
 
 def plot_critical_periods(df, periods_df):
     """
@@ -798,7 +544,136 @@ def display_critical_periods_analysis(df, periods_df):
                     st.write(f"Maks snøendring: {period['max_snow_change']:.1f} cm")
                     st.write(f"Total nedbør: {period['total_precip']:.1f} mm")
 
-# Hovedapplikasjon
+def show_ml_optimization():
+    """Viser ML-optimalisering seksjonen"""
+    st.subheader("🤖 Maskinlæringsbasert Parameteroptimalisering")
+    
+    # Debug utskrift
+    st.write("Debug: Starter ML-optimalisering")
+    
+    try:
+        # Initialiser optimizer
+        optimizer = SnowDriftOptimizer()
+        st.write("Debug: Optimizer initialisert")
+        
+        # Last inn data
+        with st.spinner('Henter værdata...'):
+            df = fetch_frost_data()
+            st.write(f"Debug: Data hentet, shape: {df.shape if df is not None else 'None'}")
+        
+        if df is not None:
+            # Beregn risikoscore med nåværende parametre
+            current_params = st.session_state.get('params', DEFAULT_PARAMS)
+            st.write("Debug: Starter risikoberegning")
+            df_risk, periods_df = calculate_snow_drift_risk(df, current_params)
+            st.write(f"Debug: Risikoberegning fullført, perioder funnet: {len(periods_df)}")
+            
+            target = df_risk['risk_score']
+            
+            # Kjør optimalisering
+            with st.spinner('Optimaliserer parametre...'):
+                try:
+                    st.write("Debug: Starter optimalisering")
+                    results = optimizer.optimize_parameters(df, target)
+                    st.write("Debug: Optimalisering fullført")
+                    
+                    # Vis resultater
+                    st.write("Debug: Viser resultater")
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.write("📊 **Modellytelse**")
+                        st.metric(
+                            "Gjennomsnittlig R² score", 
+                            f"{results['mean_cv_score']:.3f}"
+                        )
+                    
+                except Exception as e:
+                    st.error(f"Feil under optimalisering: {str(e)}")
+                    st.exception(e)
+        else:
+            st.error("Kunne ikke laste værdata for optimalisering")
+            
+    except Exception as e:
+        st.error(f"Uventet feil: {str(e)}")
+        st.exception(e)
+
+def show_main_analysis():
+    """Viser hovedanalysen"""
+    st.title("🌨️ Snøfokk-analyse")
+    
+    try:
+        # Last inn værdata
+        with st.spinner('Henter værdata fra Frost...'):
+            df = fetch_frost_data()
+            
+        if df is not None:
+            # Hent eller initialiser parametre
+            params = st.session_state.get('params', DEFAULT_PARAMS.copy())
+            
+            # Beregn risiko og finn kritiske perioder
+            df_risk, critical_periods = calculate_snow_drift_risk(df, params)
+            
+            # Vis parameterinnstillinger i sidebar
+            st.sidebar.subheader("⚙️ Parameterinnstillinger")
+            
+            # Vindparametere
+            st.sidebar.write("**Vindparametere**")
+            params['wind_strong'] = st.sidebar.slider("Sterk vind (m/s)", 5.0, 15.0, params['wind_strong'])
+            params['wind_moderate'] = st.sidebar.slider("Moderat vind (m/s)", 3.0, 10.0, params['wind_moderate'])
+            params['wind_gust'] = st.sidebar.slider("Vindkast terskel (m/s)", 10.0, 25.0, params['wind_gust'])
+            
+            # Temperaturparametere
+            st.sidebar.write("**Temperaturparametere**")
+            params['temp_cold'] = st.sidebar.slider("Kald temperatur (°C)", -10.0, 0.0, params['temp_cold'])
+            params['temp_cool'] = st.sidebar.slider("Kjølig temperatur (°C)", -5.0, 2.0, params['temp_cool'])
+            
+            # Snøparametere
+            st.sidebar.write("**Snøparametere**")
+            params['snow_high'] = st.sidebar.slider("Høy snøendring (cm/t)", 0.5, 3.0, params['snow_high'])
+            params['snow_moderate'] = st.sidebar.slider("Moderat snøendring (cm/t)", 0.2, 2.0, params['snow_moderate'])
+            
+            # Vekter
+            st.sidebar.write("**Vekter**")
+            params['wind_weight'] = st.sidebar.slider("Vindvekt", 0.0, 1.0, params['wind_weight'])
+            params['temp_weight'] = st.sidebar.slider("Temperaturvekt", 0.0, 1.0, params['temp_weight'])
+            params['snow_weight'] = st.sidebar.slider("Snøvekt", 0.0, 1.0, params['snow_weight'])
+            
+            # Oppdater session state
+            st.session_state['params'] = params
+            
+            # Vis nøkkeltall øverst
+            if not critical_periods.empty:
+                st.subheader("📊 Nøkkeltall")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Kritiske perioder", len(critical_periods))
+                with col2:
+                    st.metric("Total varighet", f"{critical_periods['duration'].sum():.1f} timer")
+                with col3:
+                    st.metric("Gjennomsnittlig risiko", f"{critical_periods['max_risk_score'].mean():.1f}")
+                
+                # Legg til litt mellomrom
+                st.write("")
+            
+            # Vis hovedplot i full bredde
+            st.plotly_chart(plot_risk_analysis(df_risk), use_container_width=True)
+            
+            # Vis detaljert analyse av kritiske perioder
+            if not critical_periods.empty:
+                display_critical_periods_analysis(df_risk, critical_periods)
+            
+            # Vis lagringsmuligheter
+            save_settings_ui(params, critical_periods)
+            
+        else:
+            st.error("Kunne ikke laste værdata. Sjekk tilkobling og prøv igjen.")
+            
+    except Exception as e:
+        st.error(f"Feil i hovedanalyse: {str(e)}")
+        st.exception(e)
+
+# Oppdater main() funksjonen
 def main():
     st.set_page_config(page_title="Snøfokk-analyse", layout="wide")
     
@@ -810,14 +685,11 @@ def main():
     choice = st.sidebar.selectbox("Velg analyse", menu)
     
     if choice == "Hovedanalyse":
-        # Eksisterende hovedanalyse kode...
-        pass
-    
+        show_main_analysis()  # Kall show_main_analysis funksjonen
     elif choice == "ML-optimalisering":
         show_ml_optimization()
-    
     elif choice == "Innstillinger":
-        # Eksisterende innstillinger kode...
-        pass
+        show_settings()
 
-# ... resten av eksisterende kode ...
+if __name__ == "__main__":
+    main()  
