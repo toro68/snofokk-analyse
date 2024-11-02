@@ -1,3 +1,10 @@
+# pylint: disable=line-too-long
+
+"""
+Modul for håndtering av snødata og væranalyse.
+Inneholder funksjoner for å hente data fra Frost API og analysere snødrift-risiko.
+"""
+
 # Standard biblioteker
 import logging
 from typing import Dict, List, Tuple, Any
@@ -10,12 +17,13 @@ import requests
 import streamlit as st
 from pandas import DataFrame
 
+# Lokale imports
+from snow_constants import SnowDepthConfig, enforce_snow_processing  # Legg til denne importen
+from config import FROST_CLIENT_ID, DEFAULT_PARAMS
+
 # Logging oppsett
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Konstanter
-from config import FROST_CLIENT_ID, FROST_STATION_ID, DEFAULT_PARAMS  # Legg til import fra config
 
 @st.cache_data(ttl=3600)  # Cache data for 1 time
 def fetch_frost_data(start_date='2023-11-01', end_date='2024-04-30'):
@@ -97,16 +105,23 @@ def fetch_frost_data(start_date='2023-11-01', end_date='2024-04-30'):
             return df
             
         else:
-            logger.error(f"Error {r.status_code}: {r.text}")
+            logger.error("Error %s: %s", r.status_code, r.text)
             return None
             
     except Exception as e:
-        logger.exception(f"Feil i fetch_frost_data: {str(e)}")
+        logger.error("Feil i fetch_frost_data: %s", str(e))
         return None
 
 def identify_risk_periods(df, min_duration=3):
     """
-    Identifiserer sammenhengende perioder med forhøyet risiko
+    Identifiserer sammenhengende perioder med forhøyet risiko.
+    
+    Args:
+        df: DataFrame med risikodata
+        min_duration: Minimum varighet for en periode i timer
+        
+    Returns:
+        DataFrame med identifiserte risikoperioder
     """
     periods = []
     
@@ -154,100 +169,152 @@ def identify_risk_periods(df, min_duration=3):
     
     return pd.DataFrame(periods)
 
+@enforce_snow_processing
 def calculate_snow_drift_risk(df: pd.DataFrame, params: Dict[str, float]) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Beregner snøfokk-risiko basert på værdata og parametre
-    """
-    min_duration = params.get('min_duration', 2)  # Bruker 2 som standardverdi
-    
-    df = df.copy()
-    
-    # Valider input data
-    required_columns = {
-        'surface_snow_thickness': -1.0,  # Endret standardverdi til -1.0
-        'wind_speed': 0.0,
-        'wind_from_direction': 0.0,
-        'air_temperature': 0.0
-    }
-
-    # Sjekk og legg til manglende kolonner
-    missing_columns = []
-    for col, default_value in required_columns.items():
-        if col not in df.columns:
-            logging.warning(f"Manglende kolonne '{col}' - bruker standardverdi {default_value}")
-            df[col] = default_value
-            missing_columns.append(col)
-
-    if missing_columns:
-        st.warning(f"""
-            Følgende data mangler fra værstasjonen: {', '.join(missing_columns)}. 
-            Analysen vil fortsette med standardverdier, men resultatet kan være mindre presist.
-            For snødybde betyr -1 at det ikke er snø på bakken.
-            """)
-
-    # Sikre beregninger med fillna()
-    df['snow_depth_change'] = df['surface_snow_thickness'].diff().fillna(0)
-    df['sustained_wind'] = df['wind_speed'].rolling(window=2, min_periods=1).mean().fillna(0)
-    df['wind_dir_change'] = df['wind_from_direction'].diff().abs().fillna(0)
-    
-    # Sikrere måte å håndtere snødybdeendringer
-    df['prev_snow_depth'] = df['surface_snow_thickness'].shift()
-    mask = (df['surface_snow_thickness'] == -1) | (df['prev_snow_depth'] == -1)
-    df.loc[mask, 'snow_depth_change'] = 0
-    df.drop('prev_snow_depth', axis=1, inplace=True)  # Fjern hjelpkolonnen
-
-    def calculate_risk_score(row):
-        """Beregner risikoscore for en enkelt rad"""
-        score = 0
+    try:
+        # Legg til debugging av input
+        logger.info(f"Starter calculate_snow_drift_risk med {len(df)} rader")
+        logger.info(f"Parametre mottatt: {params}")
         
-        # Vindrisiko
-        if row['wind_speed'] >= params['wind_strong']:
-            score += 40 * params['wind_weight']
-        elif row['wind_speed'] >= params['wind_moderate']:
-            score += 20 * params['wind_weight']
+        df = df.copy()
+        
+        # Snødybdehåndtering med debugging
+        if 'surface_snow_thickness' in df.columns:
+            logger.info("Snødybdedata før prosessering:")
+            logger.info(f"Null-verdier: {df['surface_snow_thickness'].isnull().sum()}")
+            logger.info(f"Unike verdier: {df['surface_snow_thickness'].unique()}")
             
-        if 'max(wind_speed_of_gust PT1H)' in row and row['max(wind_speed_of_gust PT1H)'] >= params['wind_gust']:
-            score += 10 * params['wind_weight']
+            df['surface_snow_thickness'] = SnowDepthConfig.process_snow_depth(
+                df['surface_snow_thickness']
+            )
             
-        if row['wind_dir_change'] >= params['wind_dir_change']:
-            score += 10 * params['wind_weight']
+            logger.info("Snødybdedata etter prosessering:")
+            logger.info(f"Null-verdier: {df['surface_snow_thickness'].isnull().sum()}")
+            logger.info(f"Unike verdier: {df['surface_snow_thickness'].unique()}")
+            
+            # Beregn endringer med debugging
+            df['snow_depth_change'] = (
+                df['surface_snow_thickness']
+                .diff()
+                .rolling(
+                    window=SnowDepthConfig.WINDOW_SIZE,
+                    min_periods=SnowDepthConfig.MIN_PERIODS
+                )
+                .mean()
+            )
+            
+            logger.info("Snødybdeendringer statistikk:")
+            logger.info(f"Min: {df['snow_depth_change'].min():.2f}")
+            logger.info(f"Maks: {df['snow_depth_change'].max():.2f}")
+            logger.info(f"Gjennomsnitt: {df['snow_depth_change'].mean():.2f}")
+
+        # Debug risikokomponenter
+        for risk_component in ['wind_risk', 'temp_risk', 'snow_risk']:
+            if risk_component in df.columns:
+                logger.info(f"{risk_component} statistikk:")
+                logger.info(f"Min: {df[risk_component].min():.2f}")
+                logger.info(f"Maks: {df[risk_component].max():.2f}")
+                logger.info(f"Gjennomsnitt: {df[risk_component].mean():.2f}")
+                logger.info(f"Null-verdier: {df[risk_component].isnull().sum()}")
+
+        # Beregn risikokomponenter
+        df['wind_risk'] = (
+            (df['wind_speed'] > params['wind_strong']).astype(float) * 1.0 +
+            ((df['wind_speed'] > params['wind_moderate']) & 
+             (df['wind_speed'] <= params['wind_strong'])).astype(float) * 0.6
+        ) * params['wind_weight']
+
+        df['temp_risk'] = (
+            (df['air_temperature'] < params['temp_cold']).astype(float) * 1.0 +
+            ((df['air_temperature'] < params['temp_cool']) & 
+             (df['air_temperature'] >= params['temp_cold'])).astype(float) * 0.6
+        ) * params['temp_weight']
+
+        df['snow_risk'] = (
+            (abs(df['snow_depth_change']) > params['snow_high']).astype(float) * 1.0 +
+            ((abs(df['snow_depth_change']) > params['snow_moderate']) & 
+             (abs(df['snow_depth_change']) <= params['snow_high'])).astype(float) * 0.6 +
+            ((abs(df['snow_depth_change']) > params['snow_low']) & 
+             (abs(df['snow_depth_change']) <= params['snow_moderate'])).astype(float) * 0.3
+        ) * params['snow_weight']
+
+        # Total risikoberegning
+        df['risk_score'] = df['wind_risk'] + df['temp_risk'] + df['snow_risk']
+
+        # Identifiser kritiske perioder
+        critical_mask = df['risk_score'] > 0.5
+        df['is_critical'] = critical_mask
+
+        # Lag periods_df
+        periods_df = pd.DataFrame(columns=[
+            'start_time', 'end_time', 'duration', 
+            'max_risk_score', 'avg_wind_speed', 'min_temp', 
+            'snow_depth_change', 'risk_level'
+        ])
+
+        if critical_mask.any():
+            # Finn start og slutt for hver periode
+            critical_periods = []
+            start_idx = None
+            
+            for idx, is_critical in critical_mask.items():
+                if is_critical and start_idx is None:
+                    start_idx = idx
+                elif not is_critical and start_idx is not None:
+                    max_risk = df.loc[start_idx:idx, 'risk_score'].max()
+                    period_data = {
+                        'start_time': start_idx,
+                        'end_time': idx,
+                        'duration': (idx - start_idx).total_seconds() / 3600,
+                        'max_risk_score': max_risk,
+                        'avg_wind_speed': df.loc[start_idx:idx, 'wind_speed'].mean(),
+                        'min_temp': df.loc[start_idx:idx, 'air_temperature'].min(),
+                        'snow_depth_change': df.loc[start_idx:idx, 'snow_depth_change'].abs().max(),
+                        'risk_level': (
+                            'Høy' if max_risk > 0.8 else
+                            'Moderat' if max_risk > 0.65 else
+                            'Lav'
+                        )
+                    }
+                    critical_periods.append(period_data)
+                    start_idx = None
+
+            # Håndter siste periode hvis den er aktiv
+            if start_idx is not None:
+                max_risk = df.loc[start_idx:, 'risk_score'].max()
+                period_data = {
+                    'start_time': start_idx,
+                    'end_time': df.index[-1],
+                    'duration': (df.index[-1] - start_idx).total_seconds() / 3600,
+                    'max_risk_score': max_risk,
+                    'avg_wind_speed': df.loc[start_idx:, 'wind_speed'].mean(),
+                    'min_temp': df.loc[start_idx:, 'air_temperature'].min(),
+                    'snow_depth_change': df.loc[start_idx:, 'snow_depth_change'].abs().max(),
+                    'risk_level': (
+                        'Høy' if max_risk > 0.8 else
+                        'Moderat' if max_risk > 0.65 else
+                        'Lav'
+                    )
+                }
+                critical_periods.append(period_data)
+
+            # Konverter til DataFrame og filtrer
+            if critical_periods:
+                periods_df = pd.DataFrame(critical_periods)
+                periods_df = periods_df[periods_df['duration'] >= params['min_duration']]
+
+        # Debug kritiske perioder
+        logger.info(f"Antall kritiske perioder funnet: {len(periods_df)}")
+        if not periods_df.empty:
+            logger.info("Kritiske perioder statistikk:")
+            logger.info(f"Gjennomsnittlig varighet: {periods_df['duration'].mean():.2f} timer")
+            logger.info(f"Maks risikoscore: {periods_df['max_risk_score'].max():.2f}")
+            
+        return df, periods_df
         
-        # Temperaturrisiko
-        if row['air_temperature'] <= params['temp_cold']:
-            score += 20 * params['temp_weight']
-        elif row['air_temperature'] <= params['temp_cool']:
-            score += 10 * params['temp_weight']
-        
-        # Snørisiko
-        if abs(row['snow_depth_change']) >= params['snow_high']:
-            score += 40 * params['snow_weight']
-        elif abs(row['snow_depth_change']) >= params['snow_moderate']:
-            score += 20 * params['snow_weight']
-        elif abs(row['snow_depth_change']) >= params['snow_low']:
-            score += 10 * params['snow_weight']
-        
-        return min(100, score)
-    
-    # Beregn risikoscore
-    df['risk_score'] = df.apply(calculate_risk_score, axis=1)
-    df['risk_level'] = pd.cut(df['risk_score'], 
-                           bins=[-np.inf, 30, 50, 70, np.inf],
-                           labels=['Lav', 'Moderat', 'Høy', 'Kritisk'])
-    
-    # Legg til periode-ID for sammenhengende risikoperioder
-    # En ny periode starter når risk_score går fra 0 til over 0 eller omvendt
-    risk_threshold = 30  # Juster denne verdien etter behov
-    df['is_risk'] = df['risk_score'] > risk_threshold
-    df['period_start'] = df['is_risk'].ne(df['is_risk'].shift()).cumsum()
-    df['period_id'] = np.where(df['is_risk'], df['period_start'], np.nan)
-    
-    # Fjern midlertidige kolonner
-    df = df.drop(['is_risk', 'period_start'], axis=1)
-    
-    # Identifiser perioder med sikker min_duration
-    periods_df = identify_risk_periods(df, min_duration=min_duration)
-    
-    return df, periods_df
+    except Exception as e:
+        logger.error(f"Feil i calculate_snow_drift_risk: {str(e)}", exc_info=True)
+        raise
 
 def create_rolling_stats(df: DataFrame, 
                         columns: List[str], 
@@ -287,18 +354,20 @@ def create_rolling_stats(df: DataFrame,
         return df
 
 def analyze_wind_directions(df: DataFrame) -> Dict[str, Any]:
-    """
-    Analyserer hvilke vindretninger som er mest assosiert med snøfokk
-    
-    Args:
-        df: DataFrame med kritiske perioder
-    Returns:
-        Dict med vindretningsanalyse
-    """
     try:
+        logger.info("Starter vindretningsanalyse")
+        logger.info(f"Input data shape: {df.shape}")
+        
         if 'wind_direction' not in df.columns:
+            logger.warning("Vindretning mangler i datasettet")
             return None
             
+        # Debug vindretningsdata
+        logger.info("Vindretningsstatistikk:")
+        logger.info(f"Null-verdier: {df['wind_direction'].isnull().sum()}")
+        logger.info(f"Unike verdier: {df['wind_direction'].nunique()}")
+        logger.info(f"Min/Maks: {df['wind_direction'].min():.1f}/{df['wind_direction'].max():.1f}")
+
         # Lag en sikker kopi av DataFrame
         analysis_df = df.copy()
         
@@ -358,25 +427,17 @@ def analyze_wind_directions(df: DataFrame) -> Dict[str, Any]:
         }
         
     except Exception as e:
-        logging.error(f"Feil i vindretningsanalyse: {str(e)}")
+        logger.error(f"Feil i vindretningsanalyse: {str(e)}", exc_info=True)
         return None
 
 def analyze_settings(params: Dict[str, float], critical_periods_df: DataFrame) -> Dict[str, Any]:
     """
     Utfører avansert AI-analyse av parameterinnstillingene og deres effektivitet
-    
-    Args:
-        params: Dict med gjeldende parameterinnstillinger
-        critical_periods_df: DataFrame med kritiske perioder
-        
-    Returns:
-        Dict med analyseinformasjon inkludert:
-        - parameter_changes: Liste med betydelige parameterendringer
-        - impact_analysis: Liste med effektanalyser
-        - suggestions: Liste med forbedringsforslag
-        - meteorological_context: Liste med meteorologisk kontekst
     """
     try:
+        from snow_constants import SnowDepthConfig
+        snow_config = SnowDepthConfig.get_processing_config()
+        
         analysis = {
             'parameter_changes': [],
             'impact_analysis': [],
@@ -436,6 +497,17 @@ def analyze_settings(params: Dict[str, float], critical_periods_df: DataFrame) -
             avg_risk = critical_periods_df['max_risk_score'].mean()
             max_wind = critical_periods_df['max_wind'].max() if 'max_wind' in critical_periods_df.columns else 0
             min_temp = critical_periods_df['min_temp'].min() if 'min_temp' in critical_periods_df.columns else 0
+            
+            # Legg til snødybdeanalyse
+            if 'max_snow_change' in critical_periods_df.columns:
+                max_snow_change = critical_periods_df['max_snow_change'].abs().max()
+                if max_snow_change > snow_config['max_change']:
+                    analysis['impact_analysis'].append({
+                        'description': (
+                            f"Observert høy snøendringsrate ({max_snow_change:.1f} cm/t) - "
+                            "justert innenfor konfigurerte grenser"
+                        )
+                    })
             
             # Legg til viktige observasjoner
             if avg_duration > 4:
@@ -498,6 +570,33 @@ def analyze_settings(params: Dict[str, float], critical_periods_df: DataFrame) -
                         f"Dominerende vindretninger under kritiske perioder: {', '.join(dominant_dirs)}. "
                         "Dette kan indikere spesielt utsatte områder i disse retningene."
                     )
+
+        # Forbedret analyse av varighetsinnstillinger
+        if not critical_periods_df.empty:
+            duration_stats = critical_periods_df['duration'].describe()
+            min_duration = params.get('min_duration', 3)
+            
+            # Analyser varighetsfordeling
+            if duration_stats['25%'] > min_duration + 2:
+                analysis['suggestions'].append(
+                    f"Vurder å øke minimum varighet fra {min_duration} til {int(duration_stats['25%'])} timer "
+                    "da de fleste kritiske perioder varer lengre"
+                )
+            elif duration_stats['75%'] < min_duration:
+                analysis['suggestions'].append(
+                    f"Vurder å redusere minimum varighet fra {min_duration} til {max(2, int(duration_stats['75%']))} timer "
+                    "for å fange opp flere potensielle hendelser"
+                )
+            
+            # Legg til varighetsstatistikk i meteorologisk kontekst
+            analysis['meteorological_context'].append(
+                f"Varighetsfordeling for kritiske perioder: "
+                f"Minimum: {duration_stats['min']:.1f}, "
+                f"25-persentil: {duration_stats['25%']:.1f}, "
+                f"Median: {duration_stats['50%']:.1f}, "
+                f"75-persentil: {duration_stats['75%']:.1f}, "
+                f"Maksimum: {duration_stats['max']:.1f} timer"
+            )
 
         return analysis
 
@@ -594,4 +693,32 @@ def preprocess_critical_periods(df: DataFrame) -> DataFrame:
         
     except Exception as e:
         logging.error(f"Feil i vindretningsanalyse: {str(e)}", exc_info=True)
+        return df
+
+def safe_dataframe_operations(df: pd.DataFrame, operations: Dict) -> pd.DataFrame:
+    """
+    Utfører sikre operasjoner på DataFrame
+    
+    Args:
+        df: Input DataFrame
+        operations: Dictionary med operasjoner som skal utføres
+    Returns:
+        Prosessert DataFrame
+    """
+    result_df = df.copy()
+    try:
+        for op_name, op_config in operations.items():
+            if op_config['operation'] == 'calculate':
+                result_df[op_name] = op_config['value'](result_df)
+            elif op_config['operation'] == 'rolling':
+                series = result_df[op_config['value']]
+                rolling = series.rolling(**op_config['args'])
+                result_df[op_name] = getattr(rolling, op_config['aggregation'])()
+            
+            if 'fillna' in op_config:
+                result_df[op_name] = result_df[op_name].fillna(op_config['fillna'])
+                
+        return result_df
+    except Exception as e:
+        logger.error("Feil i safe_dataframe_operations: %s", str(e))
         return df
