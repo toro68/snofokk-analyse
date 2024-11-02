@@ -139,10 +139,10 @@ def migrate_database_schema() -> Tuple[bool, str]:
             c.execute("PRAGMA table_info(settings)")
             settings_columns = {col[1] for col in c.fetchall()}
             
-            # Definer påkrevde kolonner og deres definisjoner
+            # Endre definisjonene for å unngå CURRENT_TIMESTAMP
             required_columns = {
-                'created_at': 'DATETIME DEFAULT CURRENT_TIMESTAMP',
-                'updated_at': 'DATETIME DEFAULT CURRENT_TIMESTAMP',
+                'created_at': 'DATETIME',  # Fjernet DEFAULT CURRENT_TIMESTAMP
+                'updated_at': 'DATETIME',  # Fjernet DEFAULT CURRENT_TIMESTAMP
                 'critical_periods': 'INTEGER',
                 'total_duration': 'INTEGER',
                 'avg_risk_score': 'REAL'
@@ -153,6 +153,13 @@ def migrate_database_schema() -> Tuple[bool, str]:
                 if col_name not in settings_columns:
                     try:
                         c.execute(f'ALTER TABLE settings ADD COLUMN {col_name} {col_def}')
+                        # Sett timestamp direkte etter å ha lagt til kolonnen
+                        if col_name in ['created_at', 'updated_at']:
+                            c.execute(f'''
+                                UPDATE settings 
+                                SET {col_name} = datetime('now') 
+                                WHERE {col_name} IS NULL
+                            ''')
                         print(f"Lagt til kolonne: {col_name} i settings")
                     except Exception as e:
                         print(f"Feil ved tillegg av kolonne {col_name}: {str(e)}")
@@ -163,7 +170,7 @@ def migrate_database_schema() -> Tuple[bool, str]:
             
             # Definer påkrevde kolonner for period_stats
             period_stats_required = {
-                'created_at': 'DATETIME DEFAULT CURRENT_TIMESTAMP',
+                'created_at': 'DATETIME',
                 'avg_wind': 'REAL',
                 'wind_direction': 'REAL',
                 'precipitation_sum': 'REAL'
@@ -467,17 +474,12 @@ def calculate_wind_direction_change(dir1: float, dir2: float) -> float:
 
 def preprocess_critical_periods(df: DataFrame) -> DataFrame:
     """
-    Forbehandler kritiske perioder med forbedret vindretningsanalyse og sikker DataFrame-håndtering
-    
-    Args:
-        df (DataFrame): Input DataFrame med kritiske perioder
-        
-    Returns:
-        DataFrame: Prosessert DataFrame med vindretningsanalyse
-        
-    Raises:
-        ValueError: Hvis påkrevde kolonner mangler
+    Forbehandler kritiske perioder med forbedret vindretningsanalyse
     """
+    if not isinstance(df, pd.DataFrame):
+        logging.error(f"Ugyldig input type i preprocess_critical_periods: {type(df)}")
+        return pd.DataFrame()
+        
     if df.empty:
         logging.warning("Tom DataFrame mottatt i preprocess_critical_periods")
         return df
@@ -538,14 +540,13 @@ def preprocess_critical_periods(df: DataFrame) -> DataFrame:
             }
             result_df = safe_dataframe_operations(result_df, additional_ops)
         
-        logging.info(f"Preprocessering fullført. Behandlet {len(result_df)} rader.")
         return result_df
         
     except Exception as e:
         logging.error(f"Feil i vindretningsanalyse: {str(e)}", exc_info=True)
         return df
 
-def analyze_wind_directions(df):
+def analyze_wind_directions(df: DataFrame) -> Dict[str, Any]:
     """
     Analyserer hvilke vindretninger som er mest assosiert med snøfokk
     
@@ -558,6 +559,9 @@ def analyze_wind_directions(df):
         if 'wind_direction' not in df.columns:
             return None
             
+        # Lag en sikker kopi av DataFrame
+        analysis_df = df.copy()
+        
         # Definer hovedretninger (N, NØ, Ø, osv.)
         directions = {
             'N': (337.5, 22.5),
@@ -578,17 +582,18 @@ def analyze_wind_directions(df):
                     return name
             return 'N'  # Fallback
         
-        df['direction_category'] = df['wind_direction'].apply(categorize_direction)
+        # Bruk loc for å unngå SettingWithCopyWarning
+        analysis_df.loc[:, 'direction_category'] = analysis_df['wind_direction'].apply(categorize_direction)
         
         # Analyser fordeling av vindretninger
-        direction_counts = df['direction_category'].value_counts()
-        total_periods = len(df)
+        direction_counts = analysis_df['direction_category'].value_counts()
+        total_periods = len(analysis_df)
         
         # Beregn gjennomsnittlig risikoscore for hver retning
-        direction_risk = df.groupby('direction_category')['max_risk_score'].mean()
+        direction_risk = analysis_df.groupby('direction_category')['max_risk_score'].mean()
         
         # Beregn gjennomsnittlig vindstyrke for hver retning
-        direction_wind = df.groupby('direction_category')['max_wind'].mean()
+        direction_wind = analysis_df.groupby('direction_category')['max_wind'].mean()
         
         # Finn dominerende retninger (over 15% av tilfellene eller høy risikoscore)
         significant_directions = []
@@ -613,7 +618,7 @@ def analyze_wind_directions(df):
         }
         
     except Exception as e:
-        print(f"Feil i vindretningsanalyse: {str(e)}")
+        logging.error(f"Feil i vindretningsanalyse: {str(e)}")
         return None
 
 def analyze_settings(params, critical_periods_df, DEFAULT_PARAMS):
@@ -960,31 +965,20 @@ from pandas import DataFrame
 def safe_dataframe_operations(
     df: DataFrame,
     operations: Dict[str, Dict[str, Any]] = None
-) -> Tuple[DataFrame, bool, str]:
+) -> DataFrame:
     """
     Utfører sikre DataFrame-operasjoner med feilhåndtering
-    
-    Args:
-        df: Input DataFrame
-        operations: Valgfritt dictionary med operasjoner som skal utføres
-            Format: {
-                'column_name': {
-                    'operation': str ('calculate', 'rolling', etc.),
-                    'value': callable eller kolonnenavn,
-                    'args': dict (valgfri),
-                    'aggregation': str (valgfri),
-                    'fillna': Any (valgfri)
-                }
-            }
-    Returns:
-        Tuple[DataFrame, bool, str]: (Prosessert DataFrame, success status, melding)
     """
-    result_df = df.copy()
+    if not isinstance(df, pd.DataFrame):
+        logging.error(f"Ugyldig input type: {type(df)}. Forventer DataFrame.")
+        return pd.DataFrame()  # Returner tom DataFrame ved ugyldig input
     
     try:
-        # Grunnleggende operasjoner først
+        # Lag en dyp kopi for å unngå SettingWithCopyWarning
+        result_df = df.copy(deep=True)
+        
         if result_df.empty:
-            return result_df, False, "Tom dataframe mottatt"
+            return result_df
             
         # Fjern duplikate rader
         result_df = result_df.drop_duplicates()
@@ -1000,7 +994,7 @@ def safe_dataframe_operations(
         # Håndter manglende verdier for standardkolonner
         for col, value in default_fillna.items():
             if col in result_df.columns:
-                result_df[col] = result_df[col].fillna(value)
+                result_df.loc[:, col] = result_df[col].fillna(value)
         
         # Hvis operations er gitt, utfør tilpassede operasjoner
         if operations:
@@ -1009,7 +1003,7 @@ def safe_dataframe_operations(
                     operation_type = op_info['operation']
                     
                     if operation_type == 'calculate':
-                        result_df[col_name] = op_info['value'](result_df)
+                        result_df.loc[:, col_name] = op_info['value'](result_df)
                         
                     elif operation_type == 'rolling':
                         base_col = op_info['value']
@@ -1018,30 +1012,24 @@ def safe_dataframe_operations(
                         
                         rolling = result_df[base_col].rolling(**window_args)
                         if hasattr(rolling, agg_func):
-                            result_df[col_name] = getattr(rolling, agg_func)()
+                            result_df.loc[:, col_name] = getattr(rolling, agg_func)()
                         else:
-                            result_df[col_name] = rolling.agg(agg_func)
+                            result_df.loc[:, col_name] = rolling.agg(agg_func)
                     
                     # Håndter NaN-verdier hvis spesifisert
                     if 'fillna' in op_info:
-                        result_df[col_name] = result_df[col_name].fillna(op_info['fillna'])
+                        result_df.loc[:, col_name] = result_df[col_name].fillna(op_info['fillna'])
                         
                 except Exception as e:
                     logging.warning(f"Feil ved prosessering av kolonne {col_name}: {str(e)}")
                     continue
         
-        # Valider datatyper for numeriske kolonner
-        numeric_columns = ['risk_score', 'wind_speed', 'air_temperature', 'surface_snow_thickness']
-        for col in numeric_columns:
-            if col in result_df.columns:
-                result_df[col] = pd.to_numeric(result_df[col], errors='coerce')
-        
-        return result_df, True, "Operasjoner fullført"
+        return result_df
         
     except Exception as e:
         error_msg = f"Kritisk feil i safe_dataframe_operations: {str(e)}"
         logging.error(error_msg)
-        return df, False, error_msg
+        return pd.DataFrame()
 
 def create_rolling_stats(df: DataFrame, 
                         columns: List[str], 
