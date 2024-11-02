@@ -6,7 +6,11 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 import plotly.express as px
+import logging
+from typing import Tuple, Dict, Any
 
+# Enten legg til pylint-disable for å unngå feilmeldingen
+# pylint: disable=E0611
 from db_utils import (
     init_db, 
     save_settings, 
@@ -19,8 +23,11 @@ from db_utils import (
     create_weather_table,
     get_cached_weather,
     save_weather_data,
-    cleanup_old_weather_data
+    cleanup_old_weather_data,
+    safe_dataframe_operations,
+    create_rolling_stats  # Lagt til denne linjen
 )
+# pylint: enable=E0611
 
 # API konfigurasjon
 CLIENT_ID = st.secrets["FROST_CLIENT_ID"]
@@ -208,59 +215,50 @@ def save_settings_ui(params, critical_periods):
 def view_saved_settings():
     """Viser lagrede innstillinger"""
     try:
-        # Hent alle lagrede innstillinger
         settings_df = get_saved_settings()
         
         if settings_df.empty:
-            st.info("Ingen lagrede innstillinger ennå")
+            st.warning("Ingen lagrede innstillinger funnet")
             return
             
-        st.subheader("📋 Lagrede innstillinger")
-        
-        # Debug info
+        st.subheader("Lagrede innstillinger")
         st.write(f"Fant {len(settings_df)} innstillinger")
         
-        # Vis hver innstilling
         for _, settings in settings_df.iterrows():
-            container = st.container()
-            container.markdown(f"### {settings['name']} ({settings['timestamp'][:10]})")
+            # Konverter timestamp til string i riktig format
+            timestamp_str = settings['timestamp'].strftime('%Y-%m-%d')
             
-            col1, col2 = container.columns([3, 1])
+            container = st.container()
+            container.markdown(f"### {settings['name']} ({timestamp_str})")
+            
+            col1, col2 = container.columns(2)
             
             with col1:
                 st.write("**Beskrivelse:**")
-                st.write(settings['description'] if settings['description'] else "Ingen beskrivelse")
+                st.write(settings['description'])
                 
-                st.write("**Endringer fra standard:**")
-                if settings['changes']:
-                    st.code("\n".join(settings['changes']))
-                else:
-                    st.write("Ingen endringer fra standard")
+                if 'critical_periods' in settings:
+                    st.write(f"**Kritiske perioder:** {settings['critical_periods']}")
+                if 'total_duration' in settings:
+                    st.write(f"**Total varighet:** {settings['total_duration']} timer")
+                if 'avg_risk_score' in settings:
+                    st.write(f"**Gjennomsnittlig risiko:** {settings['avg_risk_score']:.1f}")
             
             with col2:
-                st.metric("Kritiske perioder", settings['critical_periods'])
-                st.metric("Total varighet", f"{settings['total_duration']}t")
-                st.metric("Snittrisiko", f"{settings['avg_risk_score']:.1f}")
+                st.write("**Parametre:**")
+                st.json(settings['parameters'])
+                
+                if settings.get('changes'):
+                    st.write("**Endringer:**")
+                    st.json(settings['changes'])
             
-            # Hent periodestatistikk
-            period_stats = get_period_stats(settings['id'])
-            if not period_stats.empty:
-                st.write("**Periodestatistikk:**")
-                st.dataframe(
-                    period_stats[[
-                        'start_time', 'end_time', 'duration',
-                        'max_risk_score', 'max_wind', 'min_temp'
-                    ]].style.format({
-                        'max_risk_score': '{:.1f}',
-                        'max_wind': '{:.1f}',
-                        'min_temp': '{:.1f}'
-                    })
-                )
-            
-            # Handlinger
-            col1, col2 = st.columns([1, 4])
-            with col1:
-                if st.button("🗑️ Slett", key=f"delete_{settings['id']}"):
+            # Legg til knapper for handlinger
+            col3, col4 = container.columns(2)
+            with col3:
+                if st.button(f"Last inn {settings['name']}", key=f"load_{settings['id']}"):
+                    return settings['id']
+            with col4:
+                if st.button(f"Slett {settings['name']}", key=f"delete_{settings['id']}"):
                     success, message = delete_settings(settings['id'])
                     if success:
                         st.success(message)
@@ -268,20 +266,11 @@ def view_saved_settings():
                     else:
                         st.error(message)
             
-            with col2:
-                if st.button("📥 Last inn", key=f"load_{settings['id']}"):
-                    params = load_settings_parameters(settings['id'])
-                    if params:
-                        st.session_state.loaded_params = params
-                        st.success("Innstillinger lastet inn! Oppdaterer...")
-                        st.rerun()
-            
-            st.divider()
+            st.markdown("---")
             
     except Exception as e:
         st.error(f"Feil ved visning av innstillinger: {str(e)}")
-        import traceback
-        st.error(traceback.format_exc())
+        st.exception(e)
 
 @st.cache_data(ttl=3600)  # Cache data for 1 time
 def fetch_frost_data(start_date='2023-11-01', end_date='2024-04-30'):
@@ -850,159 +839,145 @@ def main():
                 "Sterk vind (m/s)", 
                 5.0, 15.0, 
                 DEFAULT_PARAMS['wind_strong'], 
-                0.5
+                0.5,
+                help="🌪️ Dette er vindstyrken som regnes som kraftig nok til å forårsake betydelig snøtransport. "
+                     "Når vinden er over denne verdien, gir det høy risikoscore. "
+                     "\n\nStandardverdi: 8.0 m/s"
             )
-            st.markdown("""
-            <small>🌬️ Vindstyrke som regnes som sterk nok til å kunne forårsake betydelig snøtransport.
-            Verdier over dette gir høy risikoscore.</small>
-            """, unsafe_allow_html=True)
 
             params['wind_moderate'] = st.slider(
                 "Moderat vind (m/s)", 
                 4.0, 10.0, 
                 DEFAULT_PARAMS['wind_moderate'], 
-                0.5
+                0.5,
+                help="💨 Dette er vindstyrken som kan føre til noe snøtransport. "
+                     "Gir en moderat risikoscore. "
+                     "\n\nStandardverdi: 6.5 m/s"
             )
-            st.markdown("""
-            <small>🍃 Vindstyrke som kan føre til noe snøtransport. 
-            Verdier over dette gir moderat risikoscore.</small>
-            """, unsafe_allow_html=True)
 
             params['wind_gust'] = st.slider(
                 "Vindkast terskel (m/s)", 
                 10.0, 25.0, 
                 DEFAULT_PARAMS['wind_gust'], 
-                0.5
+                0.5,
+                help="💨 Når vindkastene overstiger denne verdien, øker risikoscoren med 20%. "
+                     "Kraftige vindkast kan plutselig løfte og transportere mer snø. "
+                     "\n\nStandardverdi: 15.0 m/s"
             )
-            st.markdown("""
-            <small>💨 Grense for vindkast som kan forårsake plutselig økt snøtransport.
-            Verdier over dette øker risikoscoren med 20%.</small>
-            """, unsafe_allow_html=True)
 
             params['wind_dir_change'] = st.slider(
                 "Vindretningsendring (°)", 
                 10.0, 60.0, 
                 DEFAULT_PARAMS['wind_dir_change'], 
-                5.0
+                5.0,
+                help="🔄 Måler hvor mye vindretningen endrer seg. "
+                     "Store endringer i vindretning kan føre til mer komplekse snøtransportmønstre. "
+                     "\n\nStandardverdi: 30.0°"
             )
-            st.markdown("""
-            <small>🔄 Betydelig endring i vindretning som kan påvirke snøtransporten.
-            Verdier over dette øker risikoscoren med 10%.</small>
-            """, unsafe_allow_html=True)
             
             st.subheader("Temperaturparametere")
             params['temp_cold'] = st.slider(
                 "Kald temperatur (°C)", 
                 -5.0, 0.0, 
                 DEFAULT_PARAMS['temp_cold'], 
-                0.5
+                0.5,
+                help="❄️ Temperaturer under dette regnes som kalde forhold. "
+                     "Kalde temperaturer gir høy vekting i risikoberegningen fordi tørr, kald snø lettere transporteres. "
+                     "\n\nStandardverdi: -2.0°C"
             )
-            st.markdown("""
-            <small>❄️ Temperaturer under dette regnes som kalde forhold.
-            Gir høy vekting i risikoberegningen.</small>
-            """, unsafe_allow_html=True)
 
             params['temp_cool'] = st.slider(
                 "Kjølig temperatur (°C)", 
                 -3.0, 2.0, 
                 DEFAULT_PARAMS['temp_cool'], 
-                0.5
+                0.5,
+                help="🌡️ Temperaturer under dette regnes som kjølige forhold. "
+                     "Gir moderat vekting i risikoberegningen. "
+                     "\n\nStandardverdi: 0.0°C"
             )
-            st.markdown("""
-            <small>🌡️ Temperaturer under dette regnes som kjølige forhold.
-            Gir moderat vekting i risikoberegningen.</small>
-            """, unsafe_allow_html=True)
             
             st.subheader("Snøparametere")
             params['snow_high'] = st.slider(
                 "Høy snøendring (cm)", 
                 0.5, 3.0, 
                 DEFAULT_PARAMS['snow_high'], 
-                0.1
+                0.1,
+                help="❄️ Betydelig endring i snødybde som indikerer kraftig snøtransport. "
+                     "Når kombinert med vind, gir dette høy risikoscore. "
+                     "\n\nStandardverdi: 1.5 cm"
             )
-            st.markdown("""
-            <small>🏔️ Betydelig endring i snødybde som indikerer kraftig snøtransport.
-            Verdier over dette gir høy risikoscore når kombinert med vind.</small>
-            """, unsafe_allow_html=True)
 
             params['snow_moderate'] = st.slider(
                 "Moderat snøendring (cm)", 
                 0.3, 2.0, 
                 DEFAULT_PARAMS['snow_moderate'], 
-                0.1
+                0.1,
+                help="🌨️ Moderat endring i snødybde. "
+                     "Gir moderat risikoscore når kombinert med vind. "
+                     "\n\nStandardverdi: 0.8 cm"
             )
-            st.markdown("""
-            <small>🌨️ Moderat endring i snødybde som kan indikere snøtransport.
-            Verdier over dette gir moderat risikoscore når kombinert med vind.</small>
-            """, unsafe_allow_html=True)
 
             params['snow_low'] = st.slider(
                 "Lav snøendring (cm)", 
                 0.1, 1.0, 
                 DEFAULT_PARAMS['snow_low'], 
-                0.1
+                0.1,
+                help="❄️ Minimal endring i snødybde. "
+                     "Gir lav risikoscore når kombinert med vind. "
+                     "\n\nStandardverdi: 0.3 cm"
             )
-            st.markdown("""
-            <small>❄️ Minimal endring i snødybde som kan indikere lett snøtransport.
-            Verdier over dette gir lav risikoscore når kombinert med vind.</small>
-            """, unsafe_allow_html=True)
             
             st.subheader("Vekting")
             params['wind_weight'] = st.slider(
                 "Vindvekt", 
                 0.5, 2.0, 
                 DEFAULT_PARAMS['wind_weight'], 
-                0.1
+                0.1,
+                help="⚖️ Justerer hvor stor innvirkning vindforhold har på total risikoscore. "
+                     "Høyere verdi = vind påvirker risikoscoren mer. "
+                     "\n\nStandardverdi: 1.0"
             )
-            st.markdown("""
-            <small>🎚️ Justerer hvor stor innvirkning vindforhold har på total risikoscore.
-            Høyere verdi gir mer vekt til vindparameterne.</small>
-            """, unsafe_allow_html=True)
 
             params['temp_weight'] = st.slider(
                 "Temperaturvekt", 
                 0.5, 2.0, 
                 DEFAULT_PARAMS['temp_weight'], 
-                0.1
+                0.1,
+                help="⚖️ Justerer hvor stor innvirkning temperaturforhold har. "
+                     "Høyere verdi = temperatur påvirker risikoscoren mer. "
+                     "\n\nStandardverdi: 1.0"
             )
-            st.markdown("""
-            <small>🎚️ Justerer hvor stor innvirkning temperaturforhold har på total risikoscore.
-            Høyere verdi gir mer vekt til temperaturparameterne.</small>
-            """, unsafe_allow_html=True)
 
             params['snow_weight'] = st.slider(
                 "Snøvekt", 
                 0.5, 2.0, 
                 DEFAULT_PARAMS['snow_weight'], 
-                0.1
+                0.1,
+                help="⚖️ Justerer hvor stor innvirkning snøforhold har. "
+                     "Høyere verdi = snøendringer påvirker risikoscoren mer. "
+                     "\n\nStandardverdi: 1.0"
             )
-            st.markdown("""
-            <small>🎚️ Justerer hvor stor innvirkning snøforhold har på total risikoscore.
-            Høyere verdi gir mer vekt til snøparameterne.</small>
-            """, unsafe_allow_html=True)
             
             st.subheader("Andre parametere")
             params['min_duration'] = st.slider(
                 "Minimum varighet (timer)", 
                 1, 6, 
                 DEFAULT_PARAMS['min_duration'], 
-                1
+                1,
+                help="⚙️ Minimum antall sammenhengende timer med forhøyet risiko før det regnes som en risikoperiode. "
+                     "Høyere verdi filtrerer bort kortvarige hendelser. "
+                     "\n\nStandardverdi: 2 timer"
             )
-            st.markdown("""
-            <small>🖖 Minimum antall sammenhengende timer med forhøyet risiko før det regnes som en risikoperiode.
-            Høyere verdi filtrerer bort kortvarige hendelser.</small>
-            """, unsafe_allow_html=True)
 
-            # Info-boks med generell forklaring
+            # Legg til en generell informasjonsboks om risikoberegning
             st.info("""
-            💡 **Hvordan parameterne påvirker risikoberegningen:**
+            📊 **Hvordan risikoscoren beregnes:**
             
-            - Risikoscore beregnes på en skala fra 0-100
-            - Vind er grunnleggende for snøfokk og må være tilstede
+            - Risikoscoren går fra 0-100
+            - Vind må være til stede for å få høy score
             - Temperatur og snøforhold forsterker risikoen
-            - Vektingen lar deg justere betydningen av hver faktor
-            
-            Juster parameterne basert på lokale forhold og erfaringer.
+            - Alle faktorer vektes i henhold til vektingsparameterne
+            - Systemet ser også på kombinasjoner av faktorer for å gi en mer nøyaktig risikovurdering
             """)
     
     # Hovedinnhold
