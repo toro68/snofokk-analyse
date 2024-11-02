@@ -1,20 +1,24 @@
 # Fil: db_utils.py
 # Kategori: Database Functions
 
+from functools import lru_cache
+
 import sqlite3
 import json
 from datetime import datetime, timedelta
-import pandas as pd
-from dataclasses import dataclass
 from contextlib import contextmanager
 from typing import Optional, Dict, Tuple, List, Any
+from dataclasses import dataclass
+
+# Tredjeparts biblioteker
+import pandas as pd
 import numpy as np
 from pandas import DataFrame
-from functools import lru_cache
-import logging
 
-# Sett opp logging
+# Logging oppsett
+import logging
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 @dataclass
 class WeatherData:
@@ -460,302 +464,6 @@ def debug_database():
         except Exception as e:
             print(f"Debug error: {str(e)}")
 
-def calculate_wind_direction_change(dir1: float, dir2: float) -> float:
-    """
-    Beregner minste vinkelendring mellom to vindretninger
-    
-    Args:
-        dir1, dir2: Vindretninger i grader (0-360)
-    Returns:
-        Minste vinkelendring i grader (0-180)
-    """
-    diff = abs(dir1 - dir2)
-    return min(diff, 360 - diff)
-
-def preprocess_critical_periods(df: DataFrame) -> DataFrame:
-    """
-    Forbehandler kritiske perioder med forbedret vindretningsanalyse
-    """
-    if not isinstance(df, pd.DataFrame):
-        logging.error(f"Ugyldig input type i preprocess_critical_periods: {type(df)}")
-        return pd.DataFrame()
-        
-    if df.empty:
-        logging.warning("Tom DataFrame mottatt i preprocess_critical_periods")
-        return df
-        
-    try:
-        # Definer alle operasjoner som skal utføres
-        operations = {
-            'wind_dir_change': {
-                'operation': 'calculate',
-                'value': lambda x: x['wind_direction'].diff(),
-                'fillna': 0.0
-            },
-            'max_dir_change': {
-                'operation': 'rolling',
-                'value': 'wind_dir_change',
-                'args': {'window': 3, 'center': True, 'min_periods': 1},
-                'aggregation': 'max',
-                'fillna': 0.0
-            },
-            'wind_dir_stability': {
-                'operation': 'rolling',
-                'value': 'wind_dir_change',
-                'args': {'window': 3, 'center': True, 'min_periods': 1},
-                'aggregation': 'std',
-                'fillna': 0.0
-            },
-            'significant_dir_change': {
-                'operation': 'calculate',
-                'value': lambda x: x['wind_dir_change'] > 45
-            },
-            'wind_pattern': {
-                'operation': 'calculate',
-                'value': lambda x: x.apply(
-                    lambda row: 'ustabil' if row['wind_dir_stability'] > 30
-                    else 'skiftende' if row['wind_dir_change'] > 45
-                    else 'stabil' if row['wind_dir_stability'] < 10
-                    else 'moderat', axis=1
-                )
-            }
-        }
-        
-        # Utfør alle operasjoner sikkert
-        result_df = safe_dataframe_operations(df, operations)
-        
-        # Legg til statistiske indikatorer hvis det er mer enn én rad
-        if len(result_df) > 1:
-            additional_ops = {
-                'direction_trend': {
-                    'operation': 'rolling',
-                    'value': 'wind_direction',
-                    'args': {'window': 3, 'min_periods': 1},
-                    'aggregation': 'mean'
-                },
-                'significant_changes_pct': {
-                    'operation': 'calculate',
-                    'value': lambda x: (x['significant_dir_change'].sum() / len(x) * 100)
-                }
-            }
-            result_df = safe_dataframe_operations(result_df, additional_ops)
-        
-        return result_df
-        
-    except Exception as e:
-        logging.error(f"Feil i vindretningsanalyse: {str(e)}", exc_info=True)
-        return df
-
-def analyze_wind_directions(df: DataFrame) -> Dict[str, Any]:
-    """
-    Analyserer hvilke vindretninger som er mest assosiert med snøfokk
-    
-    Args:
-        df: DataFrame med kritiske perioder
-    Returns:
-        Dict med vindretningsanalyse
-    """
-    try:
-        if 'wind_direction' not in df.columns:
-            return None
-            
-        # Lag en sikker kopi av DataFrame
-        analysis_df = df.copy()
-        
-        # Definer hovedretninger (N, NØ, Ø, osv.)
-        directions = {
-            'N': (337.5, 22.5),
-            'NØ': (22.5, 67.5),
-            'Ø': (67.5, 112.5),
-            'SØ': (112.5, 157.5),
-            'S': (157.5, 202.5),
-            'SV': (202.5, 247.5),
-            'V': (247.5, 292.5),
-            'NV': (292.5, 337.5)
-        }
-        
-        # Kategoriser hver vindretning
-        def categorize_direction(angle):
-            angle = angle % 360
-            for name, (start, end) in directions.items():
-                if start <= angle < end or (name == 'N' and (angle >= 337.5 or angle < 22.5)):
-                    return name
-            return 'N'  # Fallback
-        
-        # Bruk loc for å unngå SettingWithCopyWarning
-        analysis_df.loc[:, 'direction_category'] = analysis_df['wind_direction'].apply(categorize_direction)
-        
-        # Analyser fordeling av vindretninger
-        direction_counts = analysis_df['direction_category'].value_counts()
-        total_periods = len(analysis_df)
-        
-        # Beregn gjennomsnittlig risikoscore for hver retning
-        direction_risk = analysis_df.groupby('direction_category')['max_risk_score'].mean()
-        
-        # Beregn gjennomsnittlig vindstyrke for hver retning
-        direction_wind = analysis_df.groupby('direction_category')['max_wind'].mean()
-        
-        # Finn dominerende retninger (over 15% av tilfellene eller høy risikoscore)
-        significant_directions = []
-        for direction in direction_counts.index:
-            percentage = (direction_counts[direction] / total_periods) * 100
-            avg_risk = direction_risk[direction]
-            avg_wind = direction_wind[direction]
-            
-            if percentage > 15 or avg_risk > 70:
-                significant_directions.append({
-                    'direction': direction,
-                    'percentage': percentage,
-                    'avg_risk': avg_risk,
-                    'avg_wind': avg_wind
-                })
-        
-        return {
-            'counts': direction_counts.to_dict(),
-            'risk_scores': direction_risk.to_dict(),
-            'wind_speeds': direction_wind.to_dict(),
-            'significant': significant_directions
-        }
-        
-    except Exception as e:
-        logging.error(f"Feil i vindretningsanalyse: {str(e)}")
-        return None
-
-def analyze_settings(params, critical_periods_df, DEFAULT_PARAMS):
-    """
-    Utfører avansert AI-analyse av parameterinnstillingene og deres effektivitet
-    """
-    try:
-        analysis = {
-            'parameter_changes': [],
-            'impact_analysis': [],
-            'suggestions': [],
-            'meteorological_context': []
-        }
-
-        # Initialiser statistiske variabler med standardverdier
-        avg_duration = 0
-        avg_risk = 0
-        max_wind = 0
-        min_temp = 0
-
-        # 1. Analyser parameterendringer med sikker prosentberegning
-        for param_name, current_value in params.items():
-            default_value = DEFAULT_PARAMS[param_name]
-            
-            # Sikker beregning av prosentendring
-            if default_value == 0:
-                if current_value == 0:
-                    percent_change = 0
-                else:
-                    percent_change = 100  # Indikerer en endring fra 0
-            else:
-                percent_change = ((current_value - default_value) / abs(default_value)) * 100
-            
-            if abs(percent_change) >= 10:  # Bare rapporter betydelige endringer
-                change_type = "økning" if percent_change > 0 else "reduksjon"
-                
-                # Forbedret parametertype-beskrivelse
-                param_description = {
-                    'wind_strong': 'Sterk vind',
-                    'wind_moderate': 'Moderat vind',
-                    'wind_gust': 'Vindkast terskel',
-                    'wind_dir_change': 'Vindretningsendring',
-                    'wind_weight': 'Vindvekt',
-                    'temp_cold': 'Kald temperatur',
-                    'temp_cool': 'Kjølig temperatur',
-                    'temp_weight': 'Temperaturvekt',
-                    'snow_high': 'Høy snøendring',
-                    'snow_moderate': 'Moderat snøendring',
-                    'snow_low': 'Lav snøendring',
-                    'snow_weight': 'Snøvekt',
-                    'min_duration': 'Minimum varighet'
-                }.get(param_name, param_name)
-                
-                analysis['parameter_changes'].append({
-                    'description': f"{param_description}: {abs(percent_change):.1f}% {change_type} "
-                                 f"fra standard ({default_value} → {current_value})",
-                    'importance': 'høy' if abs(percent_change) > 25 else 'moderat'
-                })
-
-        # 2. Analyser kritiske perioder
-        if not critical_periods_df.empty:
-            # Beregn nøkkelstatistikk
-            avg_duration = critical_periods_df['duration'].mean()
-            avg_risk = critical_periods_df['max_risk_score'].mean()
-            max_wind = critical_periods_df['max_wind'].max() if 'max_wind' in critical_periods_df.columns else 0
-            min_temp = critical_periods_df['min_temp'].min() if 'min_temp' in critical_periods_df.columns else 0
-            
-            # Legg til viktige observasjoner
-            if avg_duration > 4:
-                analysis['impact_analysis'].append({
-                    'description': f"Lange kritiske perioder (snitt {avg_duration:.1f} timer) "
-                                 f"indikerer vedvarende risikotilstander",
-                    'importance': 'høy'
-                })
-            
-            if avg_risk > 80:
-                analysis['impact_analysis'].append({
-                    'description': f"Høy gjennomsnittlig risikoscore ({avg_risk:.1f}) "
-                                 f"tyder på alvorlige forhold under kritiske perioder",
-                    'importance': 'høy'
-                })
-
-            # 3. Analyser vindretninger
-            if 'wind_direction' in critical_periods_df.columns:
-                wind_dir_analysis = analyze_wind_directions(critical_periods_df)
-                if wind_dir_analysis and wind_dir_analysis.get('significant'):
-                    for dir_info in wind_dir_analysis['significant']:
-                        analysis['impact_analysis'].append({
-                            'description': (
-                                f"Vind fra {dir_info['direction']} er betydelig: "
-                                f"Forekommer i {dir_info['percentage']:.1f}% av tilfellene "
-                                f"med snittrisiko {dir_info['avg_risk']:.1f} "
-                                f"og vindstyrke {dir_info['avg_wind']:.1f} m/s"
-                            ),
-                            'importance': 'høy' if dir_info['avg_risk'] > 70 else 'moderat'
-                        })
-        # 4. Generer forslag basert på analysen
-        if 'max_wind' in critical_periods_df.columns and params['wind_weight'] < 1.0 and max_wind > params['wind_strong']:
-            analysis['suggestions'].append(
-                "Vurder å øke vindvekten da det observeres sterke vindforhold"
-            )
-            
-        if 'min_temp' in critical_periods_df.columns and params['temp_weight'] < 1.0 and min_temp < params['temp_cold']:
-            analysis['suggestions'].append(
-                "Vurder å øke temperaturvekten da det observeres svært kalde forhold"
-            )
-            
-        if avg_duration < 2:
-            analysis['suggestions'].append(
-                "Vurder å redusere minimum varighet for å fange opp kortere hendelser"
-            )
-
-        # 5. Legg til meteorologisk kontekst
-        if not critical_periods_df.empty:
-            analysis['meteorological_context'].append(
-                f"Analysen er basert på {len(critical_periods_df)} kritiske perioder "
-                f"med gjennomsnittlig varighet på {avg_duration:.1f} timer og "
-                f"gjennomsnittlig risikoscore på {avg_risk:.1f}"
-            )
-            
-            if 'wind_direction' in critical_periods_df.columns:
-                wind_dir_analysis = analyze_wind_directions(critical_periods_df)
-                if wind_dir_analysis and wind_dir_analysis.get('significant'):
-                    dominant_dirs = [d['direction'] for d in wind_dir_analysis['significant']]
-                    analysis['meteorological_context'].append(
-                        f"Dominerende vindretninger under kritiske perioder: {', '.join(dominant_dirs)}. "
-                        "Dette kan indikere spesielt utsatte områder i disse retningene."
-                    )
-
-        return analysis
-
-    except Exception as e:
-        print(f"Feil i analyse av innstillinger: {str(e)}")
-        import traceback
-        print(traceback.format_exc())
-        return None
-
 def create_weather_table():
     """Opprett værtabell med forbedret skjema"""
     with get_db_connection() as conn:
@@ -820,79 +528,6 @@ def save_weather_data(weather_data: WeatherData) -> bool:
         print(f"Feil ved lagring av værdata: {str(e)}")
         return False
 
-def analyze_weather_patterns(df: DataFrame) -> Dict[str, Any]:
-    """
-    Analyserer værmønstre i kritiske perioder
-    
-    Args:
-        df: DataFrame med værdata
-    Returns:
-        Dict med analyseresultater
-    """
-    try:
-        if df.empty:
-            return {'temperature': {}, 'wind': {}, 'precipitation': {}, 'patterns': []}
-            
-        # Beregn rullende statistikk for relevante kolonner
-        stats_df = create_rolling_stats(
-            df,
-            columns=['temperature', 'wind_speed', 'precipitation'],
-            windows=[3, 6, 12],  # 3, 6, og 12 timers vinduer
-            stats=['mean', 'std']
-        )
-        
-        analysis = {
-            'temperature': {},
-            'wind': {},
-            'precipitation': {},
-            'patterns': []
-        }
-        
-        # Temperaturanalyse
-        analysis['temperature'] = {
-            'mean': df['temperature'].mean(),
-            'min': df['temperature'].min(),
-            'max': df['temperature'].max(),
-            'std': df['temperature'].std()
-        }
-        
-        # Vindanalyse
-        analysis['wind'] = {
-            'mean_speed': df['wind_speed'].mean(),
-            'max_speed': df['wind_speed'].max(),
-            'dominant_direction': df['wind_direction'].mode().iloc[0] if 'wind_direction' in df else None
-        }
-        
-        # Nedbørsanalyse
-        if 'precipitation' in df:
-            analysis['precipitation'] = {
-                'total': df['precipitation'].sum(),
-                'max_intensity': df['precipitation'].max()
-            }
-        
-        # Identifiser mønstre
-        if len(df) > 24:  # Minst 24 timer med data
-            # Døgnvariasjoner
-            df['hour'] = df['timestamp'].dt.hour
-            hourly_temps = df.groupby('hour')['temperature'].mean()
-            
-            # Finn kaldeste og varmeste tidspunkt
-            coldest_hour = hourly_temps.idxmin()
-            warmest_hour = hourly_temps.idxmax()
-            
-            analysis['patterns'].append({
-                'type': 'daily_cycle',
-                'coldest_hour': coldest_hour,
-                'warmest_hour': warmest_hour,
-                'temperature_range': hourly_temps.max() - hourly_temps.min()
-            })
-        
-        return analysis
-        
-    except Exception as e:
-        logging.error(f"Feil i væranalyse: {str(e)}")
-        return {}
-
 @lru_cache(maxsize=128)
 def get_cached_weather(location: str, timestamp: datetime) -> Optional[WeatherData]:
     """
@@ -956,11 +591,6 @@ def cleanup_old_weather_data(days: int = 7) -> None:
             
     except Exception as e:
         print(f"Feil ved opprydding av værdata: {str(e)}")
-
-from typing import Dict, Any, Tuple, Union
-import pandas as pd
-import logging
-from pandas import DataFrame
 
 def safe_dataframe_operations(
     df: DataFrame,
@@ -1031,39 +661,3 @@ def safe_dataframe_operations(
         logging.error(error_msg)
         return pd.DataFrame()
 
-def create_rolling_stats(df: DataFrame, 
-                        columns: List[str], 
-                        windows: List[int], 
-                        stats: List[str]) -> DataFrame:
-    """
-    Beregner rullende statistikk for spesifiserte kolonner
-    
-    Args:
-        df: Input DataFrame
-        columns: Liste med kolonnenavn å beregne statistikk for
-        windows: Liste med vindus-størrelser (i timer)
-        stats: Liste med statistiske funksjoner ('mean', 'std', etc.)
-        
-    Returns:
-        DataFrame med beregnede statistikker
-    """
-    result_df = df.copy()
-    
-    try:
-        for col in columns:
-            if col not in df.columns:
-                continue
-                
-            for window in windows:
-                rolling = df[col].rolling(window=window, min_periods=1)
-                
-                for stat in stats:
-                    if hasattr(rolling, stat):
-                        col_name = f"{col}_{window}h_{stat}"
-                        result_df[col_name] = getattr(rolling, stat)()
-        
-        return result_df
-        
-    except Exception as e:
-        logging.error(f"Feil ved beregning av rullende statistikk: {str(e)}")
-        return df
