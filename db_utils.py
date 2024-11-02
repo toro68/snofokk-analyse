@@ -17,7 +17,6 @@ from pandas import DataFrame
 
 # Logging oppsett
 import logging
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 @dataclass
@@ -123,9 +122,7 @@ def init_db() -> Tuple[bool, str]:
             
     except Exception as e:
         error_msg = f"Feil ved initialisering av database: {str(e)}"
-        print(error_msg)
-        import traceback
-        print(traceback.format_exc())
+        logger.error(error_msg)
         return False, error_msg
 
 def migrate_database_schema() -> Tuple[bool, str]:
@@ -164,9 +161,9 @@ def migrate_database_schema() -> Tuple[bool, str]:
                                 SET {col_name} = datetime('now') 
                                 WHERE {col_name} IS NULL
                             ''')
-                        print(f"Lagt til kolonne: {col_name} i settings")
+                        logger.info(f"Lagt til kolonne: {col_name} i settings")
                     except Exception as e:
-                        print(f"Feil ved tillegg av kolonne {col_name}: {str(e)}")
+                        logger.error(f"Feil ved tillegg av kolonne {col_name}: {str(e)}")
             
             # Sjekk period_stats-tabell
             c.execute("PRAGMA table_info(period_stats)")
@@ -185,9 +182,9 @@ def migrate_database_schema() -> Tuple[bool, str]:
                 if col_name not in period_stats_columns:
                     try:
                         c.execute(f'ALTER TABLE period_stats ADD COLUMN {col_name} {col_def}')
-                        print(f"Lagt til kolonne: {col_name} i period_stats")
+                        logger.info(f"Lagt til kolonne: {col_name} i period_stats")
                     except Exception as e:
-                        print(f"Feil ved tillegg av kolonne {col_name}: {str(e)}")
+                        logger.error(f"Feil ved tillegg av kolonne {col_name}: {str(e)}")
             
             # Oppdater eksisterende rader med standardverdier
             c.execute('''
@@ -272,6 +269,7 @@ def save_settings(settings_data: Dict[str, Any], critical_periods_df: DataFrame)
             return True, "Innstillingene ble lagret!"
             
     except Exception as e:
+        logger.error(f"Feil ved lagring av innstillinger: {str(e)}")
         return False, f"Feil ved lagring av innstillinger: {str(e)}"
 
 def get_saved_settings() -> DataFrame:
@@ -355,16 +353,13 @@ def get_saved_settings() -> DataFrame:
                             ).astype(dtype)
                     
                 except Exception as e:
-                    print(f"Advarsel: Feil ved datakonvertering: {str(e)}")
+                    logger.warning(f"Advarsel: Feil ved datakonvertering: {str(e)}")
                     # Fortsett med resten av dataene selv om noen konverteringer feiler
             
             return settings_df
             
     except Exception as e:
-        print(f"Kritisk feil ved henting av innstillinger: {str(e)}")
-        import traceback
-        print(traceback.format_exc())
-        # Returner tom DataFrame med forventede kolonner
+        logger.error(f"Kritisk feil ved henting av innstillinger: {e}", exc_info=True)
         return pd.DataFrame(columns=list(required_columns))
 
 def get_period_stats(settings_id: int) -> DataFrame:
@@ -388,7 +383,7 @@ def get_period_stats(settings_id: int) -> DataFrame:
             return stats_df
             
     except Exception as e:
-        print(f"Feil ved henting av periodestatistikk: {str(e)}")
+        logger.error(f"Feil ved henting av periodestatistikk: {str(e)}")
         return pd.DataFrame()
 
 def delete_settings(settings_id):
@@ -421,48 +416,8 @@ def load_settings_parameters(settings_id):
             return None
             
         except Exception as e:
-            print(f"Feil ved lasting av parametre: {str(e)}")
+            logger.error(f"Feil ved lasting av parametre: {str(e)}")
             return None
-
-def debug_database():
-    """Debug-funksjon for å sjekke databaseinnhold direkte"""
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        
-        try:
-            # Sjekk settings-tabellen
-            c.execute("SELECT COUNT(*) FROM settings")
-            settings_count = c.fetchone()[0]
-            
-            if settings_count == 0:
-                return  # Avslutt stille hvis ingen data finnes
-                
-            # Fortsett med debug-utskrift hvis det finnes data
-            print("\n=== Settings Table ===")
-            c.execute("SELECT * FROM settings")
-            settings = c.fetchall()
-            for row in settings:
-                print(f"\nID: {row[0]}")
-                print(f"Name: {row[1]}")
-                print(f"Description: {row[2]}")
-                print(f"Timestamp: {row[3]}")
-                
-            # Sjekk period_stats-tabellen
-            c.execute("SELECT COUNT(*) FROM period_stats")
-            stats_count = c.fetchone()[0]
-            
-            if stats_count > 0:
-                print("\n=== Period Stats Table ===")
-                c.execute("SELECT * FROM period_stats")
-                stats = c.fetchall()
-                for row in stats:
-                    print(f"\nID: {row[0]}")
-                    print(f"Settings ID: {row[1]}")
-                    print(f"Start Time: {row[2]}")
-                    print(f"End Time: {row[3]}")
-                
-        except Exception as e:
-            print(f"Debug error: {str(e)}")
 
 def create_weather_table():
     """Opprett værtabell med forbedret skjema"""
@@ -525,7 +480,7 @@ def save_weather_data(weather_data: WeatherData) -> bool:
             return True
             
     except Exception as e:
-        print(f"Feil ved lagring av værdata: {str(e)}")
+        logger.error(f"Feil ved lagring av værdata: {str(e)}")
         return False
 
 @lru_cache(maxsize=128)
@@ -570,7 +525,7 @@ def get_cached_weather(location: str, timestamp: datetime) -> Optional[WeatherDa
             return None
             
     except Exception as e:
-        print(f"Feil ved henting av cachet værdata: {str(e)}")
+        logger.error(f"Feil ved henting av cachet værdata: {str(e)}")
         return None
 
 def cleanup_old_weather_data(days: int = 7) -> None:
@@ -590,7 +545,7 @@ def cleanup_old_weather_data(days: int = 7) -> None:
             conn.commit()
             
     except Exception as e:
-        print(f"Feil ved opprydding av værdata: {str(e)}")
+        logger.error(f"Feil ved opprydding av værdata: {str(e)}")
 
 def safe_dataframe_operations(
     df: DataFrame,
@@ -600,7 +555,7 @@ def safe_dataframe_operations(
     Utfører sikre DataFrame-operasjoner med feilhåndtering
     """
     if not isinstance(df, pd.DataFrame):
-        logging.error(f"Ugyldig input type: {type(df)}. Forventer DataFrame.")
+        logger.error(f"Ugyldig input type: {type(df)}. Forventer DataFrame.")
         return pd.DataFrame()  # Returner tom DataFrame ved ugyldig input
     
     try:
@@ -651,13 +606,13 @@ def safe_dataframe_operations(
                         result_df.loc[:, col_name] = result_df[col_name].fillna(op_info['fillna'])
                         
                 except Exception as e:
-                    logging.warning(f"Feil ved prosessering av kolonne {col_name}: {str(e)}")
+                    logger.warning(f"Feil ved prosessering av kolonne {col_name}: {str(e)}")
                     continue
         
         return result_df
         
     except Exception as e:
         error_msg = f"Kritisk feil i safe_dataframe_operations: {str(e)}"
-        logging.error(error_msg)
+        logger.error(error_msg)
         return pd.DataFrame()
 

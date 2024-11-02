@@ -3,42 +3,96 @@
 
 import streamlit as st
 import os
+import logging
+
+# Sett opp logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Frost API konfigurasjon
 FROST_STATION_ID = "SN44560"
 
-# Prøv å hente FROST_CLIENT_ID fra ulike kilder
+# Forbedret feilhåndtering og logging for FROST_CLIENT_ID
 try:
-    # Først prøv å hente fra miljøvariabel
     FROST_CLIENT_ID = os.getenv('FROST_CLIENT_ID')
     
-    # Hvis ikke funnet, prøv streamlit secrets
     if not FROST_CLIENT_ID:
         FROST_CLIENT_ID = st.secrets.get("FROST_CLIENT_ID")
         
-    # Logg resultatet
     if FROST_CLIENT_ID:
-        print(f"FROST_CLIENT_ID funnet: {FROST_CLIENT_ID[:8]}...")
+        logger.info("FROST_CLIENT_ID er konfigurert")
     else:
-        print("ADVARSEL: FROST_CLIENT_ID ikke funnet")
+        logger.warning("FROST_CLIENT_ID ble ikke funnet i miljøvariabler eller secrets")
         
 except Exception as e:
-    print(f"ADVARSEL: Kunne ikke hente FROST_CLIENT_ID: {str(e)}")
+    logger.error(f"Feil ved henting av FROST_CLIENT_ID: {str(e)}")
     FROST_CLIENT_ID = None
 
 # Standardparametre for snøfokk-analyse
 DEFAULT_PARAMS = {
-    'wind_strong': 10.61,
-    'wind_moderate': 7.77,
-    'wind_gust': 16.96,
-    'wind_dir_change': 37.83,
-    'wind_weight': 1.65,
-    'temp_cold': -2.2,
-    'temp_cool': 0,
-    'temp_weight': 1.2,
-    'snow_high': 1.61,
-    'snow_moderate': 0.84,
-    'snow_low': 0.31,
-    'snow_weight': 1.15,
-    'min_duration': 2
+    'wind_strong': 10.70,
+    'wind_moderate': 7.82,
+    'wind_gust': 17.03,
+    'wind_dir_change': 38.11,
+    'wind_weight': 1.68,
+    'temp_cold': -2.23,
+    'temp_cool': 0.0,
+    'temp_weight': 1.23,
+    'snow_high': 1.56,
+    'snow_moderate': 0.82,
+    'snow_low': 0.30,
+    'snow_weight': 1.08,
+    'min_duration': 3.00,
+    'wind_dir_primary': 270,
+    'wind_dir_tolerance': 45,
+    'wind_dir_weight': 1.5,
+    'min_change': 0.5,  # Standard minimumsendring
 }
+
+# Grenser for parametervalidering
+PARAMETER_BOUNDS = {
+    # Vindparametre
+    'wind_strong': (5, 30),      # m/s
+    'wind_moderate': (3, 20),    # m/s
+    'wind_gust': (10, 40),       # m/s
+    'wind_dir_change': (0, 180), # grader
+    
+    # Temperaturparametre
+    'temp_cold': (-30, 0),       # celsius
+    'temp_cool': (-20, 10),      # celsius
+    
+    # Snøparametre
+    'snow_high': (0.5, 5),       # mm/t
+    'snow_moderate': (0.2, 3),   # mm/t
+    'snow_low': (0.1, 1),        # mm/t
+    
+    # Vekter
+    'wind_weight': (0, 2),       # dimensjonsløs
+    'temp_weight': (0, 2),       # dimensjonsløs
+    'snow_weight': (0, 2),       # dimensjonsløs
+    
+    # Ny parameter for varighet
+    'min_duration': (1, 12),      # timer
+    
+    # Oppdaterte grenser for vindretningsparametre
+    'wind_dir_primary': (0, 360),     # Grader
+    'wind_dir_tolerance': (15, 90),   # Grader (min 15, maks 90)
+    'wind_dir_weight': (0, 2),         # Dimensjonsløs
+    
+    # Legg til denne nye parameteren
+    'min_change': (0.1, 5.0),  # Minimum endring for å regne som signifikant
+}
+
+# Valider parametergrenser
+def validate_parameters():
+    for param, value in DEFAULT_PARAMS.items():
+        if param in PARAMETER_BOUNDS:
+            min_val, max_val = PARAMETER_BOUNDS[param]
+            if not min_val <= value <= max_val:
+                logger.warning(f"Parameter {param} = {value} er utenfor grensene [{min_val}, {max_val}]")
+
+# Kjør validering ved oppstart
+validate_parameters()
