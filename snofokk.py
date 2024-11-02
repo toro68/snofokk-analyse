@@ -21,115 +21,134 @@ from config import FROST_CLIENT_ID, FROST_STATION_ID, DEFAULT_PARAMS  # Legg til
 def fetch_frost_data(start_date='2023-11-01', end_date='2024-04-30'):
     """
     Henter utvidet værdatasett fra Frost API
-    
-    Nye elementer inkluderer:
-    - Bakketemperatur for bedre snøforholdsanalyse
-    - Luftfuktighet for snøkonsistens
-    - Utvidet temperatur- og vinddata
-    - Nedbørsvarighet for intensitetsberegning
     """
     try:
         endpoint = 'https://frost.met.no/observations/v0.jsonld'
-        elements = [
-            # Eksisterende elementer
-            "surface_snow_thickness",
-            "wind_speed",
-            "max(wind_speed_of_gust PT1H)",
-            "wind_from_direction",
-            "air_temperature",
-            "sum(precipitation_amount PT1H)",
-            
-            # Nye elementer
-            "surface_temperature",          # Bakketemperatur
-            "min(air_temperature PT1H)",    # Minimum lufttemperatur
-            "max(air_temperature PT1H)",    # Maksimum lufttemperatur
-            "relative_humidity",            # Luftfuktighet
-            "dew_point_temperature",        # Duggpunkt
-            "sum(duration_of_precipitation PT1H)",  # Nedbørsvarighet
-            "max(wind_speed PT1H)"         # Maksimal vindhastighet
-        ]
-        
         parameters = {
-            'sources': FROST_STATION_ID,
-            'elements': ','.join(elements),
+            'sources': 'SN46220',
             'referencetime': f'{start_date}/{end_date}',
-            'timeresolutions': 'PT1H'
+            'elements': 'air_temperature,surface_snow_thickness,wind_speed,wind_from_direction,relative_humidity,max(wind_speed_of_gust PT1H),max(wind_speed PT1H),min(air_temperature PT1H),max(air_temperature PT1H),sum(duration_of_precipitation PT1H),sum(precipitation_amount PT1H),dew_point_temperature',
+            'timeresolutions': 'PT1H',
         }
         
-        r = requests.get(endpoint, parameters, auth=(FROST_CLIENT_ID, ''))
+        # Legg til Accept-header
+        headers = {'Accept': 'application/json'}
         
-        if r.status_code != 200:
-            st.error(f"Feil ved henting av data: {r.text}")
+        # Gjør API-kallet med headers
+        r = requests.get(endpoint, parameters, auth=(FROST_CLIENT_ID, ''), headers=headers)
+        
+        if r.status_code == 200:
+            data = r.json()
+            
+            # Debug: Skriv ut første observasjon med alle elementer
+            if data['data']:
+                first_obs = data['data'][0]
+                logger.info("Første observasjon inneholder følgende elementer:")
+                for obs in first_obs['observations']:
+                    logger.info(f"{obs['elementId']}: {obs['value']}")
+            
+            # Sjekk om vi har data
+            if not data.get('data'):
+                logger.error("Ingen data mottatt fra API")
+                return None
+                
+            # Legg til debugging av rådata
+            if data.get('data'):
+                sample_data = data['data'][0]
+                logger.info("Eksempel på rådata fra API:")
+                logger.info(f"Tidspunkt: {sample_data['referenceTime']}")
+                logger.info("Tilgjengelige målinger:")
+                for obs in sample_data['observations']:
+                    logger.info(f"Element: {obs['elementId']}, Verdi: {obs['value']}")
+            
+            # Konverter data til DataFrame
+            df = pd.DataFrame([
+                {
+                    'timestamp': datetime.fromisoformat(item['referenceTime'].rstrip('Z')),
+                    'air_temperature': next((obs['value'] for obs in item['observations'] if obs['elementId'] == 'air_temperature'), np.nan),
+                    'surface_snow_thickness': next((obs['value'] for obs in item['observations'] if obs['elementId'] == 'surface_snow_thickness'), np.nan),
+                    'wind_speed': next((obs['value'] for obs in item['observations'] if obs['elementId'] == 'wind_speed'), np.nan),
+                    'wind_from_direction': next((obs['value'] for obs in item['observations'] if obs['elementId'] == 'wind_from_direction'), np.nan),
+                    'relative_humidity': next((obs['value'] for obs in item['observations'] if obs['elementId'] == 'relative_humidity'), np.nan),
+                    'max(wind_speed_of_gust PT1H)': next((obs['value'] for obs in item['observations'] if obs['elementId'] == 'max(wind_speed_of_gust PT1H)'), np.nan),
+                    'max(wind_speed PT1H)': next((obs['value'] for obs in item['observations'] if obs['elementId'] == 'max(wind_speed PT1H)'), np.nan),
+                    'min(air_temperature PT1H)': next((obs['value'] for obs in item['observations'] if obs['elementId'] == 'min(air_temperature PT1H)'), np.nan),
+                    'max(air_temperature PT1H)': next((obs['value'] for obs in item['observations'] if obs['elementId'] == 'max(air_temperature PT1H)'), np.nan),
+                    'sum(duration_of_precipitation PT1H)': next((obs['value'] for obs in item['observations'] if obs['elementId'] == 'sum(duration_of_precipitation PT1H)'), np.nan),
+                    'sum(precipitation_amount PT1H)': next((obs['value'] for obs in item['observations'] if obs['elementId'] == 'sum(precipitation_amount PT1H)'), np.nan),
+                    'dew_point_temperature': next((obs['value'] for obs in item['observations'] if obs['elementId'] == 'dew_point_temperature'), np.nan)
+                }
+                for item in data['data']
+            ])
+            
+            # Sett timestamp som index
+            df.set_index('timestamp', inplace=True)
+            
+            # Legg til debugging av snødybdedata
+            logger.info("Snødybdedata analyse:")
+            logger.info(f"Unike verdier i surface_snow_thickness: {df['surface_snow_thickness'].unique()}")
+            logger.info(f"Antall ikke-null verdier: {df['surface_snow_thickness'].count()}")
+            logger.info(f"Eksempel på første 5 snødybdeverdier:")
+            logger.info(df['surface_snow_thickness'].head())
+            
+            # Konverter -1 verdier til NaN for snødybde
+            df['surface_snow_thickness'] = df['surface_snow_thickness'].replace(-1, np.nan)
+            
+            return df
+            
+        else:
+            logger.error(f"Error {r.status_code}: {r.text}")
             return None
             
-        data = r.json()
-        
-        observations = []
-        for item in data['data']:
-            timestamp = item['referenceTime']
-            obs_data = {'timestamp': timestamp}
-            for obs in item['observations']:
-                obs_data[obs['elementId']] = float(obs['value']) if obs['value'] is not None else None
-            observations.append(obs_data)
-        
-        df = pd.DataFrame(observations)
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        df.set_index('timestamp', inplace=True)
-        
-        # Legg til beregnede kolonner
-        df['temp_gradient'] = df['air_temperature'] - df['surface_temperature']
-        df['precip_intensity'] = df['sum(precipitation_amount PT1H)'] / df['sum(duration_of_precipitation PT1H)'].replace(0, np.nan)
-        
-        return df
-        
     except Exception as e:
-        st.error(f"Feil i fetch_frost_data: {str(e)}")
+        logger.exception(f"Feil i fetch_frost_data: {str(e)}")
         return None
 
 def identify_risk_periods(df, min_duration=3):
-    """Identifiserer sammenhengende risikoperioder"""
-    df = df.copy()
-    
-    # Marker start på nye perioder
-    df['new_period'] = (
-        ((df['risk_score'] > 30) & (df['risk_score'].shift() <= 30)) |
-        ((df['risk_score'] > 30) & (df['risk_score'].shift().isna()))
-    ).astype(int)
-    
-    # Gi hver periode et unikt nummer
-    df['period_id'] = df['new_period'].cumsum()
-    
-    # Fjern periode_id hvor risk_score er lav
-    df.loc[df['risk_score'] <= 30, 'period_id'] = np.nan
-    
-    # Grupper sammenhengende perioder
+    """
+    Identifiserer sammenhengende perioder med forhøyet risiko
+    """
     periods = []
+    
     for period_id in df['period_id'].dropna().unique():
         period_data = df[df['period_id'] == period_id].copy()
         
         if len(period_data) >= min_duration:
+            # Definer standard kolonner med fallback-verdier
             period_info = {
                 'start_time': period_data.index[0],
                 'end_time': period_data.index[-1],
                 'duration': len(period_data),
                 'max_risk_score': period_data['risk_score'].max(),
                 'avg_risk_score': period_data['risk_score'].mean(),
-                'max_wind': period_data['sustained_wind'].max(),
-                'max_gust': period_data['max(wind_speed_of_gust PT1H)'].max(),
-                'min_temp': period_data['air_temperature'].min(),
-                'total_precip': period_data['sum(precipitation_amount PT1H)'].sum(),
-                'max_snow_change': period_data['snow_depth_change'].abs().max(),
+                'max_wind': period_data.get('sustained_wind', pd.Series()).max(),
+                'max_gust': period_data.get('max(wind_speed_of_gust PT1H)', pd.Series()).max(),
+                'min_temp': period_data.get('air_temperature', pd.Series()).min(),
+                'max_snow_change': period_data.get('snow_depth_change', pd.Series()).abs().max(),
                 'risk_level': period_data['risk_level'].mode()[0],
                 'period_id': period_id
             }
             
-            wind_dirs = period_data['wind_from_direction'].dropna()
-            if not wind_dirs.empty:
-                rad = np.deg2rad(wind_dirs)
-                avg_sin = np.mean(np.sin(rad))
-                avg_cos = np.mean(np.cos(rad))
-                avg_dir = np.rad2deg(np.arctan2(avg_sin, avg_cos)) % 360
-                period_info['wind_direction'] = avg_dir
+            # Legg til nedbørsinformasjon hvis kolonnene eksisterer
+            if 'sum(precipitation_amount PT1H)' in period_data.columns:
+                period_info['total_precip'] = period_data['sum(precipitation_amount PT1H)'].sum()
+            else:
+                period_info['total_precip'] = 0.0
+                
+            if 'sum(duration_of_precipitation PT1H)' in period_data.columns:
+                period_info['precip_duration'] = period_data['sum(duration_of_precipitation PT1H)'].sum()
+            else:
+                period_info['precip_duration'] = 0.0
+            
+            # Beregn gjennomsnittlig vindretning hvis data finnes
+            if 'wind_from_direction' in period_data.columns:
+                wind_dirs = period_data['wind_from_direction'].dropna()
+                if not wind_dirs.empty:
+                    rad = np.deg2rad(wind_dirs)
+                    avg_sin = np.mean(np.sin(rad))
+                    avg_cos = np.mean(np.cos(rad))
+                    avg_dir = np.rad2deg(np.arctan2(avg_sin, avg_cos)) % 360
+                    period_info['wind_direction'] = avg_dir
             
             periods.append(period_info)
     
@@ -143,11 +162,40 @@ def calculate_snow_drift_risk(df: pd.DataFrame, params: Dict[str, float]) -> Tup
     
     df = df.copy()
     
-    # Grunnleggende beregninger
-    df['snow_depth_change'] = df['surface_snow_thickness'].diff()
-    df['sustained_wind'] = df['wind_speed'].rolling(window=2).mean()
-    df['wind_dir_change'] = df['wind_from_direction'].diff().abs()
+    # Valider input data
+    required_columns = {
+        'surface_snow_thickness': -1.0,  # Endret standardverdi til -1.0
+        'wind_speed': 0.0,
+        'wind_from_direction': 0.0,
+        'air_temperature': 0.0
+    }
+
+    # Sjekk og legg til manglende kolonner
+    missing_columns = []
+    for col, default_value in required_columns.items():
+        if col not in df.columns:
+            logging.warning(f"Manglende kolonne '{col}' - bruker standardverdi {default_value}")
+            df[col] = default_value
+            missing_columns.append(col)
+
+    if missing_columns:
+        st.warning(f"""
+            Følgende data mangler fra værstasjonen: {', '.join(missing_columns)}. 
+            Analysen vil fortsette med standardverdier, men resultatet kan være mindre presist.
+            For snødybde betyr -1 at det ikke er snø på bakken.
+            """)
+
+    # Sikre beregninger med fillna()
+    df['snow_depth_change'] = df['surface_snow_thickness'].diff().fillna(0)
+    df['sustained_wind'] = df['wind_speed'].rolling(window=2, min_periods=1).mean().fillna(0)
+    df['wind_dir_change'] = df['wind_from_direction'].diff().abs().fillna(0)
     
+    # Sikrere måte å håndtere snødybdeendringer
+    df['prev_snow_depth'] = df['surface_snow_thickness'].shift()
+    mask = (df['surface_snow_thickness'] == -1) | (df['prev_snow_depth'] == -1)
+    df.loc[mask, 'snow_depth_change'] = 0
+    df.drop('prev_snow_depth', axis=1, inplace=True)  # Fjern hjelpkolonnen
+
     def calculate_risk_score(row):
         """Beregner risikoscore for en enkelt rad"""
         score = 0
@@ -185,6 +233,16 @@ def calculate_snow_drift_risk(df: pd.DataFrame, params: Dict[str, float]) -> Tup
     df['risk_level'] = pd.cut(df['risk_score'], 
                            bins=[-np.inf, 30, 50, 70, np.inf],
                            labels=['Lav', 'Moderat', 'Høy', 'Kritisk'])
+    
+    # Legg til periode-ID for sammenhengende risikoperioder
+    # En ny periode starter når risk_score går fra 0 til over 0 eller omvendt
+    risk_threshold = 30  # Juster denne verdien etter behov
+    df['is_risk'] = df['risk_score'] > risk_threshold
+    df['period_start'] = df['is_risk'].ne(df['is_risk'].shift()).cumsum()
+    df['period_id'] = np.where(df['is_risk'], df['period_start'], np.nan)
+    
+    # Fjern midlertidige kolonner
+    df = df.drop(['is_risk', 'period_start'], axis=1)
     
     # Identifiser perioder med sikker min_duration
     periods_df = identify_risk_periods(df, min_duration=min_duration)
@@ -448,7 +506,7 @@ def analyze_settings(params: Dict[str, float], critical_periods_df: DataFrame) -
         return {
             'parameter_changes': [],
             'impact_analysis': [],
-            'suggestions': ['Kunne ikke fullføre analysen på grunn av en feil'],
+            'suggestions': ['Kunne ikke fullføre analysen p grunn av en feil'],
             'meteorological_context': []
         }
     
