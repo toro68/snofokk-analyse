@@ -14,10 +14,13 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, r2_score
 
 # Lokale imports
-from snofokk import calculate_snow_drift_risk
+# from snofokk import calculate_snow_drift_risk
 
 # Logging oppsett
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 class SnowDriftOptimizer:
@@ -31,76 +34,97 @@ class SnowDriftOptimizer:
         self.data_path.mkdir(exist_ok=True)
         
     def create_feature_matrix(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Lager avanserte features for maskinlæring
-        
-        Args:
-            df: DataFrame med værdata
-        Returns:
-            DataFrame med beregnede features
-        """
         try:
+            # Logg alle tilgjengelige kolonner ved start
+            logger.debug(f"Mottatte kolonner fra Frost API: {df.columns.tolist()}")
+            logger.debug(f"Første rader av datasettet:\n{df.head()}")
+            
             features = pd.DataFrame(index=df.index)
             
-            # Vindstabilitet og variabilitet
-            features['wind_speed'] = df['wind_speed']
-            features['wind_gust'] = df['max(wind_speed_of_gust PT1H)']
-            features['wind_variability'] = df['wind_speed'].rolling(3).std()
+            # Sjekk dataframe
+            if df.empty:
+                logger.error("Tom dataframe mottatt")
+                raise ValueError("Dataframe er tom")
             
-            # Beregn vindretningsstabilitet
+            # Logg manglende kolonner med mer detaljer
+            required_columns = ['wind_speed', 'air_temperature', 'surface_snow_thickness']
+            available_columns = df.columns.tolist()
+            missing_columns = [col for col in required_columns if col not in available_columns]
+            
+            if missing_columns:
+                logger.warning(f"Manglende påkrevde kolonner: {missing_columns}")
+                logger.warning(f"Tilgjengelige kolonner: {available_columns}")
+            
+            # Logg datatypene for hver kolonne
+            logger.debug(f"Datatyper for kolonner:\n{df.dtypes}")
+            
+            # Vindstabilitet og variabilitet - sjekk om kolonner eksisterer
+            if 'wind_speed' in df.columns:
+                features['wind_speed'] = df['wind_speed']
+                features['wind_variability'] = df['wind_speed'].rolling(3).std()
+            
+            if 'max(wind_speed_of_gust PT1H)' in df.columns:
+                features['wind_gust'] = df['max(wind_speed_of_gust PT1H)']
+            
+            # Beregn vindretningsstabilitet hvis tilgjengelig
             if 'wind_from_direction' in df.columns:
                 wind_dir = df['wind_from_direction']
-                # Konverter til radianer for sirkulær statistikk
                 wind_rad = np.deg2rad(wind_dir)
-                # Beregn gjennomsnittlig retning over 3 timer
                 sin_avg = np.sin(wind_rad).rolling(3).mean()
                 cos_avg = np.cos(wind_rad).rolling(3).mean()
                 dir_stability = np.sqrt(sin_avg**2 + cos_avg**2)
                 features['wind_dir_stability'] = dir_stability
             
             # Temperaturgradienter og stabilitet
-            features['temperature'] = df['air_temperature']
-            features['temp_gradient'] = df['air_temperature'].diff()
-            features['temp_variability'] = df['air_temperature'].rolling(3).std()
+            if 'air_temperature' in df.columns:
+                features['temperature'] = df['air_temperature']
+                features['temp_gradient'] = df['air_temperature'].diff()
+                features['temp_variability'] = df['air_temperature'].rolling(3).std()
             
-            if 'surface_temperature' in df.columns:
-                features['temp_surface_gradient'] = (
-                    df['air_temperature'] - df['surface_temperature']
-                )
+                # Kun beregn surface_gradient hvis begge temperaturer er tilgjengelige
+                if 'surface_temperature' in df.columns:
+                    features['temp_surface_gradient'] = (
+                        df['air_temperature'] - df['surface_temperature']
+                    )
             
-            # Snøendring og akkumulering
+            # Snøendring og akkumulering hvis tilgjengelig
             if 'surface_snow_thickness' in df.columns:
                 features['snow_depth'] = df['surface_snow_thickness']
                 features['snow_change'] = df['surface_snow_thickness'].diff()
                 features['snow_change_rate'] = features['snow_change'].rolling(3).mean()
             
-            # Sesong- og døgnvariasjoner
+            # Tidsfunksjoner er alltid tilgjengelige siden de er basert på index
             features['hour'] = df.index.hour
             features['month'] = df.index.month
             features['day_of_year'] = df.index.dayofyear
-            
-            # Legg til sinus-transformerte tidsverdier for sykliske mønstre
             features['hour_sin'] = np.sin(2 * np.pi * features['hour'] / 24)
             features['month_sin'] = np.sin(2 * np.pi * features['month'] / 12)
             
-            # Kombinerte features
-            features['wind_temp_interaction'] = (
-                features['wind_speed'] * features['temperature'].abs()
-            )
+            # Kombinerte features - sjekk om nødvendige kolonner eksisterer
+            if all(col in features.columns for col in ['wind_speed', 'temperature']):
+                features['wind_temp_interaction'] = (
+                    features['wind_speed'] * features['temperature'].abs()
+                )
             
-            # Håndter manglende verdier med moderne pandas metoder
+            # Håndter manglende verdier
             features = (features
-                       .pipe(lambda x: x.ffill())  # Forward fill
-                       .pipe(lambda x: x.bfill())  # Backward fill
-                       )
+                       .pipe(lambda x: x.ffill())
+                       .pipe(lambda x: x.bfill())
+                       .fillna(0))
             
-            # Fjern eventuelle gjenværende NaN-verdier med 0
-            features = features.fillna(0)
+            # Logg hvilke features som ble opprettet
+            logger.info(f"Opprettet følgende features: {features.columns.tolist()}")
+            
+            # Mer detaljert logging av feature creation
+            for col in features.columns:
+                null_count = features[col].isnull().sum()
+                if null_count > 0:
+                    logger.warning(f"Kolonne {col} har {null_count} null-verdier")
             
             return features
             
         except Exception as e:
-            logger.error(f"Feil i feature engineering: {str(e)}")
+            logger.exception(f"Kritisk feil i feature engineering: {str(e)}")
             raise
     
     def optimize_parameters(self, df: pd.DataFrame, target: pd.Series) -> Dict[str, Any]:
@@ -248,6 +272,23 @@ class SnowDriftOptimizer:
             Dict med evalueringsmetrikker
         """
         try:
+            logger.debug(f"Starter parameterevaluering med params: {params}")
+            
+            # Sjekk om modell eksisterer
+            model_path = self.data_path / "snow_drift_model.joblib"
+            scaler_path = self.data_path / "feature_scaler.joblib"
+            
+            if not model_path.exists() or not scaler_path.exists():
+                logger.error("Manglende modell eller scaler filer")
+                raise FileNotFoundError("Modell eller scaler filer mangler")
+            
+            # Importer calculate_snow_drift_risk lokalt for å unngå syklusimport
+            try:
+                from snofokk import calculate_snow_drift_risk
+            except ImportError as e:
+                logger.error(f"Kunne ikke importere calculate_snow_drift_risk: {e}")
+                raise
+            
             # Lag features for evaluering
             features = self.create_feature_matrix(df)
             
@@ -282,7 +323,7 @@ class SnowDriftOptimizer:
             return metrics
             
         except Exception as e:
-            logger.error(f"Feil i parameterevaluering: {str(e)}")
+            logger.exception(f"Kritisk feil i parameterevaluering: {str(e)}")
             raise
 
 def analyze_seasonal_patterns(df: pd.DataFrame) -> Dict[str, Any]:
@@ -295,6 +336,19 @@ def analyze_seasonal_patterns(df: pd.DataFrame) -> Dict[str, Any]:
         Dict med sesonganalyse
     """
     try:
+        logger.debug("Starter sesonganalyse")
+        
+        # Valider input
+        if df.empty:
+            logger.error("Tom dataframe mottatt for sesonganalyse")
+            return {}
+            
+        required_columns = ['wind_speed', 'air_temperature']
+        if not all(col in df.columns for col in required_columns):
+            missing = [col for col in required_columns if col not in df.columns]
+            logger.error(f"Mangler påkrevde kolonner for sesonganalyse: {missing}")
+            return {}
+        
         analysis = {}
         
         # Legg til sesonginfo
@@ -358,3 +412,6 @@ def analyze_seasonal_patterns(df: pd.DataFrame) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Feil i sesonganalyse: {str(e)}")
         return {} 
+
+# Legg til denne linjen på slutten av filen
+__all__ = ['SnowDriftOptimizer', 'analyze_seasonal_patterns']

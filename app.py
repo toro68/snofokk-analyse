@@ -9,7 +9,7 @@ import logging
 from typing import Tuple, Dict, Any
 
 # Lokale imports
-from ml_utils import SnowDriftOptimizer
+from ml_utils import SnowDriftOptimizer, analyze_seasonal_patterns
 from db_utils import (
     init_db,
     save_settings,
@@ -24,7 +24,11 @@ from snofokk import (
     identify_risk_periods,
     analyze_wind_directions
 )
-from config import FROST_CLIENT_ID, FROST_STATION_ID, DEFAULT_PARAMS
+from config import (
+    FROST_CLIENT_ID,
+    FROST_STATION_ID,
+    DEFAULT_PARAMS
+)
 
 def format_settings_summary(params, num_critical_periods):
     """
@@ -259,72 +263,101 @@ def plot_risk_analysis(df):
     )
     
     # Vind
-    fig.add_trace(
-        go.Scatter(
-            x=df.index,
-            y=df['sustained_wind'],
-            name='Vedvarende vind',
-            line=dict(color='blue')
-        ),
-        row=2, col=1
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=df.index,
-            y=df['max(wind_speed_of_gust PT1H)'],
-            name='Vindkast',
-            line=dict(color='lightblue', dash='dash')
-        ),
-        row=2, col=1
-    )
+    if 'sustained_wind' in df.columns:
+        fig.add_trace(
+            go.Scatter(
+                x=df.index,
+                y=df['sustained_wind'],
+                name='Vedvarende vind',
+                line=dict(color='blue')
+            ),
+            row=2, col=1
+        )
+    
+    if 'max(wind_speed_of_gust PT1H)' in df.columns:
+        fig.add_trace(
+            go.Scatter(
+                x=df.index,
+                y=df['max(wind_speed_of_gust PT1H)'],
+                name='Vindkast',
+                line=dict(color='lightblue', dash='dash')
+            ),
+            row=2, col=1
+        )
     
     # Temperatur
-    fig.add_trace(
-        go.Scatter(
-            x=df.index,
-            y=df['air_temperature'],
-            name='Temperatur',
-            line=dict(color='green')
-        ),
-        row=3, col=1
-    )
+    if 'air_temperature' in df.columns:
+        fig.add_trace(
+            go.Scatter(
+                x=df.index,
+                y=df['air_temperature'],
+                name='Temperatur',
+                line=dict(color='green')
+            ),
+            row=3, col=1
+        )
     
     # Snødybde og endring
-    fig.add_trace(
-        go.Scatter(
-            x=df.index,
-            y=df['surface_snow_thickness'],
-            name='Snødybde',
-            line=dict(color='purple')
-        ),
-        row=4, col=1
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=df.index,
-            y=df['snow_depth_change'],
-            name='Endring i snødybde',
-            line=dict(color='magenta', dash='dot')
-        ),
-        row=4, col=1
-    )
+    if 'surface_snow_thickness' in df.columns:
+        fig.add_trace(
+            go.Scatter(
+                x=df.index,
+                y=df['surface_snow_thickness'],
+                name='Snødybde',
+                line=dict(color='purple')
+            ),
+            row=4, col=1
+        )
     
-    # Nedbør
-    fig.add_trace(
-        go.Bar(
-            x=df.index,
-            y=df['sum(precipitation_amount PT1H)'],
-            name='Nedbør',
-            marker_color='lightblue'
-        ),
-        row=5, col=1
-    )
+    if 'snow_depth_change' in df.columns:
+        fig.add_trace(
+            go.Scatter(
+                x=df.index,
+                y=df['snow_depth_change'],
+                name='Endring i snødybde',
+                line=dict(color='magenta', dash='dot')
+            ),
+            row=4, col=1
+        )
+    
+    # Nedbør - med riktig kolonnenavn for nedbørsvarighet
+    if 'sum(duration_of_precipitation PT1H)' in df.columns:
+        fig.add_trace(
+            go.Bar(
+                x=df.index,
+                y=df['sum(duration_of_precipitation PT1H)'],
+                name='Nedbørsvarighet',  # Oppdatert navn
+                marker_color='lightblue'
+            ),
+            row=5, col=1
+        )
+    elif 'precipitation_amount' in df.columns:  # Sjekk alternativt kolonnenavn
+        fig.add_trace(
+            go.Bar(
+                x=df.index,
+                y=df['precipitation_amount'],
+                name='Nedbør',
+                marker_color='lightblue'
+            ),
+            row=5, col=1
+        )
+    else:
+        # Legg til en tom trace for å beholde subplot-strukturen
+        fig.add_trace(
+            go.Bar(
+                x=[df.index[0]],
+                y=[0],
+                name='Nedbør (ingen data)',
+                marker_color='lightgray'
+            ),
+            row=5, col=1
+        )
     
     # Oppdater layout
     fig.update_layout(
         title='Snøfokk-risikoanalyse',
         showlegend=True,
-        height=1200  # Flyttet hit fra make_subplots
+        height=1200
     )
     
     # Legg til y-akse titler
@@ -332,179 +365,178 @@ def plot_risk_analysis(df):
     fig.update_yaxes(title_text="m/s", row=2, col=1)
     fig.update_yaxes(title_text="°C", row=3, col=1)
     fig.update_yaxes(title_text="cm", row=4, col=1)
-    fig.update_yaxes(title_text="mm", row=5, col=1)
+    fig.update_yaxes(title_text="Nedbørsvarighet (min)", row=5, col=1)  # Endret enhet til minutter
     
     return fig
 
-def plot_critical_periods(df, periods_df):
+def plot_critical_periods(df: pd.DataFrame, periods_df: pd.DataFrame) -> Tuple[go.Figure, pd.DataFrame]:
     """
-    Lager en detaljert visualisering av kritiske snøfokkperioder for Streamlit
+    Lager en detaljert visualisering av kritiske snøfokkperioder
     
     Args:
-        df: DataFrame med alle værdata og risikoberegninger
+        df: DataFrame med værdata og risikoberegninger
         periods_df: DataFrame med identifiserte perioder
+    Returns:
+        Tuple med Plotly figur og kritiske perioder DataFrame
     """
-    # Finn kritiske perioder
-    critical_periods = periods_df[periods_df['risk_level'] == 'Kritisk'].copy()
+    try:
+        # Finn kritiske perioder
+        critical_periods = periods_df[periods_df['risk_level'] == 'Kritisk'].copy()
 
-    if critical_periods.empty:
-        st.warning("Ingen kritiske perioder funnet i valgt tidsperiode")
-        return None
+        if critical_periods.empty:
+            st.warning("Ingen kritiske perioder funnet i valgt tidsperiode")
+            return None, critical_periods
 
-    # Opprett subplots med fokus på kritiske perioder
-    fig = make_subplots(
-        rows=6, cols=1,
-        subplot_titles=(
-            'Risikoscore',
-            'Vindforhold under kritiske perioder',
-            'Temperatur under kritiske perioder',
-            'Snødybde og endring under kritiske perioder',
-            'Nedbør under kritiske perioder',
-            'Oversikt over kritiske perioder'
-        ),
-        vertical_spacing=0.05,
-        shared_xaxes=True,
-        row_heights=[0.2, 0.2, 0.15, 0.15, 0.15, 0.15]
-    )
+        # Opprett subplots
+        fig = make_subplots(
+            rows=5, cols=1,  # Redusert til 5 rader siden vi ikke trenger nedbør
+            subplot_titles=(
+                'Risikoscore',
+                'Vindforhold under kritiske perioder',
+                'Temperatur under kritiske perioder',
+                'Snødybde og endring under kritiske perioder',
+                'Oversikt over kritiske perioder'
+            ),
+            vertical_spacing=0.05,
+            shared_xaxes=True,
+            row_heights=[0.2, 0.2, 0.2, 0.2, 0.2]
+        )
 
-    # Marker kritiske perioder med rød bakgrunn
-    for _, period in critical_periods.iterrows():
-        for row in range(1, 7):
-            fig.add_vrect(
-                x0=period['start_time'],
-                x1=period['end_time'],
-                fillcolor="rgba(255, 0, 0, 0.1)",
-                layer="below",
-                line_width=0,
-                row=row, col=1
-            )
+        # Marker kritiske perioder
+        for _, period in critical_periods.iterrows():
+            for row in range(1, 6):  # Oppdatert til 5 rader
+                fig.add_vrect(
+                    x0=period['start_time'],
+                    x1=period['end_time'],
+                    fillcolor="rgba(255, 0, 0, 0.1)",
+                    layer="below",
+                    line_width=0,
+                    row=row, col=1
+                )
 
-    # Risikoscore med fremhevet kritisk nivå
-    fig.add_trace(
-        go.Scatter(
-            x=df.index,
-            y=df['risk_score'],
-            name='Risikoscore',
-            line=dict(color='red', width=1)
-        ),
-        row=1, col=1
-    )
-    fig.add_hline(y=70, line_dash="dash", line_color="red", row=1, col=1,
-                 annotation=dict(text="Kritisk nivå (70)", x=0))
-
-    # Vindforhold med terskelverdi
-    fig.add_trace(
-        go.Scatter(
-            x=df.index,
-            y=df['sustained_wind'],
-            name='Vedvarende vind',
-            line=dict(color='blue')
-        ),
-        row=2, col=1
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=df.index,
-            y=df['max(wind_speed_of_gust PT1H)'],
-            name='Vindkast',
-            line=dict(color='lightblue', dash='dash')
-        ),
-        row=2, col=1
-    )
-    fig.add_hline(y=8.0, line_dash="dash", line_color="gray", row=2, col=1,
-                 annotation=dict(text="Sterk vind (8.0 m/s)", x=0))
-
-    # Temperatur med frysepunkt
-    fig.add_trace(
-        go.Scatter(
-            x=df.index,
-            y=df['air_temperature'],
-            name='Temperatur',
-            line=dict(color='green')
-        ),
-        row=3, col=1
-    )
-    fig.add_hline(y=0, line_dash="dash", line_color="gray", row=3, col=1,
-                 annotation=dict(text="Frysepunkt", x=0))
-
-    # Snødybde og endring
-    fig.add_trace(
-        go.Scatter(
-            x=df.index,
-            y=df['surface_snow_thickness'],
-            name='Snødybde',
-            line=dict(color='purple')
-        ),
-        row=4, col=1
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=df.index,
-            y=df['snow_depth_change'],
-            name='Endring i snødybde',
-            line=dict(color='magenta', dash='dot')
-        ),
-        row=4, col=1
-    )
-
-    # Nedbør
-    fig.add_trace(
-        go.Bar(
-            x=df.index,
-            y=df['sum(precipitation_amount PT1H)'],
-            name='Nedbør',
-            marker_color='lightblue'
-        ),
-        row=5, col=1
-    )
-
-    # Fokusert visning av kritiske perioder
-    for _, period in critical_periods.iterrows():
-        period_data = df[period['start_time']:period['end_time']]
+        # Risikoscore
         fig.add_trace(
             go.Scatter(
-                x=period_data.index,
-                y=period_data['risk_score'],
-                name=f"Kritisk periode {int(period['period_id'])}",
-                mode='lines+markers',
-                line=dict(width=3),
-                marker=dict(size=8)
+                x=df.index,
+                y=df['risk_score'],
+                name='Risikoscore',
+                line=dict(color='red', width=1)
             ),
-            row=6, col=1
+            row=1, col=1
+        )
+        fig.add_hline(y=70, line_dash="dash", line_color="red", row=1, col=1,
+                     annotation=dict(text="Kritisk nivå (70)", x=0))
+
+        # Vindforhold
+        if 'sustained_wind' in df.columns:
+            fig.add_trace(
+                go.Scatter(
+                    x=df.index,
+                    y=df['sustained_wind'],
+                    name='Vedvarende vind',
+                    line=dict(color='blue')
+                ),
+                row=2, col=1
+            )
+        
+        if 'max(wind_speed_of_gust PT1H)' in df.columns:
+            fig.add_trace(
+                go.Scatter(
+                    x=df.index,
+                    y=df['max(wind_speed_of_gust PT1H)'],
+                    name='Vindkast',
+                    line=dict(color='lightblue', dash='dash')
+                ),
+                row=2, col=1
+            )
+
+        # Temperatur
+        if 'air_temperature' in df.columns:
+            fig.add_trace(
+                go.Scatter(
+                    x=df.index,
+                    y=df['air_temperature'],
+                    name='Temperatur',
+                    line=dict(color='green')
+                ),
+                row=3, col=1
+            )
+            fig.add_hline(y=0, line_dash="dash", line_color="gray", row=3, col=1,
+                         annotation=dict(text="Frysepunkt", x=0))
+
+        # Snødybde og endring
+        if 'surface_snow_thickness' in df.columns:
+            fig.add_trace(
+                go.Scatter(
+                    x=df.index,
+                    y=df['surface_snow_thickness'],
+                    name='Snødybde',
+                    line=dict(color='purple')
+                ),
+                row=4, col=1
+            )
+        
+        if 'snow_depth_change' in df.columns:
+            fig.add_trace(
+                go.Scatter(
+                    x=df.index,
+                    y=df['snow_depth_change'],
+                    name='Endring i snødybde',
+                    line=dict(color='magenta', dash='dot')
+                ),
+                row=4, col=1
+            )
+
+        # Fokusert visning av kritiske perioder
+        for _, period in critical_periods.iterrows():
+            period_data = df[period['start_time']:period['end_time']]
+            fig.add_trace(
+                go.Scatter(
+                    x=period_data.index,
+                    y=period_data['risk_score'],
+                    name=f"Kritisk periode {int(period['period_id'])}",
+                    mode='lines+markers',
+                    line=dict(width=3),
+                    marker=dict(size=8)
+                ),
+                row=5, col=1
+            )
+
+        # Oppdater layout
+        fig.update_layout(
+            title={
+                'text': 'Detaljert analyse av kritiske snøfokkperioder',
+                'y':0.95,
+                'x':0.5,
+                'xanchor': 'center',
+                'yanchor': 'top'
+            },
+            height=1200,
+            showlegend=True,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+            )
         )
 
-    # Oppdater layout
-    fig.update_layout(
-        title={
-            'text': 'Detaljert analyse av kritiske snøfokkperioder',
-            'y':0.95,
-            'x':0.5,
-            'xanchor': 'center',
-            'yanchor': 'top'
-        },
-        height=1400,
-        showlegend=True,
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
-        )
-    )
+        # Legg til y-akse titler
+        fig.update_yaxes(title_text="Score", row=1, col=1)
+        fig.update_yaxes(title_text="m/s", row=2, col=1)
+        fig.update_yaxes(title_text="°C", row=3, col=1)
+        fig.update_yaxes(title_text="cm", row=4, col=1)
+        fig.update_yaxes(title_text="Score", row=5, col=1)
 
-    # Legg til y-akse titler med enheter
-    fig.update_yaxes(title_text="Risikoscore", row=1, col=1)
-    fig.update_yaxes(title_text="Vindstyrke (m/s)", row=2, col=1)
-    fig.update_yaxes(title_text="Temperatur (°C)", row=3, col=1)
-    fig.update_yaxes(title_text="Snødybde (cm)", row=4, col=1)
-    fig.update_yaxes(title_text="Nedbør (mm)", row=5, col=1)
-    fig.update_yaxes(title_text="Risikoscore", row=6, col=1)
+        # Forbedret x-akse format
+        fig.update_xaxes(tickformat="%d-%m-%Y\n%H:%M")
 
-    # Forbedret x-akse format
-    fig.update_xaxes(tickformat="%d-%m-%Y\n%H:%M")
+        return fig, critical_periods
 
-    return fig, critical_periods
+    except Exception as e:
+        logger.error(f"Feil i plotting av kritiske perioder: {str(e)}")
+        return None, pd.DataFrame()
 
 def display_critical_periods_analysis(df, periods_df):
     """
@@ -662,7 +694,14 @@ def show_main_analysis():
             # Hent eller initialiser parametre
             params = st.session_state.get('params', DEFAULT_PARAMS.copy())
             
-            # Beregn risiko og finn kritiske perioder
+            # Sikre at alle parameterverdier er float
+            for key in params:
+                if isinstance(params[key], (list, tuple)):
+                    params[key] = float(params[key][0])
+                elif not isinstance(params[key], (int, float)):
+                    params[key] = float(DEFAULT_PARAMS[key])
+            
+            # Beregn risiko og få kritiske perioder
             df_risk, critical_periods = calculate_snow_drift_risk(df, params)
             
             # Vis parameterinnstillinger i sidebar
@@ -670,25 +709,24 @@ def show_main_analysis():
             
             # Vindparametere
             st.sidebar.write("**Vindparametere**")
-            params['wind_strong'] = st.sidebar.slider("Sterk vind (m/s)", 5.0, 15.0, params['wind_strong'])
-            params['wind_moderate'] = st.sidebar.slider("Moderat vind (m/s)", 3.0, 10.0, params['wind_moderate'])
-            params['wind_gust'] = st.sidebar.slider("Vindkast terskel (m/s)", 10.0, 25.0, params['wind_gust'])
+            params['wind_strong'] = st.sidebar.slider("Sterk vind (m/s)", 10.0, 25.0, float(params['wind_strong']), step=0.5)
+            params['wind_moderate'] = st.sidebar.slider("Moderat vind (m/s)", 5.0, 15.0, float(params['wind_moderate']), step=0.5)
+            params['wind_gust'] = st.sidebar.slider("Vindkast terskel (m/s)", 10.0, 30.0, float(params['wind_gust']), step=0.5)
+            params['wind_dir_change'] = st.sidebar.slider("Vindretningsendring (grader)", 0.0, 180.0, float(params['wind_dir_change']), step=0.5)
+            params['wind_weight'] = st.sidebar.slider("Vindvekt", 0.0, 2.0, float(params['wind_weight']), step=0.1)
             
             # Temperaturparametere
             st.sidebar.write("**Temperaturparametere**")
-            params['temp_cold'] = st.sidebar.slider("Kald temperatur (°C)", -10.0, 0.0, params['temp_cold'])
-            params['temp_cool'] = st.sidebar.slider("Kjølig temperatur (°C)", -5.0, 2.0, params['temp_cool'])
+            params['temp_cold'] = st.sidebar.slider("Kald temperatur (°C)", -20.0, -5.0, float(params['temp_cold']), step=0.5)
+            params['temp_cool'] = st.sidebar.slider("Kjølig temperatur (°C)", -5.0, 2.0, float(params['temp_cool']), step=0.5)
+            params['temp_weight'] = st.sidebar.slider("Temperaturvekt", 0.0, 2.0, float(params['temp_weight']), step=0.1)
             
             # Snøparametere
             st.sidebar.write("**Snøparametere**")
-            params['snow_high'] = st.sidebar.slider("Høy snøendring (cm/t)", 0.5, 3.0, params['snow_high'])
-            params['snow_moderate'] = st.sidebar.slider("Moderat snøendring (cm/t)", 0.2, 2.0, params['snow_moderate'])
-            
-            # Vekter
-            st.sidebar.write("**Vekter**")
-            params['wind_weight'] = st.sidebar.slider("Vindvekt", 0.0, 1.0, params['wind_weight'])
-            params['temp_weight'] = st.sidebar.slider("Temperaturvekt", 0.0, 1.0, params['temp_weight'])
-            params['snow_weight'] = st.sidebar.slider("Snøvekt", 0.0, 1.0, params['snow_weight'])
+            params['snow_high'] = st.sidebar.slider("Høy snøendring (cm)", 5.0, 20.0, float(params['snow_high']), step=0.5)
+            params['snow_moderate'] = st.sidebar.slider("Moderat snøendring (cm)", 2.0, 10.0, float(params['snow_moderate']), step=0.5)
+            params['snow_low'] = st.sidebar.slider("Lav snøendring (cm)", 0.0, 5.0, float(params['snow_low']), step=0.5)
+            params['snow_weight'] = st.sidebar.slider("Snøvekt", 0.0, 2.0, float(params['snow_weight']), step=0.1)
             
             # Oppdater session state
             st.session_state['params'] = params
