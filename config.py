@@ -5,8 +5,7 @@ import streamlit as st
 FROST_STATION_ID = "SN44560"
 
 # Standardparametre for snøfokk-analyse
-DEFAULT_PARAMS = {
-'wind_strong': 10.61,
+DEFAULT_PARAMS = {'wind_strong': 10.61,
 'wind_moderate': 7.77,
 'wind_gust': 16.96,
 'wind_dir_change': 37.83,
@@ -18,8 +17,7 @@ DEFAULT_PARAMS = {
 'snow_moderate': 0.84,
 'snow_low': 0.31,
 'snow_weight': 1.15,
-'min_duration': 2
-}
+'min_duration': 2}
 
 # Hent FROST_CLIENT_ID fra Streamlit secrets
 try:
