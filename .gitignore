@@ -39,5 +39,31 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Streamlit secrets
+# Streamlit
+.streamlit/
 .streamlit/secrets.toml
+
+# Logs
+*.log
+snofokk.log
+snow_processing.log
+
+# ML Models
+*.joblib
+models/*.joblib
+
+# Local backups and versions
+backup_local_2nov/
+version_1.1.0/
+*_backup/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+*.ipynb
+
+# Environment variables
+.env
+.env.local
+
+# Cache
+.cache/
