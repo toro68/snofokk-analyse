@@ -3,7 +3,7 @@
 
 import logging
 import logging.handlers
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import joblib
 import numpy as np
@@ -421,7 +421,7 @@ class MLEvaluator:
             return {}
 
     def _analyze_parameter_changes(
-        self, parameter_changes: dict[str, Dict]
+        self, parameter_changes: dict[str, dict]
     ) -> list[dict[str, str]]:
         """
         Analyserer parameterendringer og gir anbefalinger

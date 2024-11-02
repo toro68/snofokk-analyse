@@ -12,7 +12,7 @@ En Streamlit-applikasjon for analyse av snøfokk-risiko basert på værdata fra 
 
 ## Installasjon
 
-1. Klon repositoriet: 
+1. Klon repositoriet:
 
 ## Konfigurasjon
 

@@ -108,5 +108,3 @@ Alle disse målingene er tilgjengelige med timeoppløsning (PT1H) og har vært a
 den fungerende elementlisten:
 elements = "surface_snow_thickness,max(wind_speed_of_gust PT1H),max(wind_speed PT1H),wind_speed,relative_humidity,air_temperature,wind_from_direction,surface_temperature,min(air_temperature PT1H),sum(duration_of_precipitation PT1H),sum(precipitation_amount PT1H),max(air_temperature PT1H),dew_point_temperature"
 "
-
-

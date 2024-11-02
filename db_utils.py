@@ -10,7 +10,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from functools import lru_cache
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 # Tredjeparts biblioteker
 import pandas as pd
@@ -41,12 +41,12 @@ def get_db_connection():
         conn.close()
 
 
-def init_db() -> Tuple[bool, str]:
+def init_db() -> tuple[bool, str]:
     """
     Initialiserer database og kjører nødvendige migreringer
 
     Returns:
-        Tuple[bool, str]: (suksess, melding)
+        tuple[bool, str]: (suksess, melding)
     """
     try:
         with get_db_connection() as conn:
@@ -146,12 +146,12 @@ def init_db() -> Tuple[bool, str]:
         return False, error_msg
 
 
-def migrate_database_schema() -> Tuple[bool, str]:
+def migrate_database_schema() -> tuple[bool, str]:
     """
     Migrerer databaseskjema for å håndtere manglende kolonner og indekser
 
     Returns:
-        Tuple[bool, str]: (suksess, melding)
+        tuple[bool, str]: (suksess, melding)
     """
     try:
         with get_db_connection() as conn:
@@ -181,8 +181,8 @@ def migrate_database_schema() -> Tuple[bool, str]:
                         if col_name in ["created_at", "updated_at"]:
                             c.execute(
                                 f"""
-                                UPDATE settings 
-                                SET {col_name} = datetime('now') 
+                                UPDATE settings
+                                SET {col_name} = datetime('now')
                                 WHERE {col_name} IS NULL
                             """
                             )
@@ -220,16 +220,16 @@ def migrate_database_schema() -> Tuple[bool, str]:
             # Oppdater eksisterende rader med standardverdier
             c.execute(
                 """
-                UPDATE settings 
-                SET created_at = CURRENT_TIMESTAMP 
+                UPDATE settings
+                SET created_at = CURRENT_TIMESTAMP
                 WHERE created_at IS NULL
             """
             )
 
             c.execute(
                 """
-                UPDATE settings 
-                SET updated_at = CURRENT_TIMESTAMP 
+                UPDATE settings
+                SET updated_at = CURRENT_TIMESTAMP
                 WHERE updated_at IS NULL
             """
             )
@@ -242,8 +242,8 @@ def migrate_database_schema() -> Tuple[bool, str]:
 
 
 def save_settings(
-    settings_data: Dict[str, Any], critical_periods_df: DataFrame
-) -> Tuple[bool, str]:
+    settings_data: dict[str, Any], critical_periods_df: DataFrame
+) -> tuple[bool, str]:
     """
     Lagrer innstillinger og periodestatistikk med forbedret feilhåndtering
     """
@@ -273,8 +273,8 @@ def save_settings(
             # Sett inn innstillinger
             c.execute(
                 """
-                INSERT INTO settings 
-                (name, description, timestamp, parameters, changes, 
+                INSERT INTO settings
+                (name, description, timestamp, parameters, changes,
                  critical_periods, total_duration, avg_risk_score)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
@@ -294,12 +294,12 @@ def save_settings(
 
             # Lagre statistikk for hver kritisk periode
             if not critical_periods_df.empty:
-                for idx, period in critical_periods_df.iterrows():
+                for _, period in critical_periods_df.iterrows():
                     try:
                         c.execute(
                             """
                             INSERT INTO period_stats
-                            (settings_id, start_time, end_time, duration, 
+                            (settings_id, start_time, end_time, duration,
                              max_risk_score, max_wind, min_temp, max_snow_change)
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                         """,
@@ -314,15 +314,14 @@ def save_settings(
                                 float(period.get("max_snow_change", 0)),
                             ),
                         )
-                    except Exception as e:
-                        raise ValueError(f"Error saving period data: {str(e)}")
+                    except Exception:
+                        raise Exception("Feil ved lagring av innstillinger") from None
 
             conn.commit()
             return True, "Innstillingene ble lagret!"
 
-    except Exception as e:
-        logger.error(f"Feil ved lagring av innstillinger: {str(e)}")
-        return False, f"Feil ved lagring av innstillinger: {str(e)}"
+    except Exception as err:
+        raise RuntimeError("Feil ved lagring av innstillinger") from err
 
 
 def get_saved_settings() -> DataFrame:
@@ -535,9 +534,9 @@ def save_weather_data(weather_data: WeatherData) -> bool:
             c.execute(
                 """
                 INSERT OR REPLACE INTO weather_cache (
-                    location, 
-                    timestamp, 
-                    temperature, 
+                    location,
+                    timestamp,
+                    temperature,
                     precipitation,
                     wind_speed,
                     wind_direction
@@ -562,7 +561,7 @@ def save_weather_data(weather_data: WeatherData) -> bool:
 
 
 @lru_cache(maxsize=128)
-def get_cached_weather(location: str, timestamp: datetime) -> Optional[WeatherData]:
+def get_cached_weather(location: str, timestamp: datetime) -> Any:
     """
     Henter cachet værdata med forbedret ytelse
 
@@ -583,8 +582,8 @@ def get_cached_weather(location: str, timestamp: datetime) -> Optional[WeatherDa
 
             c.execute(
                 """
-                SELECT * FROM weather_cache 
-                WHERE location = ? 
+                SELECT * FROM weather_cache
+                WHERE location = ?
                 AND timestamp BETWEEN ? AND ?
                 ORDER BY ABS(STRFTIME('%s', timestamp) - STRFTIME('%s', ?))
                 LIMIT 1
@@ -631,7 +630,7 @@ def cleanup_old_weather_data(days: int = 7) -> None:
 
 
 def safe_dataframe_operations(
-    df: DataFrame, operations: Dict[str, Dict[str, Any]] = None
+    df: DataFrame, operations: dict[str, dict[str, Any]] = None
 ) -> DataFrame:
     """
     Utfører sikre DataFrame-operasjoner med feilhåndtering

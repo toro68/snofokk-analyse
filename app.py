@@ -207,7 +207,7 @@ def plot_risk_analysis(df):
                 x=df.index,
                 y=df["sustained_wind"],
                 name="Vedvarende vind",
-                line=dict(color="blue"),
+                line={"color": "blue"},
             ),
             row=2,
             col=1,
@@ -380,7 +380,7 @@ def plot_critical_periods(
             line_color="red",
             row=1,
             col=1,
-            annotation=dict(text="Kritisk nivå (70)", x=0),
+            annotation={"text": "Kritisk nivå (70)", "x": 0},
         )
 
         # Vindforhold
@@ -464,7 +464,7 @@ def plot_critical_periods(
                     name=f"Kritisk periode {int(period['period_id'])}",
                     mode="lines+markers",
                     line=dict(width=3),
-                    marker=dict(size=8),
+                    marker={"size": 8},
                 ),
                 row=5,
                 col=1,
@@ -481,9 +481,13 @@ def plot_critical_periods(
             },
             height=1200,
             showlegend=True,
-            legend=dict(
-                orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
-            ),
+            legend={
+                "orientation": "h",
+                "yanchor": "bottom",
+                "y": 1.02,
+                "xanchor": "right",
+                "x": 1,
+            },
         )
 
         # Legg til y-akse titler
@@ -537,7 +541,7 @@ def plot_critical_periods_overview(df: pd.DataFrame, periods_df: pd.DataFrame):
     color = "red"
 
     # Legg til hver kritisk periode som en vertikal linje
-    for i, period in critical_periods.iterrows():
+    for _, period in critical_periods.iterrows():
         period_data = df[
             (df.index >= period["start_time"]) & (df.index <= period["end_time"])
         ]
@@ -552,7 +556,7 @@ def plot_critical_periods_overview(df: pd.DataFrame, periods_df: pd.DataFrame):
                 x=[period["start_time"], period["start_time"]],
                 y=[min_score, max_score],
                 mode="lines",
-                line=dict(color=color, width=3),
+                line={"color": color, "width": 3},
                 name="Høy risiko",
                 hovertemplate=(
                     "<b>Kritisk periode</b><br>"
@@ -562,7 +566,7 @@ def plot_critical_periods_overview(df: pd.DataFrame, periods_df: pd.DataFrame):
                     + f"Vind: {period.get('avg_wind_speed', 0):.1f} m/s<br>"
                     + f"Temp: {period.get('min_temp', 0):.1f}°C"
                 ),
-                hoverlabel=dict(bgcolor="white", font_size=12, bordercolor=color),
+                hoverlabel={"bgcolor": "white", "font_size": 12, "bordercolor": color},
             )
         )
 
@@ -573,22 +577,22 @@ def plot_critical_periods_overview(df: pd.DataFrame, periods_df: pd.DataFrame):
         yaxis_title="Risikoscore (%)",
         yaxis_range=[0, 100],
         height=300,
-        margin=dict(t=30, b=20, l=50, r=20),
+        margin={"t": 30, "b": 20, "l": 50, "r": 20},
         showlegend=False,
         plot_bgcolor="white",
-        yaxis=dict(
-            gridcolor="lightgray",
-            zeroline=True,
-            zerolinecolor="lightgray",
-            tickformat=",d",
-        ),
-        xaxis=dict(
-            gridcolor="lightgray",
-            tickformat="%d-%m-%Y\n%H:%M",
-            tickangle=0,
-            dtick="M1",
-            ticklabelmode="period",
-        ),
+        yaxis={
+            "gridcolor": "lightgray",
+            "zeroline": True,
+            "zerolinecolor": "lightgray",
+            "tickformat": ",d",
+        },
+        xaxis={
+            "gridcolor": "lightgray",
+            "tickformat": "%d-%m-%Y\n%H:%M",
+            "tickangle": 0,
+            "dtick": "M1",
+            "ticklabelmode": "period",
+        },
     )
 
     return fig
@@ -682,7 +686,7 @@ def show_ml_optimization():
                             st.write(f"  Nåværende: {current}")
                             st.write(f"  Foreslått: {value:.2f}")
 
-                        if st.button("Bruk ML-foreslåtte parametre"):
+                        if st.button("Bruk ML-foresltt parametre"):
                             # Behold min_duration
                             new_params = results["suggested_parameters"].copy()
                             new_params["min_duration"] = current_params.get(
@@ -880,7 +884,7 @@ def main():
         # Vis parameterkontrollen for relevante sider
         if choice in ["Hovedanalyse", "ML-optimalisering"]:
             logger.debug(f"Viser parameter-kontroller for {choice}")
-            params = show_parameter_controls()
+            _ = show_parameter_controls()
 
         # Vis valgt side
         if choice == "Hovedanalyse":

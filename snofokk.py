@@ -8,7 +8,7 @@ Inneholder funksjoner for å hente data fra Frost API og analysere snødrift-ris
 # Standard biblioteker
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 # Tredjeparts biblioteker
 import numpy as np
@@ -40,7 +40,7 @@ def fetch_frost_data(start_date="2023-11-01", end_date="2024-04-30"):
         parameters = {
             "sources": "SN46220",
             "referencetime": f"{start_date}/{end_date}",
-            "elements": "air_temperature,surface_snow_thickness,wind_speed,wind_from_direction,relative_humidity,max(wind_speed_of_gust PT1H),max(wind_speed PT1H),min(air_temperature PT1H),max(air_temperature PT1H),sum(duration_of_precipitation PT1H),sum(precipitation_amount PT1H),dew_point_temperature",
+            "elements": "air_temperature,surface_snow_thickness,wind_speed,wind_from_direction,relative_humidity,max(wind_speed_of_gust PT1H),max(wind_speed PT1H),min(air_temperature PT1H),max(air_temperature PT1H),sum(duration_of_precipitation PT1H),sum(precipitation_amount PT1H),dew_point_temperature",  # noqa: E501
             "timeresolutions": "PT1H",
         }
 
@@ -283,8 +283,8 @@ def identify_risk_periods(df, min_duration=3):
 
 @enforce_snow_processing
 def calculate_snow_drift_risk(
-    df: pd.DataFrame, params: Dict[str, float]
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    df: pd.DataFrame, params: dict[str, float]
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     try:
         # Legg til debugging av input
         logger.info(f"Starter calculate_snow_drift_risk med {len(df)} rader")
@@ -408,7 +408,9 @@ def calculate_snow_drift_risk(
                         "risk_level": (
                             "Høy"
                             if max_risk > 0.8
-                            else "Moderat" if max_risk > 0.65 else "Lav"
+                            else "Moderat"
+                            if max_risk > 0.65
+                            else "Lav"
                         ),
                     }
                     critical_periods.append(period_data)
@@ -430,7 +432,9 @@ def calculate_snow_drift_risk(
                     "risk_level": (
                         "Høy"
                         if max_risk > 0.8
-                        else "Moderat" if max_risk > 0.65 else "Lav"
+                        else "Moderat"
+                        if max_risk > 0.65
+                        else "Lav"
                     ),
                 }
                 critical_periods.append(period_data)
@@ -459,7 +463,7 @@ def calculate_snow_drift_risk(
 
 
 def create_rolling_stats(
-    df: DataFrame, columns: List[str], windows: List[int], stats: List[str]
+    df: DataFrame, columns: list[str], windows: list[int], stats: list[str]
 ) -> DataFrame:
     """
     Beregner rullende statistikk for spesifiserte kolonner
@@ -495,7 +499,7 @@ def create_rolling_stats(
         return df
 
 
-def analyze_wind_directions(df: DataFrame) -> Dict[str, Any]:
+def analyze_wind_directions(df: DataFrame) -> dict[str, Any]:
     try:
         logger.info("Starter vindretningsanalyse")
         logger.info(f"Input data shape: {df.shape}")
@@ -584,8 +588,8 @@ def analyze_wind_directions(df: DataFrame) -> Dict[str, Any]:
 
 
 def analyze_settings(
-    params: Dict[str, float], critical_periods_df: DataFrame
-) -> Dict[str, Any]:
+    params: dict[str, float], critical_periods_df: DataFrame
+) -> dict[str, Any]:
     """
     Utfører avansert AI-analyse av parameterinnstillingene og deres effektivitet
     """
@@ -772,7 +776,8 @@ def analyze_settings(
                 )
             elif duration_stats["75%"] < min_duration:
                 analysis["suggestions"].append(
-                    f"Vurder å redusere minimum varighet fra {min_duration} til {max(2, int(duration_stats['75%']))} timer "
+                    f"Vurder å redusere minimum varighet fra {min_duration} "
+                    f"til {max(2, int(duration_stats['75%']))} timer "
                     "for å fange opp flere potensielle hendelser"
                 )
 
@@ -898,7 +903,7 @@ def preprocess_critical_periods(df: DataFrame) -> DataFrame:
         return df
 
 
-def safe_dataframe_operations(df: pd.DataFrame, operations: Dict) -> pd.DataFrame:
+def safe_dataframe_operations(df: pd.DataFrame, operations: dict) -> pd.DataFrame:
     """
     Utfører sikre operasjoner på DataFrame
 
