@@ -1,7 +1,7 @@
 # Standard biblioteker
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import joblib
 
@@ -76,10 +76,7 @@ class SnowDriftOptimizer:
                     config[key] = value
 
             # Vindretningsanalyse
-            if (
-                "wind_from_direction" in df.columns
-                and "wind_speed" in df.columns
-            ):
+            if "wind_from_direction" in df.columns and "wind_speed" in df.columns:
                 wind_rad = np.deg2rad(df["wind_from_direction"])
                 features["wind_dir_sin"] = np.sin(wind_rad)
                 features["wind_dir_cos"] = np.cos(wind_rad)
@@ -118,9 +115,7 @@ class SnowDriftOptimizer:
                 features["snow_depth"]
                 .diff()
                 .clip(lower=config["min_change"], upper=config["max_change"])
-                .rolling(
-                    window=config["window"], min_periods=config["min_periods"]
-                )
+                .rolling(window=config["window"], min_periods=config["min_periods"])
                 .mean()
                 .fillna(0)
             )
@@ -129,9 +124,7 @@ class SnowDriftOptimizer:
             features["rapid_snow_change"] = (
                 features["snow_change"]
                 .abs()
-                .rolling(
-                    window=config["window"], min_periods=config["min_periods"]
-                )
+                .rolling(window=config["window"], min_periods=config["min_periods"])
                 .max()
                 .fillna(0)
             )
@@ -144,7 +137,7 @@ class SnowDriftOptimizer:
 
     def optimize_parameters(
         self, df: pd.DataFrame, target: pd.Series
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Optimaliserer parametre basert på historiske data
 
@@ -195,9 +188,7 @@ class SnowDriftOptimizer:
 
             # Beregn gjennomsnittlig feature importance
             self.feature_importance = {
-                feature: np.mean(
-                    [imp[feature] for imp in feature_importance_list]
-                )
+                feature: np.mean([imp[feature] for imp in feature_importance_list])
                 for feature in X.columns
             }
 
@@ -229,7 +220,7 @@ class SnowDriftOptimizer:
             logger.error(f"Feil i parameteroptimalisering: {str(exc)}")
             raise
 
-    def suggest_parameters(self) -> Dict[str, float]:
+    def suggest_parameters(self) -> dict[str, float]:
         """
         Foreslår parameterinnstillinger basert på feature importance
 
@@ -240,8 +231,7 @@ class SnowDriftOptimizer:
             # Normaliser feature importance
             total_importance = sum(self.feature_importance.values())
             norm_importance = {
-                k: v / total_importance
-                for k, v in self.feature_importance.items()
+                k: v / total_importance for k, v in self.feature_importance.items()
             }
 
             # Beregn vekter basert på feature groups
@@ -257,9 +247,7 @@ class SnowDriftOptimizer:
             temporal_importance = sum(
                 v
                 for k, v in norm_importance.items()
-                if any(
-                    x in k.lower() for x in ["duration", "temporal", "period"]
-                )
+                if any(x in k.lower() for x in ["duration", "temporal", "period"])
             )
 
             # Juster parametre basert på relative viktigheter
@@ -297,9 +285,9 @@ class SnowDriftOptimizer:
                 for direction in wind_dir_effects.index:
                     # Simuler effekt av ulike retninger
                     test_features = self.create_test_features(direction)
-                    wind_dir_effects.loc[direction, "effect"] = (
-                        self.model.predict(test_features).mean()
-                    )
+                    wind_dir_effects.loc[direction, "effect"] = self.model.predict(
+                        test_features
+                    ).mean()
 
                 # Finn retningen med høyest effekt
                 optimal_direction = wind_dir_effects["effect"].idxmax()
@@ -317,9 +305,7 @@ class SnowDriftOptimizer:
                     // 2,
                 )
             else:
-                optimal_direction = (
-                    270  # Standard vestlig retning hvis ingen modell
-                )
+                optimal_direction = 270  # Standard vestlig retning hvis ingen modell
                 tolerance = 45  # Standard toleranse
 
             suggested_params.update(
@@ -337,8 +323,8 @@ class SnowDriftOptimizer:
             raise
 
     def evaluate_parameters(
-        self, df: pd.DataFrame, params: Dict[str, float]
-    ) -> Dict[str, Any]:
+        self, df: pd.DataFrame, params: dict[str, float]
+    ) -> dict[str, Any]:
         """
         Evaluerer et sett med parametre mot historiske data
 
@@ -368,12 +354,8 @@ class SnowDriftOptimizer:
             features = self.create_feature_matrix(df)
 
             if self.model is None:
-                self.model = joblib.load(
-                    self.data_path / "snow_drift_model.joblib"
-                )
-                self.scaler = joblib.load(
-                    self.data_path / "feature_scaler.joblib"
-                )
+                self.model = joblib.load(self.data_path / "snow_drift_model.joblib")
+                self.scaler = joblib.load(self.data_path / "feature_scaler.joblib")
 
             # Prediker risikoscore
             X_scaled = self.scaler.transform(features)
@@ -384,15 +366,11 @@ class SnowDriftOptimizer:
 
             # Beregn evalueringsmetrikker
             metrics = {
-                "mse": mean_squared_error(
-                    actual_df["risk_score"], predicted_risk
-                ),
+                "mse": mean_squared_error(actual_df["risk_score"], predicted_risk),
                 "r2": r2_score(actual_df["risk_score"], predicted_risk),
                 "num_critical_periods": len(periods_df),
                 "avg_period_duration": (
-                    periods_df["duration"].mean()
-                    if not periods_df.empty
-                    else 0
+                    periods_df["duration"].mean() if not periods_df.empty else 0
                 ),
                 "max_risk_score": actual_df["risk_score"].max(),
                 "avg_risk_score": actual_df["risk_score"].mean(),
@@ -404,7 +382,7 @@ class SnowDriftOptimizer:
             logger.exception(f"Kritisk feil i parameterevaluering: {str(exc)}")
             raise
 
-    def optimize_min_duration(self, df: pd.DataFrame) -> Dict[str, Any]:
+    def optimize_min_duration(self, df: pd.DataFrame) -> dict[str, Any]:
         """
         Optimaliserer minimum varighet for kritiske perioder
 
@@ -416,9 +394,7 @@ class SnowDriftOptimizer:
         """
         try:
             # Sjekk om nødvendige kolonner eksisterer
-            if not all(
-                col in df.columns for col in ["wind_speed", "air_temperature"]
-            ):
+            if not all(col in df.columns for col in ["wind_speed", "air_temperature"]):
                 raise ValueError(
                     "Mangler nødvendige kolonner for varighet-optimalisering"
                 )
@@ -426,8 +402,7 @@ class SnowDriftOptimizer:
             # Beregn risikoscore direkte her istedenfor å anta at den eksisterer
             risk_scores = df.apply(
                 lambda row: (
-                    (row["wind_speed"] > 10) * 1.0
-                    + (row["air_temperature"] < -5) * 0.5
+                    (row["wind_speed"] > 10) * 1.0 + (row["air_temperature"] < -5) * 0.5
                 ),
                 axis=1,
             )
@@ -474,9 +449,7 @@ class SnowDriftOptimizer:
             logger.error(f"Feil i beregning: {str(exc)}")
             raise
 
-    def format_optimization_results(
-        self, results: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def format_optimization_results(self, results: dict[str, Any]) -> dict[str, Any]:
         """
         Formaterer optimeringsresultatene for presentasjon med bedre feilhåndtering
         """
@@ -509,13 +482,9 @@ class SnowDriftOptimizer:
             }
 
             # Formater parameterendringer
-            for param, value in results.get(
-                "suggested_parameters", {}
-            ).items():
+            for param, value in results.get("suggested_parameters", {}).items():
                 default = DEFAULT_PARAMS.get(param, value)
-                pct_change = (
-                    ((value - default) / default * 100) if default != 0 else 0
-                )
+                pct_change = ((value - default) / default * 100) if default != 0 else 0
 
                 formatted["parameter_changes"][param] = {
                     "value": round(value, 2),
@@ -536,12 +505,12 @@ class SnowDriftOptimizer:
                         duration_analysis.get("confidence_score", 0.5), 2
                     ),
                     "impact": {
-                        "num_periods": duration_analysis.get(
-                            "expected_impact", {}
-                        ).get("num_periods", 0),
-                        "avg_risk": duration_analysis.get(
-                            "expected_impact", {}
-                        ).get("avg_risk", 0),
+                        "num_periods": duration_analysis.get("expected_impact", {}).get(
+                            "num_periods", 0
+                        ),
+                        "avg_risk": duration_analysis.get("expected_impact", {}).get(
+                            "avg_risk", 0
+                        ),
                     },
                 }
 
@@ -551,7 +520,7 @@ class SnowDriftOptimizer:
             logger.error(f"Feil i beregning: {str(exc)}")
             raise
 
-    def _calculate_stability(self, cv_scores: List[float]) -> str:
+    def _calculate_stability(self, cv_scores: list[float]) -> str:
         """Beregner stabilitet basert på variasjon i CV scores"""
         variation = np.std(cv_scores) / np.mean(cv_scores)
         if variation < 0.05:
@@ -583,7 +552,7 @@ class SnowDriftOptimizer:
             raise
 
 
-def analyze_seasonal_patterns(df: pd.DataFrame) -> Dict[str, Any]:
+def analyze_seasonal_patterns(df: pd.DataFrame) -> dict[str, Any]:
     """
     Analyserer sesongmessige mønstre i værdata
 
@@ -634,10 +603,7 @@ def analyze_seasonal_patterns(df: pd.DataFrame) -> Dict[str, Any]:
 
     # Vindmønstre
     wind_pattern = (
-        df.groupby(["season", "hour"])["wind_speed"]
-        .mean()
-        .unstack()
-        .idxmax(axis=1)
+        df.groupby(["season", "hour"])["wind_speed"].mean().unstack().idxmax(axis=1)
     )
     patterns.append(
         {
@@ -678,18 +644,14 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     """
     if "surface_snow_thickness" in df.columns:
         # Logg originale negative verdier hvis de finnes
-        neg_values = df[df["surface_snow_thickness"] < 0][
-            "surface_snow_thickness"
-        ]
+        neg_values = df[df["surface_snow_thickness"] < 0]["surface_snow_thickness"]
         if not neg_values.empty:
             logger.warning(
                 f"Fant {len(neg_values)} negative snødybdeverdier. Konverterer til 0."
             )
 
         # Konverter negative verdier til 0
-        df["surface_snow_thickness"] = df["surface_snow_thickness"].clip(
-            lower=0
-        )
+        df["surface_snow_thickness"] = df["surface_snow_thickness"].clip(lower=0)
 
         # Tell antall påfølgende NaN-verdier
         null_periods = (
@@ -705,9 +667,7 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
         mask_kort = null_periods <= kort_periode
         df.loc[mask_kort, "surface_snow_thickness"] = df[
             "surface_snow_thickness"
-        ].interpolate(
-            method="linear", limit=kort_periode, limit_direction="both"
-        )
+        ].interpolate(method="linear", limit=kort_periode, limit_direction="both")
 
         # For lengre perioder, bruk ffill med en maksgrense
         lang_periode = 24  # maksimalt 24 timer med ffill
@@ -722,9 +682,7 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
                 f"Setter {manglende_data} verdier til 0 etter {lang_periode} "
                 "timer uten gyldige målinger"
             )
-            df["surface_snow_thickness"] = df["surface_snow_thickness"].fillna(
-                0
-            )
+            df["surface_snow_thickness"] = df["surface_snow_thickness"].fillna(0)
 
         logger.info(
             f"Snødybde-statistikk etter preprocessing: \n"
@@ -741,7 +699,7 @@ def _is_numeric(value: Any) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool)
 
 
-def validate_parameters(params: Dict[str, float]) -> Tuple[bool, str]:
+def validate_parameters(params: dict[str, float]) -> tuple[bool, str]:
     """
     Validerer parametre før de brukes i beregninger.
 
@@ -755,7 +713,7 @@ def validate_parameters(params: Dict[str, float]) -> Tuple[bool, str]:
         params: Dict med parametre som skal valideres
 
     Returns:
-        Tuple[bool, str]: (Er valid, Feilmelding hvis ikke valid)
+        tuple[bool, str]: (Er valid, Feilmelding hvis ikke valid)
     """
     try:
         # Sjekk at alle påkrevde parametre finnes og er numeriske
@@ -765,9 +723,7 @@ def validate_parameters(params: Dict[str, float]) -> Tuple[bool, str]:
                 return False, f"Mangler parameter: {param}"
 
             if not _is_numeric(params[param]):
-                logger.error(
-                    f"Parameter {param} er ikke numerisk: {params[param]}"
-                )
+                logger.error(f"Parameter {param} er ikke numerisk: {params[param]}")
                 return False, f"Parameter {param} må være et tall"
 
             if not min_val <= params[param] <= max_val:
@@ -794,9 +750,7 @@ def validate_parameters(params: Dict[str, float]) -> Tuple[bool, str]:
                 "temp_cold må være lavere enn temp_cool",
             ),
             (
-                params["snow_high"]
-                > params["snow_moderate"]
-                > params["snow_low"],
+                params["snow_high"] > params["snow_moderate"] > params["snow_low"],
                 "Snøverdier må være i rekkefølge: high > moderate > low",
             ),
             (
@@ -840,7 +794,7 @@ class OutlierRemover(BaseEstimator, TransformerMixin):
 
 def improve_model_robustness(
     optimizer: SnowDriftOptimizer, cv_folds: int = 5, random_state: int = 42
-) -> Tuple[bool, Dict[str, Any]]:
+) -> tuple[bool, dict[str, Any]]:
     """
     Forbedrer modellrobusthet med ensemble-metoder og feature selection
 
@@ -850,7 +804,7 @@ def improve_model_robustness(
         random_state: Random seed for reproduserbarhet
 
     Returns:
-        Tuple[bool, Dict]: (Suksess status, Metrics dict)
+        tuple[bool, Dict]: (Suksess status, Metrics dict)
     """
     try:
         logger.info("Starter modellforbedringstiltak...")
@@ -903,9 +857,7 @@ def improve_model_robustness(
         return True, metrics
 
     except Exception as exc:
-        logger.error(
-            f"Kritisk feil i modellforbedrning: {str(exc)}", exc_info=True
-        )
+        logger.error(f"Kritisk feil i modellforbedrning: {str(exc)}", exc_info=True)
         return False, {"error": str(exc)}
 
 

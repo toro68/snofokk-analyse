@@ -2,16 +2,15 @@
 # Kategori: Machine Learning Evaluation Functions
 
 import logging
-from typing import Dict, List, Any, Optional
-import pandas as pd
-import numpy as np
-from sklearn.metrics import confusion_matrix, classification_report
-import plotly.express as px
-import plotly.graph_objects as go
-import joblib
-from snow_constants import SnowDepthConfig
 import logging.handlers
+from typing import Any, Dict, Optional
+
+import joblib
+import numpy as np
+import pandas as pd
 import psutil
+
+from snow_constants import SnowDepthConfig
 
 
 # Forbedret logging-oppsett
@@ -53,8 +52,8 @@ class MLEvaluator:
         self,
         y_true: np.ndarray,
         y_pred: np.ndarray,
-        feature_importance: Optional[Dict[str, float]] = None,
-    ) -> Dict[str, Any]:
+        feature_importance: Optional[dict[str, float]] = None,
+    ) -> dict[str, Any]:
         """
         Evaluerer modellens ytelse med flere metrikker
 
@@ -106,8 +105,8 @@ class MLEvaluator:
             return {"error": str(e), "details": self._get_error_context()}
 
     def _analyze_feature_importance(
-        self, feature_importance: Dict[str, float]
-    ) -> Dict[str, Any]:
+        self, feature_importance: dict[str, float]
+    ) -> dict[str, Any]:
         """
         Analyserer feature importance med forbedret kategorisering
         """
@@ -172,7 +171,7 @@ class MLEvaluator:
 
     def _analyze_prediction_quality(
         self, y_true: np.ndarray, y_pred: np.ndarray
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyserer prediksjonskvalitet med fokus på feiltyper
         """
@@ -203,13 +202,13 @@ class MLEvaluator:
                 "error_patterns": self._analyze_error_patterns(y_true, y_pred, errors),
             }
 
-        except Exception as e:
+        except Exception:
             self.logger.exception("Feil i analyse av prediksjonskvalitet")
             return {}
 
     def _analyze_error_patterns(
         self, y_true: np.ndarray, y_pred: np.ndarray, errors: np.ndarray
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyserer mønstre i prediksjonsfeil
         """
@@ -230,7 +229,7 @@ class MLEvaluator:
             logger.error(f"Feil i analyse av feilmønstre: {str(e)}")
             return {}
 
-    def _categorize_error_severity(self, errors: np.ndarray) -> Dict[str, int]:
+    def _categorize_error_severity(self, errors: np.ndarray) -> dict[str, int]:
         """
         Kategoriserer alvorlighetsgraden av prediksjonsfeil
         """
@@ -254,8 +253,8 @@ class MLEvaluator:
             return {}
 
     def _generate_feature_recommendations(
-        self, group_importance: Dict[str, float]
-    ) -> List[Dict[str, str]]:
+        self, group_importance: dict[str, float]
+    ) -> list[dict[str, str]]:
         """
         Genererer anbefalinger basert på feature importance analyse
         """
@@ -294,7 +293,7 @@ class MLEvaluator:
 
     def _analyze_prediction_stability(
         self, y_pred: np.ndarray, window_size: int = 3
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Analyserer stabiliteten i prediksjoner over tid
         """
@@ -317,9 +316,9 @@ class MLEvaluator:
     def evaluate_parameter_impact(
         self,
         df: pd.DataFrame,
-        original_params: Dict[str, float],
-        optimized_params: Dict[str, float],
-    ) -> Dict[str, Any]:
+        original_params: dict[str, float],
+        optimized_params: dict[str, float],
+    ) -> dict[str, Any]:
         """
         Evaluerer effekten av optimaliserte parametre mot originale parametre
 
@@ -417,13 +416,13 @@ class MLEvaluator:
             )
             return comparison
 
-        except Exception as e:
+        except Exception:
             self.logger.exception("Kritisk feil i evaluering av parametereffekt")
             return {}
 
     def _analyze_parameter_changes(
-        self, parameter_changes: Dict[str, Dict]
-    ) -> List[Dict[str, str]]:
+        self, parameter_changes: dict[str, Dict]
+    ) -> list[dict[str, str]]:
         """
         Analyserer parameterendringer og gir anbefalinger
         """
@@ -461,8 +460,8 @@ class MLEvaluator:
     def verify_model_parameters(
         self,
         model_path: str = "models/snow_drift_model.joblib",
-        expected_params: Dict[str, float] = None,
-    ) -> Dict[str, Any]:
+        expected_params: dict[str, float] = None,
+    ) -> dict[str, Any]:
         """
         Verifiserer at modellen bruker forventede parametre
         """
@@ -516,7 +515,7 @@ class MLEvaluator:
             return verification_result
 
         except Exception as e:
-            self.logger.exception(f"Feil under verifisering av modellparametre")
+            self.logger.exception("Feil under verifisering av modellparametre")
             return {
                 "status": "error",
                 "error": str(e),
@@ -524,7 +523,7 @@ class MLEvaluator:
                 "timestamp": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
             }
 
-    def _get_error_context(self) -> Dict[str, Any]:
+    def _get_error_context(self) -> dict[str, Any]:
         """Samler kontekstuell informasjon for feilsøking"""
         return {
             "metrics_state": bool(self.metrics),
@@ -532,7 +531,7 @@ class MLEvaluator:
             "memory_usage": self._get_memory_usage(),
         }
 
-    def _get_memory_usage(self) -> Dict[str, float]:
+    def _get_memory_usage(self) -> dict[str, float]:
         """Henter minnebruk for debugging"""
         process = psutil.Process()
         return {
