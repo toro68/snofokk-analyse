@@ -1,20 +1,22 @@
-import numpy as np
-import pandas as pd
-try:
-    from sklearn.ensemble import RandomForestRegressor
-    from sklearn.model_selection import TimeSeriesSplit 
-    from sklearn.preprocessing import StandardScaler
-    from sklearn.metrics import mean_squared_error, r2_score
-except ImportError:
-    logging.error("Kunne ikke importere sklearn. Vennligst installer scikit-learn pakken.")
-    raise
+# Standard biblioteker
 import logging
 from typing import Dict, List, Tuple, Any
 from datetime import datetime
-import joblib
 from pathlib import Path
 
-# Sett opp logging
+# Tredjeparts biblioteker
+import numpy as np
+import pandas as pd
+import joblib
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import TimeSeriesSplit 
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Lokale imports
+from snofokk import calculate_snow_drift_risk
+
+# Logging oppsett
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -86,8 +88,14 @@ class SnowDriftOptimizer:
                 features['wind_speed'] * features['temperature'].abs()
             )
             
-            # Fyll manglende verdier
-            features = features.fillna(method='ffill').fillna(method='bfill')
+            # Håndter manglende verdier med moderne pandas metoder
+            features = (features
+                       .pipe(lambda x: x.ffill())  # Forward fill
+                       .pipe(lambda x: x.bfill())  # Backward fill
+                       )
+            
+            # Fjern eventuelle gjenværende NaN-verdier med 0
+            features = features.fillna(0)
             
             return features
             
@@ -95,18 +103,14 @@ class SnowDriftOptimizer:
             logger.error(f"Feil i feature engineering: {str(e)}")
             raise
     
-    def optimize_parameters(self, 
-                          df: pd.DataFrame, 
-                          target: pd.Series,
-                          n_splits: int = 5) -> Dict[str, Any]:
+    def optimize_parameters(self, df: pd.DataFrame, target: pd.Series) -> Dict[str, Any]:
         """
         Optimaliserer parametre basert på historiske data
         
         Args:
             df: DataFrame med værdata
             target: Faktisk risikoscore
-            n_splits: Antall splitt for tidsserie-validering
-        
+            
         Returns:
             Dict med optimaliserte parametre og evalueringsmetrikker
         """
@@ -116,7 +120,7 @@ class SnowDriftOptimizer:
             y = target
             
             # Tidsserie-splitting
-            tscv = TimeSeriesSplit(n_splits=n_splits)
+            tscv = TimeSeriesSplit(n_splits=5)
             
             # Initialiser resultater
             cv_scores = []
@@ -256,7 +260,6 @@ class SnowDriftOptimizer:
             predicted_risk = self.model.predict(X_scaled)
             
             # Beregn faktisk risiko med nye parametre
-            from db_utils import calculate_snow_drift_risk
             actual_df, periods_df = calculate_snow_drift_risk(df, params)
             
             # Beregn evalueringsmetrikker
