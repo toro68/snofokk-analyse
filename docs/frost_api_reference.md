@@ -1,21 +1,12 @@
-# Snøfokk-analyse
+# FROST API Referanse
 
-En applikasjon for analyse av snøfokk-forhold basert på værdata.
+## Tidsoppløsninger
+- PT1H  = Timesdata
+- PT10M = 10-minuttersdata
+- P1D   = Døgndata
+- P1M   = Månedsdata
 
-## Prosjektstruktur
-.
-├── README.md                 # Prosjektbeskrivelse
-├── backups/                  # Backup-versjoner
-├── config/                   # Konfigurasjonsfiler
-├── data/                     # Hovedmappe for data
-│   ├── db/                  # Database
-│   ├── models/              # ML-modeller
-│   └── src/snofokk/        # Kildekode
-├── docs/                     # Dokumentasjon
-├── logs/                     # Loggfiler
-└── tests/                    # Testfiler
-
-Frost api.
+## Hovedparametere
 === OVERSIKT OVER TILGJENGELIGE TIDSOPPLØSNINGER ===
 
 Forklaring av tidsoppløsninger:
@@ -924,13 +915,3 @@ wind_from_direction:
 
 wind_speed:
   - PT1H
-
-## Setup
-
-1. Kopier example secrets fil:
-```bash
-mkdir -p .streamlit
-cp examples/secrets.toml.example .streamlit/secrets.toml
-```
-
-2. Legg til din FROST_CLIENT_ID i .streamlit/secrets.toml
