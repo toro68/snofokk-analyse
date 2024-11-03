@@ -374,123 +374,128 @@ def plot_critical_periods_overview(df: pd.DataFrame, periods_df: pd.DataFrame):
     """
     Lager en oversiktsgraf som viser score-spennet for kun de mest kritiske periodene
     """
-    if periods_df.empty:
-        return None
+    try:
+        if periods_df.empty:
+            return None
 
-    # Hent gjeldende parametre fra session state
-    params = st.session_state.get("params", DEFAULT_PARAMS)
+        # Filtrer ut bare de mest kritiske periodene
+        critical_threshold = 0.85  # Høy terskel for å få ca. 14 perioder
+        min_duration = 3  # Timer
 
-    # Beregn kritisk grense basert på wind_weight
-    # Høyere vindvekt betyr at vi bør være mer selektive med kritiske perioder
-    critical_threshold = 0.8  # Standard grense
-    if params["wind_weight"] > 1.5:
-        critical_threshold = 0.85  # Øk grensen for høy vindvekt
-    elif params["wind_weight"] < 1.0:
-        critical_threshold = 0.75  # Senk grensen for lav vindvekt
-
-    # Filtrer ut bare de mest kritiske periodene
-    critical_periods = periods_df[
-        (periods_df["max_risk_score"] > critical_threshold)
-        & (periods_df["duration"] >= params["min_duration"])
-    ].copy()
-
-    if critical_periods.empty:
-        return None
-
-    # Opprett figur
-    fig = go.Figure()
-
-    # Definer fargepalett - bruk rød for høy risiko
-    color = "red"
-
-    # Legg til hver kritisk periode som en vertikal linje
-    for _, period in critical_periods.iterrows():
-        period_data = df[
-            (df.index >= period["start_time"]) & (df.index <= period["end_time"])
-        ]
-
-        # Beregn min og max risikoscore for perioden
-        min_score = period_data["risk_score"].min() * 100
-        max_score = period["max_risk_score"] * 100
-
-        # Legg til vertikal linje
-        fig.add_trace(
-            go.Scatter(
-                x=[period["start_time"], period["start_time"]],
-                y=[min_score, max_score],
-                mode="lines",
-                line={"color": color, "width": 3},
-                name="Høy risiko",
-                hovertemplate=(
-                    "<b>Kritisk periode</b><br>"
-                    + f"Start: {period['start_time'].strftime('%d-%m-%Y %H:%M')}<br>"
-                    + f"Varighet: {period['duration']:.1f} timer<br>"
-                    + f"Score: {max_score:.0f}%<br>"
-                    + f"Vind: {period.get('avg_wind_speed', 0):.1f} m/s<br>"
-                    + f"Temp: {period.get('min_temp', 0):.1f}°C"
-                ),
-                hoverlabel={"bgcolor": "white", "font_size": 12, "bordercolor": color},
-            )
+        # Filtrer og sorter periodene
+        critical_periods = (
+            periods_df[
+                (periods_df["max_risk_score"] > critical_threshold)
+                & (periods_df["duration"] >= min_duration)
+            ]
+            .sort_values("max_risk_score", ascending=False)
+            .head(14)
         )
 
-    # Oppdater layout
-    fig.update_layout(
-        title=f"Kritiske perioder (score > {critical_threshold*100:.0f}%)",
-        xaxis_title="",
-        yaxis_title="Risikoscore (%)",
-        yaxis_range=[0, 100],
-        height=300,
-        margin={"t": 30, "b": 20, "l": 50, "r": 20},
-        showlegend=False,
-        plot_bgcolor="white",
-        yaxis={
-            "gridcolor": "lightgray",
-            "zeroline": True,
-            "zerolinecolor": "lightgray",
-            "tickformat": ",d",
-        },
-        xaxis={
-            "gridcolor": "lightgray",
-            "tickformat": "%d-%m-%Y\n%H:%M",
-            "tickangle": 0,
-            "dtick": "M1",
-            "ticklabelmode": "period",
-        },
-    )
+        if critical_periods.empty:
+            return None
 
-    return fig
+        # Opprett figur
+        fig = go.Figure()
+
+        # Legg til hver kritisk periode som en vertikal linje
+        for _, period in critical_periods.iterrows():
+            period_data = df[
+                (df.index >= period["start_time"]) & (df.index <= period["end_time"])
+            ]
+
+            if not period_data.empty:
+                # Beregn statistikk
+                min_score = period_data["risk_score"].min() * 100
+                max_score = period["max_risk_score"] * 100
+                avg_wind = period_data["wind_speed"].mean()
+                max_wind = period_data["wind_speed"].max()
+                min_temp = period_data["air_temperature"].min()
+
+                # Legg til vertikal linje
+                fig.add_trace(
+                    go.Scatter(
+                        x=[period["start_time"], period["start_time"]],
+                        y=[min_score, max_score],
+                        mode="lines",
+                        line=dict(color="red", width=3),
+                        name=f"Kritisk periode {int(period['period_id'])}",
+                        hovertemplate=(
+                            "<b>Kritisk periode</b><br>"
+                            + f"Start: {period['start_time'].strftime('%d-%m-%Y %H:%M')}<br>"
+                            + f"Varighet: {period['duration']:.1f} timer<br>"
+                            + f"Risiko: {max_score:.1f}%<br>"
+                            + f"Vind: {avg_wind:.1f} m/s (maks {max_wind:.1f})<br>"
+                            + f"Min temp: {min_temp:.1f}°C"
+                        ),
+                    )
+                )
+
+        # Oppdater layout
+        fig.update_layout(
+            title="Oversikt over mest kritiske perioder",
+            height=300,
+            showlegend=False,
+            yaxis_title="Risikoscore (%)",
+            xaxis_title="",
+            hovermode="x unified",
+            margin=dict(t=30, b=20, l=50, r=20),
+            plot_bgcolor="white",
+            yaxis=dict(gridcolor="lightgray", range=[0, 100], tickformat=",d"),
+            xaxis=dict(gridcolor="lightgray", tickformat="%d-%m-%Y\n%H:%M"),
+        )
+
+        return fig
+
+    except Exception as e:
+        logger.error(f"Feil i plot_critical_periods_overview: {str(e)}")
+        return None
 
 
-def display_critical_periods_analysis(df, periods_df):
+def display_critical_alerts(df: pd.DataFrame, periods_df: pd.DataFrame):
     """
-    Viser analyse av kritiske perioder i Streamlit
+    Viser en kompakt oversikt over kritiske varsler
     """
-    if periods_df.empty:
-        st.warning("Ingen kritiske perioder funnet i valgt tidsperiode.")
-        return
+    try:
+        if periods_df.empty:
+            st.warning("Ingen kritiske perioder funnet i valgt tidsperiode.")
+            return
 
-    # Vis først oversiktsgrafen
-    overview_fig = plot_critical_periods_overview(df, periods_df)
-    if overview_fig is not None:
-        st.plotly_chart(overview_fig, use_container_width=True)
+        # Filtrer ut kritiske perioder (samme logikk som i plot_critical_periods_overview)
+        critical_threshold = 0.85
+        min_duration = 3
+        critical_periods = (
+            periods_df[
+                (periods_df["max_risk_score"] > critical_threshold)
+                & (periods_df["duration"] >= min_duration)
+            ]
+            .sort_values("max_risk_score", ascending=False)
+            .head(14)
+        )
 
-    # Vis ekspanderbare detaljer for hver kritisk periode
-    st.subheader("Detaljer for kritiske perioder")
+        # Vis grafen med kritiske perioder først
+        fig = plot_critical_periods_overview(df, periods_df)
+        if fig:
+            st.plotly_chart(fig, use_container_width=True)
 
-    # Filtrer og sorter periodene
-    critical_periods = periods_df[periods_df["max_risk_score"] > 0.65].sort_values(
-        "start_time"
-    )
+        # Vis detaljert liste under grafen
+        if not critical_periods.empty:
+            st.subheader("Detaljer for kritiske perioder")
+            for _, period in critical_periods.iterrows():
+                with st.expander(
+                    f"Periode {int(period['period_id'])} - {period['start_time'].strftime('%Y-%m-%d %H:%M')}"
+                ):
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Varighet", f"{period['duration']:.1f} timer")
+                    with col2:
+                        st.metric("Maks risiko", f"{period['max_risk_score']*100:.0f}%")
+                    with col3:
+                        st.metric("Alvorlighet", period.get("severity", "Ukjent"))
 
-    for i, period in critical_periods.iterrows():
-        with st.expander(
-            f"Periode {i} - {period['start_time'].strftime('%Y-%m-%d %H:%M')}"
-        ):
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("Varighet", f"{period['duration']:.1f} timer")
-            with col2:
-                st.metric("Maks risiko", f"{period['max_risk_score']*100:.0f}")
+    except Exception as e:
+        logger.error(f"Feil i visning av kritiske varsler: {str(e)}")
+        st.error("Kunne ikke vise kritiske varsler")
 
 
 def show_ml_optimization():
@@ -557,78 +562,6 @@ def show_ml_optimization():
         st.error("En feil oppstod under optimalisering")
 
 
-def display_critical_alerts(df: pd.DataFrame, periods_df: pd.DataFrame):
-    """
-    Viser en kompakt oversikt over kritiske varsler med sammenslåtte perioder og alvorlighetsgrad.
-    """
-    try:
-        if periods_df.empty:
-            st.warning("Ingen kritiske perioder funnet i valgt tidsperiode.")
-            return
-
-        # Hent gjeldende parametre
-        params = st.session_state.get("params", DEFAULT_PARAMS.copy())
-
-        # Preprocess perioder og beregn alvorlighetsgrad
-        working_df = periods_df.copy()
-
-        # Beregn basis-score først
-        working_df["base_score"] = working_df["max_risk_score"] * working_df["duration"]
-
-        # Normaliser basis-score
-        max_base = working_df["base_score"].max()
-        if max_base > 0:
-            working_df["normalized_score"] = working_df["base_score"] / max_base
-        else:
-            working_df["normalized_score"] = working_df["base_score"]
-
-        # ... (resten av severity-beregningen forblir uendret) ...
-
-        # Filtrer kritiske perioder
-        critical_threshold = 0.8
-        if params["wind_weight"] > 1.5:
-            critical_threshold = 0.85
-        elif params["wind_weight"] < 1.0:
-            critical_threshold = 0.75
-
-        critical_periods = working_df[
-            (working_df["max_risk_score"] > critical_threshold)
-            & (working_df["duration"] >= params["min_duration"])
-        ].sort_values("severity_score", ascending=False)
-
-        if critical_periods.empty:
-            st.info("Ingen kritiske varsler med nåværende kriterier.")
-            return
-
-        st.subheader("🚨 Kritiske varsler")
-
-        # Vis oppsummerende metrikker
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("Antall varsler", len(critical_periods))
-        with col2:
-            total_duration = critical_periods["duration"].sum()
-            st.metric("Total varighet", f"{total_duration:.1f}t")
-        with col3:
-            avg_severity = critical_periods["severity_score"].mean()
-            st.metric("Gj.snitt alvorlighet", f"{avg_severity:.2f}")
-        with col4:
-            extreme_count = len(
-                critical_periods[critical_periods["severity"] == "Ekstrem"]
-            )
-            st.metric("Ekstreme perioder", extreme_count)
-
-        # Bruk display_critical_periods_analysis for hver periode
-        for _, period in critical_periods.iterrows():
-            # Lag en midlertidig DataFrame med bare denne perioden
-            period_df = pd.DataFrame([period])
-            display_critical_periods_analysis(df, period_df)
-
-    except Exception as e:
-        logger.error(f"Feil i visning av kritiske varsler: {str(e)}", exc_info=True)
-        st.error("Kunne ikke vise kritiske varsler")
-
-
 def show_main_analysis():
     """Viser hovedanalysen"""
     st.title("🌨️ Snøfokk-analyse")
@@ -664,8 +597,10 @@ def show_main_analysis():
                 if fig is not None:
                     st.plotly_chart(fig, use_container_width=True)
             else:
-                # Vis kombinert analyse
-                display_combined_analysis(df_risk, critical_periods)
+                # Midlertidig: vis bare standardvisning
+                fig = plot_risk_analysis(df_risk)
+                if fig is not None:
+                    st.plotly_chart(fig, use_container_width=True)
 
             # Vis kritiske varsler
             display_critical_alerts(df_risk, critical_periods)
@@ -755,132 +690,6 @@ def show_parameter_controls():
         st.rerun()
 
     return params
-
-
-def display_critical_alerts(df: pd.DataFrame, periods_df: pd.DataFrame):
-    """
-    Viser en kompakt oversikt over kritiske varsler med sammenslåtte perioder
-    """
-    try:
-        if periods_df.empty:
-            st.warning("Ingen kritiske perioder funnet i valgt tidsperiode.")
-            return
-        # Hent gjeldende parametre
-        params = st.session_state.get("params", DEFAULT_PARAMS.copy())
-
-        # Juster kritisk grense basert på vindvekt
-        critical_threshold = 0.8
-        if params["wind_weight"] > 1.5:
-            critical_threshold = 0.85
-        elif params["wind_weight"] < 1.0:
-            critical_threshold = 0.75
-
-        # Filtrer kritiske perioder
-        critical_periods = periods_df[
-            (periods_df["max_risk_score"] > critical_threshold)
-            & (periods_df["duration"] >= params["min_duration"])
-        ].sort_values("start_time", ascending=False)
-
-        if critical_periods.empty:
-            st.info("Ingen kritiske varsler med nåværende kriterier.")
-            return
-
-        st.subheader("🚨 Kritiske varsler (sammenslåtte perioder)")
-
-        # Vis oppsummerende metrikker
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Antall kritiske varsler", len(critical_periods))
-        with col2:
-            total_duration = critical_periods["duration"].sum()
-            st.metric("Total varighet", f"{total_duration:.1f}t")
-        with col3:
-            avg_risk = critical_periods["max_risk_score"].mean() * 100
-            st.metric("Gjennomsnittlig risiko", f"{avg_risk:.0f}%")
-
-        # Vis hver kritisk periode med forbedret formatering
-        for _, period in critical_periods.iterrows():
-            start = period["start_time"].strftime("%Y-%m-%d %H:%M")
-            end = period["end_time"].strftime("%Y-%m-%d %H:%M")
-
-            # Beregn alvorlighetsgrad
-            severity = "🔴" if period["max_risk_score"] > 0.85 else "🟡"
-
-            title = (
-                f"{severity} Periode {int(period['period_id'])} "
-                f"({start} - {end}, "
-                f"varighet: {period['duration']:.1f}t)"
-            )
-
-            with st.expander(title):
-                # Vis detaljert informasjon i kolonner
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric(
-                        "Risikoscore",
-                        f"{period['max_risk_score']*100:.0f}%",
-                        delta=f"{(period['max_risk_score']-0.7)*100:.0f}%"
-                        if period["max_risk_score"] > 0.7
-                        else None,
-                    )
-                with col2:
-                    if "max_wind" in period:
-                        st.metric("Maks vindstyrke", f"{period['max_wind']:.1f} m/s")
-                    if "min_temp" in period:
-                        st.metric("Min temperatur", f"{period['min_temp']:.1f}°C")
-                with col3:
-                    if "max_snow_change" in period:
-                        st.metric(
-                            "Maks snøendring", f"{period['max_snow_change']:.1f} cm"
-                        )
-
-                # Vis periodedata
-                period_data = df[
-                    (df.index >= period["start_time"])
-                    & (df.index <= period["end_time"])
-                ].copy()
-
-                if not period_data.empty:
-                    st.write("### Tidsseriedata")
-                    fig = go.Figure()
-
-                    # Legg til risikoscore
-                    fig.add_trace(
-                        go.Scatter(
-                            x=period_data.index,
-                            y=period_data["risk_score"] * 100,
-                            name="Risikoscore",
-                            line=dict(color="red", width=2),
-                        )
-                    )
-
-                    # Legg til vindstyrke på sekundær y-akse
-                    if "wind_speed" in period_data.columns:
-                        fig.add_trace(
-                            go.Scatter(
-                                x=period_data.index,
-                                y=period_data["wind_speed"],
-                                name="Vindstyrke",
-                                line=dict(color="blue", width=1),
-                                yaxis="y2",
-                            )
-                        )
-
-                    fig.update_layout(
-                        height=300,
-                        margin=dict(l=0, r=0, t=20, b=0),
-                        showlegend=True,
-                        yaxis=dict(title="Risikoscore (%)"),
-                        yaxis2=dict(
-                            title="Vindstyrke (m/s)", overlaying="y", side="right"
-                        ),
-                    )
-
-                    st.plotly_chart(fig, use_container_width=True)
-
-    except Exception as e:
-        logger.error(f"Feil i visning av kritiske varsler: {str(e)}", exc_info=True)
-        st.error("Kunne ikke vise kritiske varsler")
 
 
 def show_date_selector():

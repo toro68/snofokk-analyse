@@ -10,11 +10,15 @@ import numpy as np
 import pandas as pd
 
 # Sett opp logging med mer detaljert konfigurasjon
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("data.src.snofokk.snow_constants")
 logger.setLevel(logging.INFO)
 
+# Fjern alle eksisterende handlers
+for handler in logger.handlers[:]:
+    logger.removeHandler(handler)
+
 # Opprett en formatter for loggmeldinger
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
 # Legg til console handler
 console_handler = logging.StreamHandler()
@@ -25,6 +29,9 @@ logger.addHandler(console_handler)
 file_handler = logging.FileHandler("snow_processing.log")
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
+
+# Unngå propagering til root logger
+logger.propagate = False
 
 
 def enforce_snow_processing(func):
@@ -108,44 +115,26 @@ class SnowDepthConfig:
         }
 
     @classmethod
-    def process_snow_depth(cls, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Prosesserer snødybdedata
-        """
-        if not isinstance(df, pd.DataFrame):
-            logger.error("Inndata må være pandas DataFrame")
-            raise TypeError("Inndata må være pandas DataFrame")
-
-        if df.empty:
-            logger.error("Tom dataserie mottatt")
-            raise ValueError("Kan ikke prosessere tom dataserie")
-
-        logger.info("=== Start snødybdeprosessering ===")
-        logger.info(f"Inndata: {len(df)} målinger")
-        logger.debug(f"Konfigurasjon: {cls.get_processing_config()}")
-
-        data = df.copy()
-        invalid_mask = (data < cls.MIN_VALID_DEPTH) | (data > cls.MAX_VALID_DEPTH)
-        invalid_count = invalid_mask.sum().sum()
-
-        if invalid_count > 0:
-            logger.warning(
-                f"Fant {invalid_count} ugyldige målinger "
-                f"({(invalid_count/len(df))*100:.1f}% av datasettet)"
+    def process_snow_depth(cls, snow_df: pd.Series) -> pd.Series:
+        """Prosesserer snødybdedata."""
+        try:
+            snow_depth = pd.to_numeric(snow_df, errors="coerce")
+            snow_depth = snow_depth.replace(-1.0, 0.0)
+            snow_depth = snow_depth.mask(
+                (snow_depth < cls.MIN_VALID_DEPTH) | (snow_depth > cls.MAX_VALID_DEPTH)
             )
 
-        data[invalid_mask] = np.nan
+            logger.info("=== Snødybdeprosessering ===")
+            logger.info(f"Prosessert {len(snow_depth)} målinger")
+            logger.info(
+                f"Filtrert: {len(snow_depth) - snow_depth.count()} målinger fjernet"
+            )
 
-        processed_data = (
-            data.interpolate(method="linear", limit=cls.INTERPOLATION_LIMIT)
-            .ffill(limit=cls.FFILL_LIMIT)
-            .bfill(limit=cls.BFILL_LIMIT)
-            .fillna(0)
-        )
+            return snow_depth
 
-        logger.info(f"Prosessering fullført. Utdata: {len(processed_data)} målinger")
-        logger.info("=== Slutt snødybdeprosessering ===")
-        return processed_data
+        except Exception as e:
+            logger.error(f"Feil i snødatabehandling: {str(e)}", exc_info=True)
+            raise
 
     @classmethod
     def validate_snow_depth(cls, df: pd.DataFrame) -> pd.DataFrame:
@@ -168,10 +157,10 @@ class SnowDepthConfig:
         invalid_mask = (data < cls.MIN_VALID_DEPTH) | (data > cls.MAX_VALID_DEPTH)
         invalid_count = invalid_mask.sum().sum()
 
-        if invalid_count > 0:
+        if invalid_count.any() > 0:
             logger.warning(
-                f"Fant {invalid_count} ugyldige målinger "
-                f"({(invalid_count/len(df))*100:.1f}% av datasettet)"
+                f"Fant {invalid_count.any()} ugyldige målinger "
+                f"({(invalid_count.any()/len(df))*100:.1f}% av datasettet)"
             )
 
         data[invalid_mask] = np.nan

@@ -8,7 +8,7 @@ Inneholder funksjoner for å hente data fra Frost API og analysere snødrift-ris
 # Standard biblioteker
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional, TypeVar  # ruff: noqa: F401
+from typing import Any, Dict, TypeVar  # ruff: noqa: F401
 
 # Tredjeparts biblioteker
 import numpy as np
@@ -20,9 +20,9 @@ import streamlit as st
 from pandas import DataFrame
 from plotly.subplots import make_subplots
 
-from .config import DEFAULT_PARAMS, FROST_CLIENT_ID, PARAMETER_BOUNDS
+from data.src.snofokk.config import DEFAULT_PARAMS, FROST_CLIENT_ID, PARAMETER_BOUNDS
 # Lokale imports
-from .snow_constants import (SnowDepthConfig, enforce_snow_processing,
+from data.src.snofokk.snow_constants import (SnowDepthConfig, enforce_snow_processing,
                              get_risk_level)
 
 # Logging oppsett
@@ -46,7 +46,7 @@ def fetch_frost_data(start_date="2023-11-01", end_date="2024-04-30"):
         parameters = {
             "sources": "SN46220",
             "referencetime": f"{start_date}/{end_date}",
-            "elements": "air_temperature,surface_snow_thickness,wind_speed,wind_from_direction,relative_humidity,max(wind_speed_of_gust PT1H),max(wind_speed PT1H),min(air_temperature PT1H),max(air_temperature PT1H),sum(duration_of_precipitation PT1H),sum(precipitation_amount PT1H),dew_point_temperature",
+            "elements": "air_temperature,surface_snow_thickness,wind_speed,wind_from_direction,relative_humidity,max(wind_speed_of_gust PT1H),max(wind_speed PT1H),min(air_temperature PT1H),max(air_temperature PT1H),sum(duration_of_precipitation PT1H),sum(precipitation_amount PT1H),dew_point_temperature",  # noqa: E501
             "timeresolutions": "PT1H",
         }
 
@@ -336,22 +336,38 @@ def identify_risk_periods(df: pd.DataFrame, min_duration: int = 3) -> pd.DataFra
 
 @enforce_snow_processing
 def calculate_snow_drift_risk(
-    df: pd.DataFrame,
-    params: Dict[str, float],
-    snow_config: Optional[SnowDepthConfig] = None,
-) -> Dict[str, Any]:
-    """
-    Beregner snøfokk-risiko basert på værdata og parametre
-    """
+    df: pd.DataFrame, params: dict
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     try:
-        # Sjekk om df er en DataFrame
-        if not isinstance(df, pd.DataFrame):
-            raise TypeError("df må være en pandas DataFrame")
+        df = df.copy()
 
-        # Prosesser snødybdedata
-        snow_series = df["surface_snow_thickness"]
-        snow_df = pd.DataFrame(snow_series)
+        snow_df = df["surface_snow_thickness"]
+        logger.info("=== Snødybdeanalyse ===")
+        logger.info(f"Målinger: {len(snow_df)} totalt, {snow_df.count()} gyldige")
+        logger.info(
+            f"Tidsperiode: {snow_df.index[0].strftime('%Y-%m-%d')} "
+            f"til {snow_df.index[-1].strftime('%Y-%m-%d')}"
+        )
+        logger.info(f"Første gyldige måling: {snow_df.dropna().iloc[0]:.1f} cm")
+        logger.info(f"Siste gyldige måling: {snow_df.dropna().iloc[-1]:.1f} cm")
+
         df["surface_snow_thickness"] = SnowDepthConfig.process_snow_depth(snow_df)
+
+        processed_snow = df["surface_snow_thickness"]
+        logger.info("=== Etter prosessering ===")
+        logger.info(
+            f"Gyldige målinger: {processed_snow.count()} "
+            f"({processed_snow.count()/len(processed_snow)*100:.1f}%)"
+        )
+        logger.info(
+            f"Snødybdeområde: {processed_snow.min():.1f} - {processed_snow.max():.1f} cm"
+        )
+        logger.info("Statistikk:")
+        logger.info(f"- Gjennomsnitt: {processed_snow.mean():.1f} cm")
+        logger.info(f"- Median: {processed_snow.median():.1f} cm")
+        logger.info(f"- Standardavvik: {processed_snow.std():.1f} cm")
+        logger.info(f"- 25-percentil: {processed_snow.quantile(0.25):.1f} cm")
+        logger.info(f"- 75-percentil: {processed_snow.quantile(0.75):.1f} cm")
 
         # Beregn snødybdeendringer med SnowDepthConfig parametre
         df["snow_depth_change"] = (
@@ -1311,68 +1327,80 @@ def plot_critical_periods_overview(df: pd.DataFrame, periods_df: pd.DataFrame):
     Lager en oversiktsgraf som viser score-spennet for kun de mest kritiske periodene
     """
     try:
-        # Sjekk om vi har data
-        if df.empty or periods_df.empty:
-            st.warning("Ingen data tilgjengelig for visning")
+        if periods_df.empty:
             return None
 
-        # Hent gjeldende parametre fra session state
-        params = st.session_state.get("params", DEFAULT_PARAMS)
+        # Filtrer ut bare de mest kritiske periodene
+        critical_threshold = 0.85  # Høy terskel for å få ca. 14 perioder
+        min_duration = 3  # Timer
 
-        # Beregn kritisk grense
-        critical_threshold = 0.7  # Senker grensen for å vise flere perioder
-
-        # Filtrer ut kritiske perioder
-        critical_periods = periods_df[
-            (periods_df["max_risk_score"] > critical_threshold)
-            & (periods_df["duration"] >= params["min_duration"])
-        ].copy()
+        # Filtrer og sorter periodene
+        critical_periods = (
+            periods_df[
+                (periods_df["max_risk_score"] > critical_threshold)
+                & (periods_df["duration"] >= min_duration)
+            ]
+            .sort_values("max_risk_score", ascending=False)
+            .head(14)
+        )
 
         if critical_periods.empty:
-            st.info("Ingen kritiske perioder funnet med gjeldende kriterier")
             return None
 
-        # Opprett figur med forbedret layout
+        # Opprett figur
         fig = go.Figure()
 
-        # Legg til hver kritisk periode som en vertikal linje med bedre synlighet
+        # Legg til hver kritisk periode som en vertikal linje
         for _, period in critical_periods.iterrows():
             period_data = df[
                 (df.index >= period["start_time"]) & (df.index <= period["end_time"])
             ]
 
             if not period_data.empty:
-                # Beregn statistikk for perioden
+                # Beregn statistikk
                 min_score = period_data["risk_score"].min() * 100
                 max_score = period["max_risk_score"] * 100
-                avg_wind = period_data.get("sustained_wind", pd.Series()).mean()
+                avg_wind = period_data["wind_speed"].mean()
+                max_wind = period_data["wind_speed"].max()
                 min_temp = period_data["air_temperature"].min()
 
-                # Legg til vertikal linje med mer informativ hover
+                # Legg til vertikal linje
                 fig.add_trace(
                     go.Scatter(
                         x=[period["start_time"], period["start_time"]],
                         y=[min_score, max_score],
                         mode="lines",
-                        line={"color": "red", "width": 3},
-                        name=f"Periode {int(period.get('period_id', 0))}",
+                        line=dict(color="red", width=3),
+                        name=f"Kritisk periode {int(period['period_id'])}",
                         hovertemplate=(
-                            "<b>Kritisk periode</b>"
-                            "<br>Start: {period['start_time'].strftime('%d-%m-%Y %H:%M')}<br>"
-                            + f"Varighet: {period['duration']} timer<br>"
-                            + f"Maksimal risikoscore: {period['max_risk_score']:.2f}<br>"
-                            + f"Gjennomsnittlig vindstyrke: {avg_wind:.2f} m/s<br>"
-                            + f"Minimal temperatur: {min_temp:.2f}°C"
+                            "<b>Kritisk periode</b><br>"
+                            + f"Start: {period['start_time'].strftime('%d-%m-%Y %H:%M')}<br>"
+                            + f"Varighet: {period['duration']:.1f} timer<br>"
+                            + f"Risiko: {max_score:.1f}%<br>"
+                            + f"Vind: {avg_wind:.1f} m/s (maks {max_wind:.1f})<br>"
+                            + f"Min temp: {min_temp:.1f}°C"
                         ),
-                    ),
-                    row=1,
-                    col=1,
+                    )
                 )
+
+        # Oppdater layout
+        fig.update_layout(
+            title="Oversikt over mest kritiske perioder",
+            height=300,
+            showlegend=False,
+            yaxis_title="Risikoscore (%)",
+            xaxis_title="",
+            hovermode="x unified",
+            margin=dict(t=30, b=20, l=50, r=20),
+            plot_bgcolor="white",
+            yaxis=dict(gridcolor="lightgray", range=[0, 100], tickformat=",d"),
+            xaxis=dict(gridcolor="lightgray", tickformat="%d-%m-%Y\n%H:%M"),
+        )
 
         return fig
 
     except Exception as e:
-        logger.error(f"Feil i plot_critical_periods_overview: {str(e)}", exc_info=True)
+        logger.error(f"Feil i plot_critical_periods_overview: {str(e)}")
         return None
 
 
@@ -1618,3 +1646,23 @@ def generate_recommendations(
         recommendations.append("Vær oppmerksom på værforholdene")
 
     return list(set(recommendations))  # Fjern duplikater
+
+if __name__ == "__main__":
+    # Legg til prosjektets rotmappe i Python path
+    import sys
+    from pathlib import Path
+    project_root = Path(__file__).parent.parent.parent.parent
+    sys.path.append(str(project_root))
+
+    try:
+        logger.info("Starter test av API-kall...")
+        test_data = fetch_frost_data("2024-01-01", "2024-01-02")
+        if test_data is not None:
+            logger.info("API-kall vellykket!")
+            logger.info(f"Antall rader: {len(test_data)}")
+            logger.info("Første rad med data:")
+            logger.info(test_data.iloc[0])
+        else:
+            logger.error("API-kall feilet - ingen data mottatt")
+    except Exception as e:
+        logger.error(f"Feil under testing: {str(e)}")
