@@ -71,3 +71,5 @@ version_1.1.0/
 # Ignorer store filer i .venv
 .venv/share/jupyter/
 .venv/bin/ruff
+.venv/
+.venv/
