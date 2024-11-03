@@ -126,7 +126,7 @@ class SnowDepthConfig:
 
         data = df.copy()
         invalid_mask = (data < cls.MIN_VALID_DEPTH) | (data > cls.MAX_VALID_DEPTH)
-        invalid_count = invalid_mask.sum()
+        invalid_count = invalid_mask.sum().sum()
 
         if invalid_count > 0:
             logger.warning(
@@ -166,7 +166,7 @@ class SnowDepthConfig:
 
         data = df.copy()
         invalid_mask = (data < cls.MIN_VALID_DEPTH) | (data > cls.MAX_VALID_DEPTH)
-        invalid_count = invalid_mask.sum()
+        invalid_count = invalid_mask.sum().sum()
 
         if invalid_count > 0:
             logger.warning(
