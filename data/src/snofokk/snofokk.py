@@ -20,10 +20,11 @@ import streamlit as st
 from pandas import DataFrame
 from plotly.subplots import make_subplots
 
-from data.src.snofokk.config import DEFAULT_PARAMS, FROST_CLIENT_ID, PARAMETER_BOUNDS
+from data.src.snofokk.config import (DEFAULT_PARAMS, FROST_CLIENT_ID)
 # Lokale imports
-from data.src.snofokk.snow_constants import (SnowDepthConfig, enforce_snow_processing,
-                             get_risk_level)
+from data.src.snofokk.snow_constants import (SnowDepthConfig,
+                                             enforce_snow_processing,
+                                             get_risk_level)
 
 # Logging oppsett
 logging.basicConfig(level=logging.INFO)
@@ -341,23 +342,24 @@ def calculate_snow_drift_risk(
     try:
         df = df.copy()
 
+        # Innledende analyse
         snow_df = df["surface_snow_thickness"]
         logger.info("=== Snødybdeanalyse ===")
         logger.info(f"Målinger: {len(snow_df)} totalt, {snow_df.count()} gyldige")
         logger.info(
-            f"Tidsperiode: {snow_df.index[0].strftime('%Y-%m-%d')} "
-            f"til {snow_df.index[-1].strftime('%Y-%m-%d')}"
+            f"Tidsperiode: {snow_df.index[0].strftime('%Y-%m-%d')} til {snow_df.index[-1].strftime('%Y-%m-%d')}"
         )
         logger.info(f"Første gyldige måling: {snow_df.dropna().iloc[0]:.1f} cm")
         logger.info(f"Siste gyldige måling: {snow_df.dropna().iloc[-1]:.1f} cm")
 
+        # Prosesser snødybdedata
         df["surface_snow_thickness"] = SnowDepthConfig.process_snow_depth(snow_df)
 
+        # Detaljert statistikk etter prosessering
         processed_snow = df["surface_snow_thickness"]
         logger.info("=== Etter prosessering ===")
         logger.info(
-            f"Gyldige målinger: {processed_snow.count()} "
-            f"({processed_snow.count()/len(processed_snow)*100:.1f}%)"
+            f"Gyldige målinger: {processed_snow.count()} ({processed_snow.count()/len(processed_snow)*100:.1f}%)"
         )
         logger.info(
             f"Snødybdeområde: {processed_snow.min():.1f} - {processed_snow.max():.1f} cm"
@@ -369,7 +371,7 @@ def calculate_snow_drift_risk(
         logger.info(f"- 25-percentil: {processed_snow.quantile(0.25):.1f} cm")
         logger.info(f"- 75-percentil: {processed_snow.quantile(0.75):.1f} cm")
 
-        # Beregn snødybdeendringer med SnowDepthConfig parametre
+        # Beregn snødybdeendringer med forbedret metode
         df["snow_depth_change"] = (
             df["surface_snow_thickness"]
             .diff()
@@ -378,90 +380,97 @@ def calculate_snow_drift_risk(
                 min_periods=SnowDepthConfig.MIN_PERIODS,
             )
             .mean()
+            .clip(SnowDepthConfig.MIN_CHANGE, SnowDepthConfig.MAX_CHANGE)
         )
 
-        # Begrens endringer til konfigurerte verdier
-        df["snow_depth_change"] = df["snow_depth_change"].clip(
-            SnowDepthConfig.MIN_CHANGE, SnowDepthConfig.MAX_CHANGE
-        )
-
-        # Beregn glidende gjennomsnitt for vind
+        # Forbedret vindanalyse
         df["sustained_wind"] = (
             df["wind_speed"]
-            .rolling(
-                window=SnowDepthConfig.WINDOW_SIZE,
-                min_periods=SnowDepthConfig.MIN_PERIODS,
-            )
+            .rolling(window=3, min_periods=1)
             .mean()
-            .fillna(0)
+            .fillna(method="ffill", limit=2)
         )
 
-        # Beregn vindretningsendringer
-        df["wind_dir_change"] = df["wind_from_direction"].diff().abs().fillna(0)
+        # Beregn vindstabilitet
+        df["wind_stability"] = (
+            df["wind_speed"].rolling(window=6, min_periods=3).std().fillna(0)
+        )
+
+        # Forbedret vindretningsanalyse
+        df["wind_dir_change"] = df["wind_from_direction"].diff().abs()
         df.loc[df["wind_dir_change"] > 180, "wind_dir_change"] = (
             360 - df.loc[df["wind_dir_change"] > 180, "wind_dir_change"]
         )
 
+        # Beregn risikoscore med forbedret logikk
         def calculate_risk_score(row):
             score = 0
 
-            # Vindrisiko med validerte parametre
+            # Vindrisiko med stabilitetsvurdering
             if row["wind_speed"] >= params["wind_strong"]:
-                score += 40 * params["wind_weight"]
+                wind_factor = 40
+                # Øk risiko ved ustabil vind
+                if row["wind_stability"] > 3:
+                    wind_factor *= 1.2
+                score += wind_factor * params["wind_weight"]
             elif row["wind_speed"] >= params["wind_moderate"]:
                 score += 20 * params["wind_weight"]
 
+            # Vindkast-risiko
             if (
                 "max(wind_speed_of_gust PT1H)" in row
                 and row["max(wind_speed_of_gust PT1H)"] >= params["wind_gust"]
             ):
                 score += 10 * params["wind_weight"]
 
-            # Vindretningsrisiko
-            if abs(row["wind_dir_change"]) >= params["wind_dir_change"]:
-                score += 10 * params["wind_weight"]
+            # Vindretningsrisiko med forbedret vurdering
+            if row["wind_dir_change"] >= params["wind_dir_change"]:
+                dir_factor = min(
+                    20, row["wind_dir_change"] / 9
+                )  # Maks 20 poeng ved 180° endring
+                score += dir_factor * params["wind_weight"]
 
-            # Temperaturrisiko
+            # Temperaturrisiko med gradert vurdering
             if row["air_temperature"] <= params["temp_cold"]:
                 score += 20 * params["temp_weight"]
             elif row["air_temperature"] <= params["temp_cool"]:
-                score += 10 * params["temp_weight"]
+                temp_factor = (params["temp_cool"] - row["air_temperature"]) / (
+                    params["temp_cool"] - params["temp_cold"]
+                )
+                score += 10 * temp_factor * params["temp_weight"]
 
-            # Snørisiko med validerte endringer
+            # Snørisiko med forbedret vurdering
             snow_change = abs(row["snow_depth_change"])
             if snow_change >= params["snow_high"]:
                 score += 40 * params["snow_weight"]
             elif snow_change >= params["snow_moderate"]:
-                score += 20 * params["snow_weight"]
+                snow_factor = (snow_change - params["snow_moderate"]) / (
+                    params["snow_high"] - params["snow_moderate"]
+                )
+                score += (20 + 20 * snow_factor) * params["snow_weight"]
             elif snow_change >= params["snow_low"]:
                 score += 10 * params["snow_weight"]
 
-            return min(100, score)
+            return min(100, score) / 100  # Normaliser til 0-1
 
         # Beregn total risiko
         df["risk_score"] = df.apply(calculate_risk_score, axis=1)
         df["risk_level"] = pd.cut(
             df["risk_score"],
-            bins=[-np.inf, 30, 50, 70, np.inf],
+            bins=[-np.inf, 0.3, 0.5, 0.7, np.inf],
             labels=["Lav", "Moderat", "Høy", "Kritisk"],
         )
 
-        # Identifiser perioder med validert min_duration
-        min_duration = np.clip(
-            params.get("min_duration", DEFAULT_PARAMS["min_duration"]),
-            PARAMETER_BOUNDS["min_duration"][0],
-            PARAMETER_BOUNDS["min_duration"][1],
-        )
-
-        df["is_risk"] = df["risk_score"] > params.get(
-            "min_change", DEFAULT_PARAMS["min_change"]
-        )
+        # Identifiser perioder
+        df["is_risk"] = df["risk_score"] > params.get("risk_threshold", 0.3)
         df["period_start"] = df["is_risk"].ne(df["is_risk"].shift()).cumsum()
         df["period_id"] = np.where(df["is_risk"], df["period_start"], np.nan)
         df = df.drop(["is_risk", "period_start"], axis=1)
 
-        # Analyser risikoperioder
-        periods_df = identify_risk_periods(df, min_duration=min_duration)
+        # Analyser perioder
+        periods_df = identify_risk_periods(
+            df, min_duration=params.get("min_duration", 3)
+        )
 
         return df, periods_df
 
@@ -520,14 +529,40 @@ def merge_nearby_periods(periods_df: pd.DataFrame, max_gap: int = 2) -> pd.DataF
         # Legg til siste periode
         merged_periods.append(current_period)
 
-        # Konverter til DataFrame og oppdater periode-IDer
-        result_df = pd.DataFrame(merged_periods)
-        result_df["period_id"] = range(len(result_df))
+        # Konverter tilbake til DataFrame og oppdater periode-IDer
+        merged_df = pd.DataFrame(merged_periods)
+        merged_df["period_id"] = range(len(merged_df))
 
-        return result_df
+        # Beregn nye statistikker for de sammenslåtte periodene
+        if not merged_df.empty:
+            # Beregn intensitet basert på risiko og varighet
+            merged_df["intensity"] = merged_df["max_risk_score"] * np.log1p(
+                merged_df["duration"]
+            )
+
+            # Beregn alvorlighetsgrad basert på flere faktorer
+            merged_df["severity_score"] = (
+                merged_df["intensity"] * 0.4  # Vekt for intensitet
+                + (merged_df["max_wind"] / merged_df["max_wind"].max())
+                * 0.3  # Vekt for vind
+                + (np.abs(merged_df["min_temp"]) / np.abs(merged_df["min_temp"].min()))
+                * 0.3  # Vekt for temperatur
+            )
+
+            # Kategoriser alvorlighetsgrad
+            merged_df["severity"] = pd.qcut(
+                merged_df["severity_score"],
+                q=3,
+                labels=["Moderat", "Alvorlig", "Ekstrem"],
+            )
+
+        logger.info(
+            f"Sammenslåing fullført: {len(periods_df)} perioder redusert til {len(merged_df)}"
+        )
+        return merged_df
 
     except Exception as e:
-        logger.error(f"Feil ved sammenslåing av perioder: {str(e)}")
+        logger.error(f"Feil i merge_critical_periods: {str(e)}", exc_info=True)
         return periods_df
 
 
@@ -1647,10 +1682,12 @@ def generate_recommendations(
 
     return list(set(recommendations))  # Fjern duplikater
 
+
 if __name__ == "__main__":
     # Legg til prosjektets rotmappe i Python path
     import sys
     from pathlib import Path
+
     project_root = Path(__file__).parent.parent.parent.parent
     sys.path.append(str(project_root))
 
