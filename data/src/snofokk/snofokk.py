@@ -378,7 +378,7 @@ def calculate_snow_drift_risk(
             df["wind_speed"]
             .rolling(window=3, min_periods=1)
             .mean()
-            .fillna(method="ffill", limit=2)
+            .ffill(limit=2)
         )
 
         # Beregn vindstabilitet
