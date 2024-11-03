@@ -241,90 +241,80 @@ def identify_risk_periods(df: pd.DataFrame, min_duration: int = 3) -> pd.DataFra
         DataFrame med identifiserte risikoperioder og deres egenskaper
     """
     try:
-        periods = []
-
-        # Sjekk om vi har nødvendige kolonner
-        required_cols = ["period_id", "risk_score", "risk_level"]
-        if not all(col in df.columns for col in required_cols):
-            logger.error("Mangler påkrevde kolonner for periodeidentifisering")
+        if df.empty or "period_id" not in df.columns:
+            logger.warning("Tomt datasett eller manglende period_id")
             return pd.DataFrame()
 
-        for period_id in df["period_id"].dropna().unique():
-            period_data = df[df["period_id"] == period_id].copy()
+        periods = []
+        unique_periods = df["period_id"].dropna().unique()
 
+        for period_id in unique_periods:
+            period_data = df[df["period_id"] == period_id].copy()
+            
             if len(period_data) >= min_duration:
-                # Basisinformasjon om perioden
                 period_info = {
                     "start_time": period_data.index[0],
                     "end_time": period_data.index[-1],
                     "duration": len(period_data),
-                    "risk_level": period_data["risk_level"].mode()[0],
-                    "period_id": period_id,
-                    # Risikovurdering
                     "max_risk_score": period_data["risk_score"].max(),
                     "avg_risk_score": period_data["risk_score"].mean(),
-                    "risk_hours": len(period_data[period_data["risk_score"] > 0.65]),
+                    "period_id": period_id
                 }
 
-                # Vindanalyse
+                # Utvidet vindanalyse
                 if "wind_speed" in period_data.columns:
-                    period_info.update(
-                        {
-                            "max_wind": period_data["wind_speed"].max(),
-                            "avg_wind": period_data["wind_speed"].mean(),
-                            "wind_hours_above_threshold": len(
-                                period_data[period_data["wind_speed"] > 10]
-                            ),
-                        }
-                    )
+                    wind_stats = {
+                        "sustained_wind_max": period_data["wind_speed"].max(),
+                        "sustained_wind_avg": period_data["wind_speed"].mean(),
+                        "wind_stability": period_data["wind_speed"].std(),
+                        "strong_wind_hours": len(period_data[period_data["wind_speed"] > 10.0]),
+                    }
+                    
+                    # Beregn vindstøt-faktor
+                    if "max(wind_speed_of_gust PT1H)" in period_data.columns:
+                        gust_factor = (
+                            period_data["max(wind_speed_of_gust PT1H)"] / 
+                            period_data["wind_speed"]
+                        ).mean()
+                        wind_stats["gust_factor"] = gust_factor
 
-                # Vindkast analyse
-                if "max(wind_speed_of_gust PT1H)" in period_data.columns:
-                    period_info["max_gust"] = period_data[
-                        "max(wind_speed_of_gust PT1H)"
-                    ].max()
+                    # Vindretningsanalyse
+                    if "wind_from_direction" in period_data.columns:
+                        dirs = period_data["wind_from_direction"].dropna()
+                        if not dirs.empty:
+                            # Beregn vindretningsstabilitet
+                            dir_changes = np.abs(dirs.diff()).fillna(0)
+                            wind_stats.update({
+                                "dir_change_max": dir_changes.max(),
+                                "dir_change_avg": dir_changes.mean(),
+                                "dir_stability": "stabil" if dir_changes.mean() < 30 
+                                              else "moderat" if dir_changes.mean() < 60 
+                                              else "ustabil"
+                            })
+
+                    period_info.update(wind_stats)
 
                 # Temperaturanalyse
                 if "air_temperature" in period_data.columns:
-                    period_info.update(
-                        {
-                            "min_temp": period_data["air_temperature"].min(),
-                            "avg_temp": period_data["air_temperature"].mean(),
-                            "cold_hours": len(
-                                period_data[period_data["air_temperature"] < 0]
-                            ),
-                        }
-                    )
+                    period_info.update({
+                        "min_temp": period_data["air_temperature"].min(),
+                        "avg_temp": period_data["air_temperature"].mean(),
+                        "cold_hours": len(period_data[period_data["air_temperature"] < 0])
+                    })
 
                 # Snøanalyse
                 if "snow_depth_change" in period_data.columns:
                     abs_change = period_data["snow_depth_change"].abs()
-                    period_info.update(
-                        {
-                            "max_snow_change": abs_change.max(),
-                            "total_snow_change": abs_change.sum(),
-                            "significant_changes": len(period_data[abs_change > 0.5]),
-                        }
-                    )
+                    period_info.update({
+                        "max_snow_change": abs_change.max(),
+                        "total_snow_change": abs_change.sum(),
+                        "significant_changes": len(period_data[abs_change > 0.5])
+                    })
 
                 # Nedbørsanalyse
                 if "sum(precipitation_amount PT1H)" in period_data.columns:
-                    period_info["total_precip"] = period_data[
-                        "sum(precipitation_amount PT1H)"
-                    ].sum()
-                    period_info["precip_hours"] = len(
-                        period_data[period_data["sum(precipitation_amount PT1H)"] > 0]
-                    )
-
-                # Vindretningsanalyse
-                if "wind_from_direction" in period_data.columns:
-                    wind_dirs = period_data["wind_from_direction"].dropna()
-                    if not wind_dirs.empty:
-                        rad = np.deg2rad(wind_dirs)
-                        avg_sin = np.mean(np.sin(rad))
-                        avg_cos = np.mean(np.cos(rad))
-                        avg_dir = np.rad2deg(np.arctan2(avg_sin, avg_cos)) % 360
-                        period_info["wind_direction"] = avg_dir
+                    period_info["total_precip"] = period_data["sum(precipitation_amount PT1H)"].sum()
+                    period_info["precip_hours"] = len(period_data[period_data["sum(precipitation_amount PT1H)"] > 0])
 
                 periods.append(period_info)
 
