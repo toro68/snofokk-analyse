@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from functools import lru_cache
-from typing import Any
+from typing import Any, List, Optional, Dict
 
 # Tredjeparts biblioteker
 import pandas as pd
@@ -699,3 +699,139 @@ def safe_dataframe_operations(
         error_msg = f"Kritisk feil i safe_dataframe_operations: {str(e)}"
         logger.error(error_msg)
         return pd.DataFrame()
+
+
+def validate_dataframe(df: pd.DataFrame, required_columns: List[str]) -> tuple[bool, str]:
+    """
+    Validerer at et DataFrame har påkrevde kolonner og data.
+    
+    Args:
+        df: DataFrame som skal valideres
+        required_columns: Liste med påkrevde kolonnenavn
+        
+    Returns:
+        tuple[bool, str]: (suksess, feilmelding)
+    """
+    try:
+        # Sjekk for None input
+        if df is None:
+            return False, "Ugyldig DataFrame: None"
+            
+        # Sjekk for tom kolonneliste
+        if not required_columns:
+            return False, "Ingen kolonner spesifisert for validering"
+            
+        # Sjekk for tomt DataFrame
+        if df.empty:
+            return False, "DataFrame er tomt"
+            
+        # Sjekk for manglende kolonner
+        missing_cols = [col for col in required_columns if col not in df.columns]
+        if missing_cols:
+            return False, f"Mangler påkrevde kolonner: {', '.join(missing_cols)}"
+            
+        # Sjekk for null-verdier og logg advarsler
+        null_counts = df[required_columns].isnull().sum()
+        if null_counts.any():
+            null_info = [f"{col}: {count}" for col, count in null_counts.items() if count > 0]
+            logger.warning(f"Null-verdier funnet: {', '.join(null_info)}")
+            
+        return True, ""
+        
+    except Exception as e:
+        logger.error(f"Feil i validate_dataframe: {str(e)}")
+        return False, f"Valideringsfeil: {str(e)}"
+
+
+def clean_dataframe(df: pd.DataFrame, numeric_columns: Optional[List[str]] = None) -> pd.DataFrame:
+    """
+    Rydder og validerer data i et DataFrame.
+    
+    Args:
+        df: DataFrame som skal ryddes
+        numeric_columns: Valgfri liste med kolonner som skal være numeriske
+        
+    Returns:
+        pd.DataFrame: Renset DataFrame
+    """
+    try:
+        df_clean = df.copy()
+        
+        # Fjern duplikate rader
+        initial_rows = len(df_clean)
+        df_clean = df_clean.drop_duplicates()
+        if len(df_clean) < initial_rows:
+            logger.info(f"Fjernet {initial_rows - len(df_clean)} duplikate rader")
+            
+        # Konverter numeriske kolonner
+        if numeric_columns:
+            for col in numeric_columns:
+                if col in df_clean.columns:
+                    # Spesialhåndtering for snødybde
+                    if col == 'snow_depth':
+                        # Konverter til numerisk først
+                        df_clean[col] = pd.to_numeric(df_clean[col], errors='coerce')
+                        # Behold -1.0 (bar bakke), men erstatt andre negative verdier med NaN
+                        mask = (df_clean[col] < 0) & (df_clean[col] != -1.0)
+                        df_clean.loc[mask, col] = float('nan')
+                    else:
+                        df_clean[col] = pd.to_numeric(df_clean[col], errors='coerce')
+                    
+                    # Konverter til float64
+                    df_clean[col] = df_clean[col].astype('float64')
+                    
+        # Fjern rader med alle null-verdier
+        df_clean = df_clean.dropna(how='all')
+        
+        return df_clean
+        
+    except Exception as e:
+        logger.error(f"Feil i clean_dataframe: {str(e)}")
+        return df
+
+def get_period_summary(df: pd.DataFrame, period_start: datetime, period_end: datetime) -> Dict[str, Any]:
+    """
+    Genererer en oppsummering av data for en gitt tidsperiode.
+    
+    Args:
+        df: DataFrame med data
+        period_start: Startdato for perioden
+        period_end: Sluttdato for perioden
+        
+    Returns:
+        Dict med oppsummeringsstatistikk
+    """
+    try:
+        # Filtrer data for perioden
+        mask = (df.index >= period_start) & (df.index <= period_end)
+        period_data = df[mask].copy()
+        
+        if period_data.empty:
+            return {"error": "Ingen data funnet for perioden"}
+            
+        # Beregn statistikk
+        stats = {
+            "start_time": period_start,
+            "end_time": period_end,
+            "duration_hours": (period_end - period_start).total_seconds() / 3600,
+            "total_rows": len(period_data)
+        }
+        
+        # Legg til statistikk for numeriske kolonner
+        numeric_cols = period_data.select_dtypes(include=['float64', 'int64']).columns
+        for col in numeric_cols:
+            stats[f"{col}_stats"] = {
+                "min": float(period_data[col].min()),
+                "max": float(period_data[col].max()),
+                "mean": float(period_data[col].mean()),
+                "std": float(period_data[col].std())
+            }
+            
+        return stats
+        
+    except Exception as e:
+        logger.error(f"Feil i get_period_summary: {str(e)}")
+        return {"error": str(e)}
+
+if __name__ == "__main__":
+    logger.info("Dette er db_utils modulen. Kjør tester med pytest.")
