@@ -730,8 +730,7 @@ def show_date_selector():
 # Oppdater main() funksjonen
 def main():
     logger.info("Starter applikasjon")
-    st.set_page_config(page_title="Snøfokk-analyse", layout="wide")
-
+    
     try:
         # Initialiser database med debugging
         logger.debug("Initialiserer database...")
