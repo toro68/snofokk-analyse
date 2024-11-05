@@ -1,10 +1,14 @@
 import streamlit as st
 import sys
 import os
+from pathlib import Path
 
 # Legg til prosjektets rotkatalog i Python-stien
-project_root = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, project_root)
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root))
+
+# Sett arbeidskatalog til prosjektets rot
+os.chdir(project_root)
 
 # Importer applikasjonen
 from data.src.snofokk.app import main
