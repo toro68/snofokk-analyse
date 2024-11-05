@@ -20,7 +20,7 @@ import streamlit as st
 from pandas import DataFrame
 from plotly.subplots import make_subplots
 
-from data.src.snofokk.config import (DEFAULT_PARAMS, FROST_CLIENT_ID)
+from .config import (DEFAULT_PARAMS, FROST_CLIENT_ID)
 # Lokale imports
 from data.src.snofokk.snow_constants import (SnowDepthConfig,
                                              enforce_snow_processing,
@@ -33,28 +33,30 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 def enable_detailed_logging():
-    """
-    Konfigurerer og aktiverer detaljert logging
-    
-    Returns:
-        Logger: Konfigurert logger-instans
-    """
+    """Konfigurerer detaljert logging for applikasjonen"""
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
     
-    # Opprett en formatter for loggmeldinger
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
+    # Opprett en filhåndterer
+    file_handler = logging.FileHandler('snofokk.log')
+    file_handler.setLevel(logging.INFO)
     
-    # Legg til console handler hvis det ikke allerede finnes
-    if not logger.handlers:
-        console_handler = logging.StreamHandler()
-        console_handler.setFormatter(formatter)
-        logger.addHandler(console_handler)
+    # Opprett en konsolhåndterer
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    
+    # Definer formatet
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+    console_handler.setFormatter(formatter)
+    
+    # Legg til håndtererne til loggeren
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
     
     return logger
 
+# Initialiser logger
 logger = enable_detailed_logging()
 
 
