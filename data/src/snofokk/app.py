@@ -3,6 +3,7 @@ import sys
 import logging
 import logging.handlers
 from datetime import datetime
+from typing import Dict, Any
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -16,6 +17,7 @@ from .db_utils import (delete_settings, get_saved_settings, init_db,
                        save_settings)
 # Lokale imports
 from .ml_utils import SnowDriftOptimizer
+from .ml_evaluation import MLEvaluator
 
 # Sett opp logging
 logging.basicConfig(
@@ -560,7 +562,7 @@ def show_ml_optimization():
         st.subheader("Optimaliseringsinnstillinger")
         target = st.selectbox(
             "Optimaliseringsmål",
-            ["accuracy", "precision", "recall", "f1"],
+            ["r2_score", "mean_squared_error", "mean_absolute_error"],
             help="Velg hvilken metrikk som skal optimaliseres",
         )
 
@@ -568,32 +570,144 @@ def show_ml_optimization():
             with st.spinner("Optimaliserer parametre..."):
                 results = optimizer.optimize_parameters(df, target)
 
-                if results:
-                    st.success("Optimalisering fullført!")
-                    st.write("Beste parametre funnet:")
-                    st.json(results["best_params"])
-
-                    # Vis sammenligning
-                    st.subheader("Sammenligning med nåværende parametre")
-                    col1, col2 = st.columns(2)
+                if results and results.get('status') == 'success':
+                    # Vis sammendrag av forbedringer
+                    st.write("### Modellytelse")
+                    col1, col2, col3 = st.columns(3)
                     with col1:
-                        st.write("Nåværende parametre:")
-                        st.json(current_params)
+                        st.metric("Original score", f"{results['current_score']:.4f}")
                     with col2:
-                        st.write("Optimaliserte parametre:")
-                        st.json(results["best_params"])
+                        st.metric("Optimalisert score", f"{results['best_score']:.4f}")
+                    with col3:
+                        forbedring = ((results['best_score'] - results['current_score']) / abs(results['current_score'])) * 100
+                        st.metric("Forbedring", f"{forbedring:.1f}%")
+                    
+                    # Vis beste parametre i en pen tabell
+                    st.write("### Beste Parametre")
+                    param_df = pd.DataFrame({
+                        'Parameter': list(results['best_params'].keys()),
+                        'Verdi': [str(v) for v in results['best_params'].values()],
+                        'Beskrivelse': [
+                            'Antall beslutningstrær',
+                            'Maksimal dybde for hvert tre',
+                            'Minimum antall samples for split',
+                            'Minimum antall samples i blad',
+                            'Feature-utvalgsmetode'
+                        ]
+                    })
+                    st.dataframe(
+                        param_df,
+                        column_config={
+                            "Parameter": "Parameter",
+                            "Verdi": "Optimalisert Verdi",
+                            "Beskrivelse": "Forklaring"
+                        },
+                        hide_index=True
+                    )
+                    
+                    # Vis optimaliseringshistorikk
+                    st.write("### Optimaliseringshistorikk")
+                    if 'optimization_history' in results:
+                        history_df = pd.DataFrame(results['optimization_history'])
+                        fig = go.Figure()
+                        fig.add_trace(go.Scatter(
+                            y=-history_df['value'],
+                            mode='lines+markers',
+                            name='Score'
+                        ))
+                        fig.update_layout(
+                            title="Forbedring over tid",
+                            yaxis_title="Score",
+                            xaxis_title="Forsøk nr",
+                            showlegend=False
+                        )
+                        st.plotly_chart(fig)
 
                     # Tilby mulighet til å bruke de nye parametrene
                     if st.button("Bruk optimaliserte parametre"):
                         st.session_state["params"] = results["best_params"]
                         st.rerun()
+
+                    # Legg til parametereffekt-analyse
+                    st.write("### Parametereffekt-analyse")
+                    
+                    # Opprett MLEvaluator og analyser
+                    evaluator = MLEvaluator()
+                    impact_analysis = evaluator.evaluate_parameter_impact(
+                        df, 
+                        original_params=optimizer.initial_params,
+                        optimized_params=results['best_params']
+                    )
+                    
+                    if impact_analysis:
+                        # Vis anbefalinger
+                        if impact_analysis.get('recommendations'):
+                            st.write("#### Anbefalinger for parameterinnstillinger")
+                            for rec in impact_analysis['recommendations']:
+                                st.info(rec['message'])
+                        
+                        # Vis parameterendringer
+                        if impact_analysis.get('risk_scores'):
+                            st.write("#### Effekt på risikoscore")
+                            scores = impact_analysis['risk_scores']
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.metric("Original gjennomsnitt", f"{scores['original']['mean']:.2f}")
+                                st.metric("Original maks", f"{scores['original']['max']:.2f}")
+                            with col2:
+                                st.metric("Optimalisert gjennomsnitt", f"{scores['optimized']['mean']:.2f}")
+                                st.metric("Optimalisert maks", f"{scores['optimized']['max']:.2f}")
+
+                    # Vis ML-parametre
+                    st.write("### ML-modellparametre")
+                    ml_param_df = pd.DataFrame({
+                        'Parameter': list(results['best_params'].keys()),
+                        'Verdi': [str(v) for v in results['best_params'].values()],
+                        'Beskrivelse': [
+                            'Antall beslutningstrær',
+                            'Maksimal dybde for hvert tre',
+                            'Minimum antall samples for split',
+                            'Minimum antall samples i blad',
+                            'Feature-utvalgsmetode'
+                        ]
+                    })
+                    st.dataframe(ml_param_df, hide_index=True)
+                    
+                    # Vis anbefalte snøfokk-parametre
+                    st.write("### Anbefalte snøfokk-parametre")
+                    if impact_analysis and impact_analysis.get('parameters'):
+                        params = impact_analysis['parameters']
+                        snofokk_param_df = pd.DataFrame({
+                            'Parameter': list(params['optimized'].keys()),
+                            'Original verdi': [params['original'][k] for k in params['optimized'].keys()],
+                            'Anbefalt verdi': [params['optimized'][k] for k in params['optimized'].keys()],
+                            'Beskrivelse': [
+                                'Grense for sterk vind (m/s)',
+                                'Grense for moderat vind (m/s)',
+                                'Grense for vindkast (m/s)',
+                                'Grense for vindretningsendring (grader)',
+                                'Vekting av vindfaktor',
+                                'Grense for kald temperatur (°C)',
+                                'Grense for kjølig temperatur (°C)',
+                                'Vekting av temperaturfaktor',
+                                'Grense for høy snøendring (cm)',
+                                'Grense for moderat snøendring (cm)',
+                                'Grense for lav snøendring (cm)',
+                                'Vekting av snøfaktor',
+                                'Minimum varighet (timer)',
+                                'Temperaturgrense (°C)',
+                                'Minimum snødybde (cm)',
+                                'Risikogrense'
+                            ]
+                        })
+                        st.dataframe(snofokk_param_df, hide_index=True)
+
                 else:
-                    st.error("Optimalisering feilet")
+                    st.error(f"Optimalisering feilet: {results.get('error', 'Ukjent feil')}")
 
     except Exception as e:
         logger.error(f"Feil i ML-optimalisering: {str(e)}", exc_info=True)
         st.error("En feil oppstod under optimalisering")
-
 
 def show_main_analysis():
     """Viser hovedanalysen"""
