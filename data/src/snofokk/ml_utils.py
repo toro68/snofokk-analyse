@@ -13,13 +13,16 @@ from sklearn.ensemble import (
     VotingRegressor,
 )
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from xgboost import XGBRegressor
 from joblib import dump, load
 
 # Lokale imports
 try:
+    from .snofokk import calculate_snow_drift_risk
     from .config import DEFAULT_PARAMS
 except ImportError:
+    from data.src.snofokk.snofokk import calculate_snow_drift_risk
     from data.src.snofokk.config import DEFAULT_PARAMS
 
 # Type aliases
@@ -93,85 +96,66 @@ class SnowDriftOptimizer:
         """Optimaliserer modellparametre"""
         logger.info("Starter parameteroptimalisering")
         try:
-            # Beregn risk_score med snøfokk-parametre hvis den ikke finnes
-            if 'risk_score' not in df.columns:
-                from .snofokk import calculate_snow_drift_risk
-                df, _ = calculate_snow_drift_risk(df, params=self.initial_params)
-            
-            X = self.prepare_features(df)
-            y = df['risk_score'].values
-            
-            # Tren modellen først med nåværende parametre
-            logger.info("Trener initial modell")
-            self.model.fit(X, y)
-            
-            # Beregn current_score med trent modell
-            if target == 'r2_score':
-                current_score = self.model.score(X, y)
-            elif target == 'mean_squared_error':
-                pred = self.model.predict(X)
-                current_score = -np.mean((y - pred) ** 2)
-            else:  # mean_absolute_error
-                pred = self.model.predict(X)
-                current_score = -np.mean(np.abs(y - pred))
-            
-            logger.info(f"Initial score: {-current_score}")
-            
+            # Beregn baseline risk_score med initielle parametre
+            df_baseline = df.copy()
+            df_baseline, _ = calculate_snow_drift_risk(df_baseline, params=self.initial_params)
+            baseline_risk = df_baseline['risk_score'].copy()
+
             def objective(trial):
+                # Optimaliser snøfokk-parametre
                 params = {
-                    'n_estimators': trial.suggest_int('n_estimators', 50, 300),
-                    'max_depth': trial.suggest_int('max_depth', 3, 20),
-                    'min_samples_split': trial.suggest_int('min_samples_split', 2, 10),
-                    'min_samples_leaf': trial.suggest_int('min_samples_leaf', 1, 5),
-                    'max_features': trial.suggest_categorical('max_features', ['sqrt', 'log2'])
+                    'wind_strong': trial.suggest_float('wind_strong', 10.0, 25.0),
+                    'wind_moderate': trial.suggest_float('wind_moderate', 5.0, 15.0),
+                    'wind_gust': trial.suggest_float('wind_gust', 10.0, 30.0),
+                    'wind_dir_change': trial.suggest_float('wind_dir_change', 0.0, 180.0),
+                    'wind_weight': trial.suggest_float('wind_weight', 0.0, 2.0),
+                    'temp_cold': trial.suggest_float('temp_cold', -20.0, -5.0),
+                    'temp_cool': trial.suggest_float('temp_cool', -5.0, 2.0),
+                    'temp_weight': trial.suggest_float('temp_weight', 0.0, 2.0),
+                    'snow_high': trial.suggest_float('snow_high', 2.0, 10.0),
+                    'snow_moderate': trial.suggest_float('snow_moderate', 1.0, 5.0),
+                    'snow_low': trial.suggest_float('snow_low', 0.0, 2.0),
+                    'snow_weight': trial.suggest_float('snow_weight', 0.0, 2.0)
                 }
                 
-                model = RandomForestRegressor(**params, random_state=42)
-                model.fit(X, y)
+                # Beregn risk_score med de foreslåtte parametrene
+                df_temp = df.copy()
+                df_temp, _ = calculate_snow_drift_risk(df_temp, params=params)
                 
+                # Evaluer resultatet mot baseline
                 if target == 'r2_score':
-                    score = model.score(X, y)
+                    score = r2_score(baseline_risk, df_temp['risk_score'])
                 elif target == 'mean_squared_error':
-                    pred = model.predict(X)
-                    score = -np.mean((y - pred) ** 2)
+                    score = -mean_squared_error(baseline_risk, df_temp['risk_score'])
                 else:  # mean_absolute_error
-                    pred = model.predict(X)
-                    score = -np.mean(np.abs(y - pred))
+                    score = -mean_absolute_error(baseline_risk, df_temp['risk_score'])
                     
                 return -score  # Negativ fordi Optuna minimerer
-                
+
+            # Kjør optimalisering
             study = optuna.create_study(direction='minimize')
             study.optimize(objective, n_trials=50)
+
+            # Hent beste parametre og beregn endelig score
+            best_params = study.best_params
+            df_best = df.copy()
+            df_best, _ = calculate_snow_drift_risk(df_best, params=best_params)
             
-            if study.best_params and study.best_value is not None:
-                self.model = RandomForestRegressor(**study.best_params, random_state=42)
-                self.model.fit(X, y)
-                
-                # Konverter numpy typer til Python native typer
-                best_params = {
-                    k: v.item() if hasattr(v, 'item') else v 
-                    for k, v in study.best_params.items()
-                }
-                
-                return {
-                    'status': 'success',
-                    'best_params': best_params,  # Bruk konverterte parametre
-                    'best_score': float(-study.best_value),  # Konverter til float
-                    'current_score': float(-current_score),  # Konverter til float
-                    'optimization_history': [
-                        {k: v.item() if hasattr(v, 'item') else v for k, v in trial.items()}
-                        for trial in study.trials_dataframe().to_dict('records')
-                    ],
-                    'n_trials': len(study.trials)
-                }
+            if target == 'r2_score':
+                best_score = r2_score(baseline_risk, df_best['risk_score'])
+                current_score = 1.0
             else:
-                raise ValueError("Ingen gyldige parametre funnet under optimalisering")
-                
-        except Exception as e:
-            logger.error(f"Feil under parameteroptimalisering: {str(e)}")
+                best_score = -study.best_value
+                current_score = 0.0
+
             return {
-                'status': 'error',
-                'error': str(e),
-                'best_params': None,
-                'best_score': None
+                'status': 'success',
+                'best_params': best_params,
+                'best_score': best_score,
+                'current_score': current_score,
+                'optimization_history': study.trials_dataframe().to_dict('records')
             }
+
+        except Exception as e:
+            logger.error(f"Feil i parameteroptimalisering: {str(e)}", exc_info=True)
+            return {'status': 'error', 'error': str(e)}

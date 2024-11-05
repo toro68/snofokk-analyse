@@ -1,7 +1,6 @@
 import os
 import sys
 import logging
-import logging.handlers
 from datetime import datetime
 from typing import Dict, Any
 
@@ -10,31 +9,24 @@ import plotly.graph_objects as go
 import streamlit as st
 from plotly.subplots import make_subplots
 
-from . import (analyze_settings, calculate_snow_drift_risk, fetch_frost_data,
-               plot_risk_analysis)
+from . import (
+    analyze_settings,
+    calculate_snow_drift_risk,
+    fetch_frost_data,
+    plot_risk_analysis,
+)
 from .config import DEFAULT_PARAMS
-from .db_utils import (delete_settings, get_saved_settings, init_db,
-                       save_settings)
-# Lokale imports
+from .db_utils import delete_settings, get_saved_settings, init_db, save_settings
 from .ml_utils import SnowDriftOptimizer
 from .ml_evaluation import MLEvaluator
 
-# Sett opp logging
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler("snofokk.log"), logging.StreamHandler()],
-)
-logger = logging.getLogger(__name__)
-
-# Legg til i toppen av app.py etter eksisterende imports
-import sys
-import traceback
-
-# Oppdater logging-oppsettet
 def setup_logging():
+    """Konfigurerer og returnerer logger"""
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
+    
+    # Opprett logs-mappe hvis den ikke eksisterer
+    os.makedirs('logs', exist_ok=True)
     
     # Filhåndtering
     file_handler = logging.FileHandler('logs/snofokk_debug.log')
@@ -57,6 +49,8 @@ def setup_logging():
     
     return logger
 
+# Initialiser logger globalt
+logger = setup_logging()
 
 def format_settings_summary(params, num_critical_periods):
     """
@@ -579,32 +573,12 @@ def show_ml_optimization():
                     with col2:
                         st.metric("Optimalisert score", f"{results['best_score']:.4f}")
                     with col3:
-                        forbedring = ((results['best_score'] - results['current_score']) / abs(results['current_score'])) * 100
+                        if abs(results['current_score']) > 1e-10:  # Unngå divisjon med null
+                            forbedring = ((results['best_score'] - results['current_score']) / abs(results['current_score'])) * 100
+                        else:
+                            forbedring = 0.0  # Eller en annen passende standardverdi
                         st.metric("Forbedring", f"{forbedring:.1f}%")
-                    
-                    # Vis beste parametre i en pen tabell
-                    st.write("### Beste Parametre")
-                    param_df = pd.DataFrame({
-                        'Parameter': list(results['best_params'].keys()),
-                        'Verdi': [str(v) for v in results['best_params'].values()],
-                        'Beskrivelse': [
-                            'Antall beslutningstrær',
-                            'Maksimal dybde for hvert tre',
-                            'Minimum antall samples for split',
-                            'Minimum antall samples i blad',
-                            'Feature-utvalgsmetode'
-                        ]
-                    })
-                    st.dataframe(
-                        param_df,
-                        column_config={
-                            "Parameter": "Parameter",
-                            "Verdi": "Optimalisert Verdi",
-                            "Beskrivelse": "Forklaring"
-                        },
-                        hide_index=True
-                    )
-                    
+
                     # Vis optimaliseringshistorikk
                     st.write("### Optimaliseringshistorikk")
                     if 'optimization_history' in results:
@@ -623,13 +597,14 @@ def show_ml_optimization():
                         )
                         st.plotly_chart(fig)
 
-                    # Tilby mulighet til å bruke de nye parametrene
-                    if st.button("Bruk optimaliserte parametre"):
-                        st.session_state["params"] = results["best_params"]
-                        st.rerun()
-
-                    # Legg til parametereffekt-analyse
-                    st.write("### Parametereffekt-analyse")
+                    # Vis optimaliserte parametre
+                    st.write("### Optimaliserte parametre")
+                    opt_params = results.get('best_params', {})
+                    
+                    # Del parametrene inn i kategorier
+                    wind_params = {k: v for k, v in opt_params.items() if 'wind' in k}
+                    temp_params = {k: v for k, v in opt_params.items() if 'temp' in k}
+                    snow_params = {k: v for k, v in opt_params.items() if 'snow' in k}
                     
                     # Opprett MLEvaluator og analyser
                     evaluator = MLEvaluator()
@@ -638,7 +613,7 @@ def show_ml_optimization():
                         original_params=optimizer.initial_params,
                         optimized_params=results['best_params']
                     )
-                    
+
                     if impact_analysis:
                         # Vis anbefalinger
                         if impact_analysis.get('recommendations'):
@@ -658,56 +633,33 @@ def show_ml_optimization():
                                 st.metric("Optimalisert gjennomsnitt", f"{scores['optimized']['mean']:.2f}")
                                 st.metric("Optimalisert maks", f"{scores['optimized']['max']:.2f}")
 
-                    # Vis ML-parametre
-                    st.write("### ML-modellparametre")
-                    ml_param_df = pd.DataFrame({
-                        'Parameter': list(results['best_params'].keys()),
-                        'Verdi': [str(v) for v in results['best_params'].values()],
-                        'Beskrivelse': [
-                            'Antall beslutningstrær',
-                            'Maksimal dybde for hvert tre',
-                            'Minimum antall samples for split',
-                            'Minimum antall samples i blad',
-                            'Feature-utvalgsmetode'
-                        ]
-                    })
-                    st.dataframe(ml_param_df, hide_index=True)
+                    # Vis parameterdetaljer
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.write("#### Vindparametre")
+                        for param, value in wind_params.items():
+                            st.metric(param, f"{value:.2f}")
                     
-                    # Vis anbefalte snøfokk-parametre
-                    st.write("### Anbefalte snøfokk-parametre")
-                    if impact_analysis and impact_analysis.get('parameters'):
-                        params = impact_analysis['parameters']
-                        snofokk_param_df = pd.DataFrame({
-                            'Parameter': list(params['optimized'].keys()),
-                            'Original verdi': [params['original'][k] for k in params['optimized'].keys()],
-                            'Anbefalt verdi': [params['optimized'][k] for k in params['optimized'].keys()],
-                            'Beskrivelse': [
-                                'Grense for sterk vind (m/s)',
-                                'Grense for moderat vind (m/s)',
-                                'Grense for vindkast (m/s)',
-                                'Grense for vindretningsendring (grader)',
-                                'Vekting av vindfaktor',
-                                'Grense for kald temperatur (°C)',
-                                'Grense for kjølig temperatur (°C)',
-                                'Vekting av temperaturfaktor',
-                                'Grense for høy snøendring (cm)',
-                                'Grense for moderat snøendring (cm)',
-                                'Grense for lav snøendring (cm)',
-                                'Vekting av snøfaktor',
-                                'Minimum varighet (timer)',
-                                'Temperaturgrense (°C)',
-                                'Minimum snødybde (cm)',
-                                'Risikogrense'
-                            ]
-                        })
-                        st.dataframe(snofokk_param_df, hide_index=True)
+                    with col2:
+                        st.write("#### Temperaturparametre")
+                        for param, value in temp_params.items():
+                            st.metric(param, f"{value:.2f}")
+                    
+                    with col3:
+                        st.write("#### Snøparametre")
+                        for param, value in snow_params.items():
+                            st.metric(param, f"{value:.2f}")
+
+                    # Tilby mulighet til å bruke de nye parametrene
+                    if st.button("Bruk optimaliserte parametre"):
+                        st.session_state["params"] = results["best_params"]
+                        st.rerun()
 
                 else:
-                    st.error(f"Optimalisering feilet: {results.get('error', 'Ukjent feil')}")
-
+                    st.error("Optimalisering mislyktes. Sjekk loggene for detaljer.")
     except Exception as e:
         logger.error(f"Feil i ML-optimalisering: {str(e)}", exc_info=True)
-        st.error("En feil oppstod under optimalisering")
+        st.error("En feil oppstod under ML-optimaliseringen.")
 
 def show_main_analysis():
     """Viser hovedanalysen"""
@@ -824,6 +776,12 @@ def show_parameter_controls():
     params["snow_weight"] = st.sidebar.slider(
         "Snøvekt", 0.0, 2.0, float(params["snow_weight"]), step=0.1
     )
+    params["min_change"] = st.sidebar.slider(
+        "Minimum endring (cm)", 0.0, 5.0, float(params["min_change"]), step=0.5
+    )
+    params["max_gap"] = st.sidebar.slider(
+        "Maksimal gap (timer)", 0, 24, int(params["max_gap"]), step=1
+    )
 
     # Oppdater session state og trigger rerun hvis parameterne er endret
     if params != old_params:
@@ -874,7 +832,7 @@ def show_date_selector():
     return start_date_str, end_date_str
 
 
-# Oppdater main() funksjonen
+# Definer hovedfunksjonen
 def main():
     logger.info("Starter applikasjon")
     st.set_page_config(page_title="Snøfokk-analyse", layout="wide")
@@ -893,7 +851,7 @@ def main():
         # Vis parameterkontrollen for relevante sider
         if choice in ["Hovedanalyse", "ML-optimalisering"]:
             logger.debug(f"Viser parameter-kontroller for {choice}")
-            _ = show_parameter_controls()
+            show_parameter_controls()
         
         # Vis valgt side
         if choice == "Hovedanalyse":
@@ -906,7 +864,6 @@ def main():
     except Exception as e:
         logger.error("Kritisk feil i applikasjon", exc_info=True)
         st.error("En kritisk feil oppstod. Sjekk loggene for detaljer.")
-
 
 if __name__ == "__main__":
     main()
