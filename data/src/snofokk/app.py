@@ -483,16 +483,17 @@ def plot_critical_periods_overview(df: pd.DataFrame, periods_df: pd.DataFrame):
 
 def display_critical_alerts(df: pd.DataFrame, periods_df: pd.DataFrame):
     """
-    Viser en kompakt oversikt over kritiske varsler
+    Viser en kompakt oversikt over kritiske varsler med både graf og detaljer
     """
     try:
         if periods_df.empty:
             st.warning("Ingen kritiske perioder funnet i valgt tidsperiode.")
             return
 
-        # Filtrer ut kritiske perioder (samme logikk som i plot_critical_periods_overview)
+        # Bruk samme kritiske terskel som i plot_critical_periods_overview
         critical_threshold = 0.85
         min_duration = 3
+
         critical_periods = (
             periods_df[
                 (periods_df["max_risk_score"] > critical_threshold)
@@ -502,28 +503,62 @@ def display_critical_alerts(df: pd.DataFrame, periods_df: pd.DataFrame):
             .head(14)
         )
 
-        # Vis grafen med kritiske perioder først
+        # Vis statistikk først
+        st.header("📊 Analyse av kritiske perioder")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Kritiske perioder", len(critical_periods))
+        with col2:
+            total_duration = critical_periods["duration"].sum()
+            st.metric("Total varighet", f"{total_duration:.1f} timer")
+        with col3:
+            avg_risk = critical_periods["max_risk_score"].mean() if not critical_periods.empty else 0
+            st.metric("Gjennomsnittlig risiko", f"{avg_risk:.1f}")
+
+        if critical_periods.empty:
+            st.info("Ingen kritiske perioder oppfyller kriteriene.")
+            return
+
+        # Vis oversiktsgraf
+        st.header("🚨 Kritiske perioder")
         fig = plot_critical_periods_overview(df, periods_df)
-        if fig:
+        if fig is not None:
             st.plotly_chart(fig, use_container_width=True)
 
         # Vis detaljert liste under grafen
-        if not critical_periods.empty:
-            st.subheader("Detaljer for kritiske perioder")
-            for _, period in critical_periods.iterrows():
-                with st.expander(
-                    f"Periode {int(period['period_id'])} - {period['start_time'].strftime('%Y-%m-%d %H:%M')}"
-                ):
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        st.metric("Varighet", f"{period['duration']:.1f} timer")
-                    with col2:
-                        st.metric("Maks risiko", f"{period['max_risk_score']*100:.0f}%")
-                    with col3:
-                        st.metric("Alvorlighet", period.get("severity", "Ukjent"))
+        st.subheader("Detaljer for kritiske perioder")
+        
+        for _, period in critical_periods.iterrows():
+            period_data = df[
+                (df.index >= period["start_time"]) & 
+                (df.index <= period["end_time"])
+            ]
+            
+            # Beregn statistikk
+            avg_wind = period_data["wind_speed"].mean() if "wind_speed" in period_data else 0
+            max_wind = period_data["wind_speed"].max() if "wind_speed" in period_data else 0
+            min_temp = period_data["air_temperature"].min() if "air_temperature" in period_data else 0
+            
+            # Lag ekspander for hver periode
+            with st.expander(
+                f"Periode {int(period['period_id'])} - "
+                f"{period['start_time'].strftime('%d-%m-%Y %H:%M')} "
+                f"(Risiko: {period['max_risk_score']*100:.0f}%)"
+            ):
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    st.metric("Varighet", f"{period['duration']:.1f} timer")
+                with col2:
+                    st.metric("Maks vindstyrke", f"{max_wind:.1f} m/s")
+                with col3:
+                    st.metric("Min temperatur", f"{min_temp:.1f}°C")
+                with col4:
+                    st.metric("Gj.snitt vind", f"{avg_wind:.1f} m/s")
 
     except Exception as e:
-        logger.error(f"Feil i visning av kritiske varsler: {str(e)}")
+        logger.error(f"Feil i visning av kritiske varsler: {str(e)}", exc_info=True)
         st.error("Kunne ikke vise kritiske varsler")
 
 

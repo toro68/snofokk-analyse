@@ -40,7 +40,7 @@ DEFAULT_PARAMS = {
     "wind_moderate": 6,
     "wind_gust": 15,
     "wind_dir_change": 30,
-    "wind_weight": 0.4,
+    "wind_weight": 0.5,
     "temp_cold": -10,
     "temp_cool": -5,
     "temp_weight": 0.3,

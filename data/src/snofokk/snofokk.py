@@ -64,19 +64,41 @@ def fetch_frost_data(start_date="2023-11-01", end_date="2024-04-30"):
     """
     Henter utvidet værdatasett fra Frost API
     """
+    elements = [
+        "air_temperature",
+        "surface_snow_thickness",
+        "wind_speed",
+        "wind_from_direction",
+        "relative_humidity",
+        "max(wind_speed_of_gust PT1H)",
+        "max(wind_speed PT1H)",
+        "min(air_temperature PT1H)",
+        "max(air_temperature PT1H)",
+        "sum(duration_of_precipitation PT1H)",
+        "sum(precipitation_amount PT1H)",
+        "dew_point_temperature",
+        "mean(relative_humidity PT1H)",
+        "mean(surface_air_pressure PT1H)",
+        "mean(cloud_area_fraction PT1H)",
+        "sum(duration_of_sunshine PT1H)",
+        "mean(global_radiation PT1H)",
+        "surface_temperature",
+        "sum(duration_of_precipitation_as_snow PT1H)"
+    ]
+    
+    parameters = {
+        "sources": "SN46220",
+        "referencetime": f"{start_date}/{end_date}",
+        "elements": ",".join(elements),
+        "timeresolutions": "PT1H",
+    }
+
     try:
         logger.info(
             f"Starting fetch_frost_data with FROST_CLIENT_ID: {FROST_CLIENT_ID}"
         )
 
         endpoint = "https://frost.met.no/observations/v0.jsonld"
-        parameters = {
-            "sources": "SN46220",
-            "referencetime": f"{start_date}/{end_date}",
-            "elements": "air_temperature,surface_snow_thickness,wind_speed,wind_from_direction,relative_humidity,max(wind_speed_of_gust PT1H),max(wind_speed PT1H),min(air_temperature PT1H),max(air_temperature PT1H),sum(duration_of_precipitation PT1H),sum(precipitation_amount PT1H),dew_point_temperature",  # noqa: E501
-            "timeresolutions": "PT1H",
-        }
-
         logger.info(f"API request parameters: {parameters}")
 
         # Legg til Accept-header
