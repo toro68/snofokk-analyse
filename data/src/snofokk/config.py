@@ -13,7 +13,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Frost API konfigurasjon
-FROST_STATION_ID = "SN46220 "
+FROST_STATION_ID = "SN46220"
 
 # Forbedret feilhåndtering og logging for FROST_CLIENT_ID
 try:
@@ -95,7 +95,5 @@ def validate_parameters():
                 logger.warning(
                     f"Parameter {param} = {value} er utenfor grensene [{min_val}, {max_val}]"
                 )
-
-
 # Kjør validering ved oppstart
 validate_parameters()
