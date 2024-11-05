@@ -532,6 +532,39 @@ def show_ml_optimization():
     st.title("🤖 ML-optimalisering av parametre")
 
     try:
+        # Legg til forklaring av optimaliseringsmål
+        with st.expander("ℹ️ Om optimaliseringsmål"):
+            st.write("""
+            ### Velg optimaliseringsmål
+            
+            Det finnes tre forskjellige måter å optimalisere parametrene på:
+            
+            #### 1. R²-score (r2_score)
+            - Måler hvor godt modellen forklarer variansen i dataene
+            - Verdier mellom 0 og 1, hvor 1 er perfekt tilpasning
+            - **Anbefales** for de fleste tilfeller
+            - Best når du vil ha en generell indikasjon på modellens ytelse
+            
+            #### 2. Gjennomsnittlig kvadratfeil (mean_squared_error)
+            - Måler gjennomsnittlig kvadrert avvik mellom prediksjoner og faktiske verdier
+            - Straffer store avvik mer enn små
+            - Velg denne når store avvik er spesielt problematiske
+            - Verdier ≥ 0, hvor lavere er bedre
+            
+            #### 3. Gjennomsnittlig absolutt feil (mean_absolute_error)
+            - Måler gjennomsnittlig absolutt avvik mellom prediksjoner og faktiske verdier
+            - Behandler alle avvik likt
+            - Lettere å tolke enn kvadratfeil
+            - Velg denne når du vil ha lett tolkbare resultater
+            - Verdier ≥ 0, hvor lavere er bedre
+            
+            ### Når skal jeg velge hva?
+            
+            - **Start med R²-score** hvis du er usikker
+            - Velg **kvadratfeil** hvis store feil er spesielt problematiske
+            - Velg **absolutt feil** hvis du trenger lett tolkbare resultater
+            """)
+
         # Hent datoperiode
         start_date, end_date = show_date_selector()
 
@@ -558,6 +591,11 @@ def show_ml_optimization():
             "Optimaliseringsmål",
             ["r2_score", "mean_squared_error", "mean_absolute_error"],
             help="Velg hvilken metrikk som skal optimaliseres",
+            format_func=lambda x: {
+                'r2_score': 'R²-score (anbefalt)',
+                'mean_squared_error': 'Gjennomsnittlig kvadratfeil',
+                'mean_absolute_error': 'Gjennomsnittlig absolutt feil'
+            }[x]
         )
 
         if st.button("Start optimalisering"):
@@ -596,7 +634,6 @@ def show_ml_optimization():
                             showlegend=False
                         )
                         st.plotly_chart(fig)
-
                     # Vis optimaliserte parametre
                     st.write("### Optimaliserte parametre")
                     opt_params = results.get('best_params', {})
@@ -632,7 +669,6 @@ def show_ml_optimization():
                             with col2:
                                 st.metric("Optimalisert gjennomsnitt", f"{scores['optimized']['mean']:.2f}")
                                 st.metric("Optimalisert maks", f"{scores['optimized']['max']:.2f}")
-
                     # Vis parameterdetaljer
                     col1, col2, col3 = st.columns(3)
                     with col1:

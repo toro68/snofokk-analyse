@@ -357,7 +357,6 @@ class MLEvaluator:
                 'snow_depth_min': 10.0,   # Minimum snødybde
                 'risk_threshold': 0.7     # Risikogrense
             }
-            
             from snofokk import calculate_snow_drift_risk
             
             # Beregn risiko med standardparametre
@@ -391,7 +390,6 @@ class MLEvaluator:
                     "optimized": adjusted_params
                 }
             }
-
         except Exception as e:
             self.logger.error(f"Feil under evaluering av parametereffekt: {str(e)}")
             return None
