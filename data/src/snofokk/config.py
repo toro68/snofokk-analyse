@@ -13,7 +13,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Frost API konfigurasjon
-FROST_STATION_ID = "SN44560"
+FROST_STATION_ID = "SN46220 "
 
 # Forbedret feilhåndtering og logging for FROST_CLIENT_ID
 try:
