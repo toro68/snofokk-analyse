@@ -55,7 +55,6 @@ def enable_detailed_logging():
     logger.addHandler(console_handler)
     
     return logger
-
 # Initialiser logger
 logger = enable_detailed_logging()
 
@@ -1721,3 +1720,4 @@ if __name__ == "__main__":
             logger.error("API-kall feilet - ingen data mottatt")
     except Exception as e:
         logger.error(f"Feil under testing: {str(e)}")
+
