@@ -10,6 +10,10 @@ sys.path.insert(0, str(project_root))
 # Sett arbeidskatalog til prosjektets rot
 os.chdir(project_root)
 
+# Opprett logs-mappe hvis den ikke finnes
+logs_dir = project_root / "logs"
+logs_dir.mkdir(exist_ok=True)
+
 # Importer applikasjonen
 from data.src.snofokk.app import main
 
