@@ -1,0 +1,125 @@
+2025-01-25 08:30:54,704 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.0 STARTER 2025-01-25 08:30:54 === (TEST-MODUS)
+
+2025-01-25 08:30:54,705 - ERROR - Kunne ikke laste konfigurasjonsfil: WeatherConfig.__init__() got an unexpected keyword argument 'snow_alert'
+2025-01-25 08:30:54,705 - ERROR - Feil i hovedfunksjon: WeatherConfig.__init__() got an unexpected keyword argument 'snow_alert'
+2025-01-25 08:31:17,753 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.0 STARTER 2025-01-25 08:31:17 === (TEST-MODUS)
+
+2025-01-25 08:31:19,763 - ERROR - Feil ved henting av værdata: Already tz-aware, use tz_convert to convert.
+2025-01-25 08:31:19,764 - ERROR - Kunne ikke hente værdata
+2025-01-25 08:31:38,594 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.0 STARTER 2025-01-25 08:31:38 === (TEST-MODUS)
+
+2025-01-25 08:31:39,993 - ERROR - Feil i hovedfunksjon: window must be an integer 0 or greater
+2025-01-25 08:31:57,495 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.0 STARTER 2025-01-25 08:31:57 === (TEST-MODUS)
+
+2025-01-25 08:32:01,216 - INFO - Værgraf lagret til /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-01-25 08:32:04,422 - INFO - Ukesrapport sendt på e-post
+2025-01-25 08:40:59,822 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.0 STARTER 2025-01-25 08:40:59 === (TEST-MODUS)
+
+2025-01-25 08:41:02,786 - INFO - Værgraf lagret til /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-01-25 08:41:05,459 - INFO - Ukesrapport sendt på e-post
+2025-01-30 09:51:51,855 - INFO - Ikke fredag - ingen rapport sendes
+2025-01-30 09:56:35,090 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.0 STARTER 2025-01-30 09:56:35 === (TEST-MODUS)
+
+2025-01-30 09:56:37,489 - INFO - Værgraf lagret til /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-01-30 09:56:40,330 - INFO - Ukesrapport sendt på e-post
+2025-02-06 11:20:32,256 - INFO - Ikke fredag - ingen rapport sendes
+2025-02-06 11:50:07,663 - INFO - Ikke fredag - ingen rapport sendes
+2025-02-06 11:51:18,646 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.0 STARTER 2025-02-06 11:51:18 === (TEST-MODUS)
+
+2025-02-06 11:51:21,103 - INFO - Værgraf lagret til /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-02-06 11:51:23,485 - INFO - Ukesrapport sendt på e-post
+2025-02-13 08:00:03,229 - INFO - Ikke fredag - ingen rapport sendes
+2025-02-13 08:02:43,200 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.0 STARTER 2025-02-13 08:02:43 === (TEST-MODUS)
+
+2025-02-13 08:02:46,602 - INFO - Værgraf lagret til /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-02-13 08:02:50,148 - INFO - Ukesrapport sendt på e-post
+2025-02-20 08:04:21,610 - INFO - Ikke fredag - ingen rapport sendes
+2025-02-20 08:04:30,366 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.0 STARTER 2025-02-20 08:04:30 === (TEST-MODUS)
+
+2025-02-20 08:04:33,657 - INFO - Værgraf lagret til /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-02-20 08:04:36,992 - INFO - Ukesrapport sendt på e-post
+2025-02-20 10:59:39,450 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.0 STARTER 2025-02-20 10:59:39 === (TEST-MODUS)
+
+2025-02-20 10:59:42,334 - INFO - Værgraf lagret til /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-02-20 10:59:44,538 - INFO - Ukesrapport sendt på e-post
+2025-02-20 11:00:15,654 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.0 STARTER 2025-02-20 11:00:15 === (TEST-MODUS)
+
+2025-02-20 11:00:18,003 - INFO - Værgraf lagret til /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-02-20 11:00:20,623 - INFO - Ukesrapport sendt på e-post
+2025-02-27 07:36:07,616 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.0 STARTER 2025-02-27 07:36:07 === (TEST-MODUS)
+
+2025-02-27 07:36:10,323 - INFO - Værgraf lagret til /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-02-27 07:36:12,661 - INFO - Ukesrapport sendt på e-post
+2025-02-27 07:39:12,319 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.0 STARTER 2025-02-27 07:39:12 === (TEST-MODUS)
+
+2025-02-27 07:39:15,359 - INFO - Værgraf lagret til /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-02-27 07:39:17,895 - INFO - Ukesrapport sendt på e-post
+2025-02-27 07:45:03,278 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.0 STARTER 2025-02-27 07:45:03 === (TEST-MODUS)
+
+2025-02-27 07:45:07,229 - INFO - Værgraf lagret til /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-02-27 07:45:09,669 - INFO - Ukesrapport sendt på e-post
+2025-02-27 07:47:53,271 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.0 STARTER 2025-02-27 07:47:53 === (TEST-MODUS)
+
+2025-02-27 07:47:57,351 - INFO - Værgraf lagret til /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-02-27 07:47:59,408 - INFO - Ukesrapport sendt på e-post
+2025-03-06 06:39:18,945 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.0 STARTER 2025-03-06 06:39:18 === (TEST-MODUS)
+
+2025-03-06 06:39:22,529 - INFO - Værgraf lagret til /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-03-06 06:39:26,440 - INFO - Ukesrapport sendt på e-post
+2025-08-09 08:15:13,362 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.0 STARTER 2025-08-09 08:15:13 === (TEST-MODUS)
+
+2025-08-09 08:15:23,918 - INFO - Værgraf lagret til /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-08-09 08:15:25,704 - INFO - Ukesrapport sendt på e-post
+2025-08-09 08:19:13,583 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.1 STARTER 2025-08-09 08:19:13 ===
+2025-08-09 08:19:13,584 - INFO -  (TEST MODE)
+2025-08-09 08:19:13,584 - ERROR - Error in main function: WeatherConfig.__init__() got an unexpected keyword argument 'snow_alert'
+2025-08-09 08:19:56,897 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.1 STARTER 2025-08-09 08:19:56 ===
+2025-08-09 08:19:56,898 - INFO -  (TEST MODE)
+2025-08-09 08:19:56,919 - INFO - Fetching weather data...
+2025-08-09 08:19:57,898 - INFO - Fetched 995 weather records
+2025-08-09 08:19:57,899 - INFO - Generated 26 snow analyses
+2025-08-09 08:19:57,901 - INFO - Detected 0 risk periods
+2025-08-09 08:19:58,324 - ERROR - Error creating weather plot: x and y must have same first dimension, but have shapes (1,) and (995,)
+2025-08-09 08:19:58,325 - ERROR - Could not generate weather plot
+2025-08-09 08:19:58,325 - INFO - === UKENTLIG VÆRRAPPORT FULLFØRT ===
+2025-08-09 08:21:04,731 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.1 STARTER 2025-08-09 08:21:04 ===
+2025-08-09 08:21:04,733 - INFO -  (TEST MODE)
+2025-08-09 08:21:04,758 - INFO - Fetching weather data...
+2025-08-09 08:21:05,707 - INFO - Fetched 994 weather records
+2025-08-09 08:21:05,708 - INFO - Generated 26 snow analyses
+2025-08-09 08:21:05,709 - INFO - Detected 0 risk periods
+2025-08-09 08:21:06,392 - INFO - Plot saved to /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-08-09 08:21:06,637 - INFO - Weather plot saved to /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-08-09 08:21:06,637 - INFO - Test mode - email not sent
+2025-08-09 08:21:06,637 - INFO - === UKENTLIG VÆRRAPPORT FULLFØRT ===
+2025-08-09 08:25:19,026 - INFO - 
+=== UKENTLIG VÆRRAPPORT V2.1 STARTER 2025-08-09 08:25:19 ===
+2025-08-09 08:25:19,027 - INFO -  (TEST MODE)
+2025-08-09 08:25:19,045 - INFO - Fetching weather data...
+2025-08-09 08:25:20,002 - INFO - Fetched 994 weather records
+2025-08-09 08:25:20,003 - INFO - Generated 26 snow analyses
+2025-08-09 08:25:20,005 - INFO - Detected 0 risk periods
+2025-08-09 08:25:20,757 - INFO - Plot saved to /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-08-09 08:25:21,000 - INFO - Weather plot saved to /Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/data/weather_plot_v2.png
+2025-08-09 08:25:21,000 - INFO - Test mode - email not sent
+2025-08-09 08:25:21,000 - INFO - === UKENTLIG VÆRRAPPORT FULLFØRT ===

@@ -1,0 +1,12 @@
+2025-01-01 09:33:11,735 - INFO - Kolonner etter pivot: ['referenceTime', 'air_temperature', 'relative_humidity', 'surface_snow_thickness', 'wind_from_direction', 'wind_speed']
+2025-01-01 09:33:11,736 - INFO - Første rad etter pivot: {'referenceTime': '2025-01-01T07:00:00.000Z', 'air_temperature': -0.4, 'relative_humidity': 98.0, 'surface_snow_thickness': 17.9, 'wind_from_direction': 137.0, 'wind_speed': 1.5}
+2025-01-01 09:33:11,736 - INFO - Vind - Hastighet: 1.5, Moderat: False, Sterk: False
+2025-01-01 09:33:11,736 - INFO - Temperatur - Verdi: -0.6000000000000001, Cool: True, Cold: False
+2025-01-01 09:33:11,736 - INFO - Snø - Dybde: 18.2, Endring: 0.3000000000000007
+2025-01-01 09:33:11,736 - INFO - Snø - Low: False, Moderate: False, High: False
+2025-01-01 09:33:11,737 - INFO - Luftfuktighet - Verdi: 98.0, OK: False
+2025-01-01 09:33:11,737 - INFO - Grunnkriterier ikke oppfylt:
+2025-01-01 09:33:11,737 - INFO - - Vind OK: False
+2025-01-01 09:33:11,737 - INFO - - Temp OK: True
+2025-01-01 09:33:11,737 - INFO - - Snø OK: False
+2025-01-01 09:33:11,737 - INFO - - Fuktighet OK: False

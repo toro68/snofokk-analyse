@@ -1,0 +1,52 @@
+{
+  "analysis_type": "enhanced_snowdrift_detection",
+  "analysis_date": "2025-08-09T08:58:40.785584",
+  "period": {
+    "start": "2023-01-01",
+    "end": "2023-01-31"
+  },
+  "station": {
+    "id": "SN46220",
+    "name": "Gullingen Skisenter"
+  },
+  "methodology": {
+    "primary_conditions": [
+      "sufficient_wind",
+      "cold_enough",
+      "available_snow"
+    ],
+    "secondary_factors": [
+      "wind_direction",
+      "humidity",
+      "precipitation",
+      "surface_temp"
+    ],
+    "drift_classification": [
+      "invisible_drift",
+      "accumulating_drift",
+      "eroding_drift"
+    ],
+    "risk_threshold": 0.6
+  },
+  "statistics": {
+    "total_events": 0,
+    "total_hours": 0,
+    "drift_types": {},
+    "risk_distribution": {
+      "low": 0,
+      "medium": 0,
+      "high": 0
+    },
+    "confidence_stats": {
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    }
+  },
+  "events": [],
+  "data_quality": {
+    "total_datapoints": 720,
+    "parameters_used": 8,
+    "coverage": 1.0
+  }
+}

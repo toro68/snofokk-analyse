@@ -1,0 +1,795 @@
+{
+  "status": "ok",
+  "time_server": 1735620912,
+  "body": [
+    {
+      "_id": "70:ee:50:1c:82:0c",
+      "place": {
+        "location": [
+          6.426558,
+          59.42262
+        ],
+        "timezone": "Europe/Oslo",
+        "country": "NO",
+        "altitude": 568,
+        "street": "Rota"
+      },
+      "mark": 10,
+      "measures": {
+        "02:00:00:33:eb:de": {
+          "res": {
+            "1735620635": [
+              -5,
+              92
+            ]
+          },
+          "type": [
+            "temperature",
+            "humidity"
+          ]
+        },
+        "70:ee:50:1c:82:0c": {
+          "res": {
+            "1735620670": [
+              1008.7
+            ]
+          },
+          "type": [
+            "pressure"
+          ]
+        },
+        "06:00:00:02:97:c4": {
+          "wind_strength": 2,
+          "wind_angle": 241,
+          "gust_strength": 3,
+          "gust_angle": 242,
+          "wind_timeutc": 1735620667
+        }
+      },
+      "modules": [
+        "02:00:00:33:eb:de",
+        "06:00:00:02:97:c4"
+      ],
+      "module_types": {
+        "02:00:00:33:eb:de": "NAModule1",
+        "06:00:00:02:97:c4": "NAModule2"
+      }
+    },
+    {
+      "_id": "70:ee:50:ab:ce:02",
+      "place": {
+        "location": [
+          6.44856452941895,
+          59.4244728088379
+        ],
+        "timezone": "Europe/Oslo",
+        "country": "NO",
+        "altitude": 527,
+        "city": "Hovestølen",
+        "street": "Mosstølhaugen"
+      },
+      "mark": 10,
+      "measures": {
+        "02:00:00:ab:ca:e0": {
+          "res": {
+            "1735620855": [
+              -3.5,
+              93
+            ]
+          },
+          "type": [
+            "temperature",
+            "humidity"
+          ]
+        },
+        "70:ee:50:ab:ce:02": {
+          "res": {
+            "1735620895": [
+              1009.8
+            ]
+          },
+          "type": [
+            "pressure"
+          ]
+        }
+      },
+      "modules": [
+        "02:00:00:ab:ca:e0"
+      ],
+      "module_types": {
+        "02:00:00:ab:ca:e0": "NAModule1"
+      }
+    },
+    {
+      "_id": "70:ee:50:7f:93:2c",
+      "place": {
+        "location": [
+          6.45615941766556,
+          59.4242093384051
+        ],
+        "timezone": "Europe/Oslo",
+        "country": "NO",
+        "altitude": 552,
+        "street": "Fidjane"
+      },
+      "mark": 10,
+      "measures": {
+        "02:00:00:7f:a6:ea": {
+          "res": {
+            "1735620536": [
+              -4.6,
+              88
+            ]
+          },
+          "type": [
+            "temperature",
+            "humidity"
+          ]
+        },
+        "70:ee:50:7f:93:2c": {
+          "res": {
+            "1735620582": [
+              1008.7
+            ]
+          },
+          "type": [
+            "pressure"
+          ]
+        },
+        "05:00:00:09:3d:9c": {
+          "rain_60min": 0,
+          "rain_24h": 0,
+          "rain_live": 0,
+          "rain_timeutc": 1735620581
+        }
+      },
+      "modules": [
+        "02:00:00:7f:a6:ea",
+        "05:00:00:09:3d:9c"
+      ],
+      "module_types": {
+        "02:00:00:7f:a6:ea": "NAModule1",
+        "05:00:00:09:3d:9c": "NAModule3"
+      }
+    },
+    {
+      "_id": "70:ee:50:b4:fd:f4",
+      "place": {
+        "location": [
+          6.45976209640503,
+          59.4249229431152
+        ],
+        "timezone": "Europe/Oslo",
+        "country": "NO",
+        "altitude": 569,
+        "city": "Hovestølen",
+        "street": "Stavastølvegen"
+      },
+      "mark": 10,
+      "measures": {
+        "02:00:00:b5:00:4c": {
+          "res": {
+            "1735620280": [
+              -4.2,
+              79
+            ]
+          },
+          "type": [
+            "temperature",
+            "humidity"
+          ]
+        },
+        "70:ee:50:b4:fd:f4": {
+          "res": {
+            "1735620309": [
+              1009.4
+            ]
+          },
+          "type": [
+            "pressure"
+          ]
+        }
+      },
+      "modules": [
+        "02:00:00:b5:00:4c"
+      ],
+      "module_types": {
+        "02:00:00:b5:00:4c": "NAModule1"
+      }
+    },
+    {
+      "_id": "70:ee:50:96:b8:fa",
+      "place": {
+        "location": [
+          6.458512,
+          59.425671
+        ],
+        "timezone": "Europe/Berlin",
+        "country": "NO",
+        "altitude": 559,
+        "city": "Hovestølen",
+        "street": "Stavastølvegen"
+      },
+      "mark": 10,
+      "measures": {
+        "02:00:00:96:ac:02": {
+          "res": {
+            "1735620603": [
+              -3.7,
+              85
+            ]
+          },
+          "type": [
+            "temperature",
+            "humidity"
+          ]
+        },
+        "70:ee:50:96:b8:fa": {
+          "res": {
+            "1735620612": [
+              1009.4
+            ]
+          },
+          "type": [
+            "pressure"
+          ]
+        }
+      },
+      "modules": [
+        "02:00:00:96:ac:02"
+      ],
+      "module_types": {
+        "02:00:00:96:ac:02": "NAModule1"
+      }
+    },
+    {
+      "_id": "70:ee:50:96:c9:d8",
+      "place": {
+        "location": [
+          6.46165,
+          59.416199
+        ],
+        "timezone": "Europe/Berlin",
+        "country": "NO",
+        "altitude": 622,
+        "street": "Åsliane"
+      },
+      "mark": 10,
+      "measures": {
+        "02:00:00:96:dc:e4": {
+          "res": {
+            "1735620690": [
+              -5.1,
+              87
+            ]
+          },
+          "type": [
+            "temperature",
+            "humidity"
+          ]
+        },
+        "70:ee:50:96:c9:d8": {
+          "res": {
+            "1735620724": [
+              1008.3
+            ]
+          },
+          "type": [
+            "pressure"
+          ]
+        }
+      },
+      "modules": [
+        "02:00:00:96:dc:e4"
+      ],
+      "module_types": {
+        "02:00:00:96:dc:e4": "NAModule1"
+      }
+    },
+    {
+      "_id": "70:ee:50:58:6c:48",
+      "place": {
+        "location": [
+          6.465262,
+          59.424238
+        ],
+        "timezone": "Europe/Oslo",
+        "country": "NO",
+        "altitude": 608,
+        "street": "Småliane"
+      },
+      "mark": 10,
+      "measures": {
+        "02:00:00:58:ec:da": {
+          "res": {
+            "1735620451": [
+              -4.2,
+              89
+            ]
+          },
+          "type": [
+            "temperature",
+            "humidity"
+          ]
+        },
+        "70:ee:50:58:6c:48": {
+          "res": {
+            "1735620481": [
+              1011
+            ]
+          },
+          "type": [
+            "pressure"
+          ]
+        },
+        "06:00:00:03:72:ae": {
+          "wind_strength": 143,
+          "wind_angle": 43,
+          "gust_strength": 147,
+          "gust_angle": 44,
+          "wind_timeutc": 1735620477
+        }
+      },
+      "modules": [
+        "06:00:00:03:72:ae",
+        "02:00:00:58:ec:da"
+      ],
+      "module_types": {
+        "06:00:00:03:72:ae": "NAModule2",
+        "02:00:00:58:ec:da": "NAModule1"
+      }
+    },
+    {
+      "_id": "70:ee:50:29:50:98",
+      "place": {
+        "location": [
+          6.461088,
+          59.426055
+        ],
+        "timezone": "Europe/Oslo",
+        "country": "NO",
+        "altitude": 590,
+        "street": "Stavastølvegen"
+      },
+      "mark": 10,
+      "measures": {
+        "02:00:00:29:35:6e": {
+          "res": {
+            "1735620613": [
+              -4.6,
+              94
+            ]
+          },
+          "type": [
+            "temperature",
+            "humidity"
+          ]
+        },
+        "70:ee:50:29:50:98": {
+          "res": {
+            "1735620663": [
+              1011.7
+            ]
+          },
+          "type": [
+            "pressure"
+          ]
+        }
+      },
+      "modules": [
+        "02:00:00:29:35:6e"
+      ],
+      "module_types": {
+        "02:00:00:29:35:6e": "NAModule1"
+      }
+    },
+    {
+      "_id": "70:ee:50:29:17:34",
+      "place": {
+        "location": [
+          6.431148,
+          59.390007
+        ],
+        "timezone": "Europe/Oslo",
+        "country": "NO",
+        "altitude": 587,
+        "street": "Fjellbergsskarvegen"
+      },
+      "mark": 10,
+      "measures": {
+        "02:00:00:28:ff:18": {
+          "res": {
+            "1735620455": [
+              -3.6,
+              94
+            ]
+          },
+          "type": [
+            "temperature",
+            "humidity"
+          ]
+        },
+        "70:ee:50:29:17:34": {
+          "res": {
+            "1735620494": [
+              1011.5
+            ]
+          },
+          "type": [
+            "pressure"
+          ]
+        }
+      },
+      "modules": [
+        "02:00:00:28:ff:18"
+      ],
+      "module_types": {
+        "02:00:00:28:ff:18": "NAModule1"
+      }
+    },
+    {
+      "_id": "70:ee:50:74:5f:18",
+      "place": {
+        "location": [
+          6.436173,
+          59.388748
+        ],
+        "timezone": "Europe/Oslo",
+        "country": "NO",
+        "altitude": 557,
+        "street": "Fjellbergsskarvegen"
+      },
+      "mark": 10,
+      "measures": {
+        "02:00:00:74:3a:bc": {
+          "res": {
+            "1735620796": [
+              -4.6,
+              86
+            ]
+          },
+          "type": [
+            "temperature",
+            "humidity"
+          ]
+        },
+        "70:ee:50:74:5f:18": {
+          "res": {
+            "1735620838": [
+              1011.7
+            ]
+          },
+          "type": [
+            "pressure"
+          ]
+        }
+      },
+      "modules": [
+        "02:00:00:74:3a:bc"
+      ],
+      "module_types": {
+        "02:00:00:74:3a:bc": "NAModule1"
+      }
+    },
+    {
+      "_id": "70:ee:50:96:e3:72",
+      "place": {
+        "location": [
+          6.42391,
+          59.392367
+        ],
+        "timezone": "Europe/Berlin",
+        "country": "NO",
+        "altitude": 621,
+        "city": "Jøsenfjorden",
+        "street": "Kalvaknutvegen"
+      },
+      "mark": 10,
+      "measures": {
+        "02:00:00:96:c3:7c": {
+          "res": {
+            "1735620378": [
+              -3.7,
+              85
+            ]
+          },
+          "type": [
+            "temperature",
+            "humidity"
+          ]
+        },
+        "70:ee:50:96:e3:72": {
+          "res": {
+            "1735620426": [
+              1008.7
+            ]
+          },
+          "type": [
+            "pressure"
+          ]
+        }
+      },
+      "modules": [
+        "02:00:00:96:c3:7c"
+      ],
+      "module_types": {
+        "02:00:00:96:c3:7c": "NAModule1"
+      }
+    },
+    {
+      "_id": "70:ee:50:5f:1b:dc",
+      "place": {
+        "location": [
+          6.42689304165156,
+          59.3926889378478
+        ],
+        "timezone": "Europe/Oslo",
+        "country": "NO",
+        "altitude": 626,
+        "street": "Fjellbergsskarvegen"
+      },
+      "mark": 10,
+      "measures": {
+        "02:00:00:5f:07:5a": {
+          "res": {
+            "1735620469": [
+              -4.6,
+              79
+            ]
+          },
+          "type": [
+            "temperature",
+            "humidity"
+          ]
+        },
+        "70:ee:50:5f:1b:dc": {
+          "res": {
+            "1735620480": [
+              1010.2
+            ]
+          },
+          "type": [
+            "pressure"
+          ]
+        }
+      },
+      "modules": [
+        "02:00:00:5f:07:5a"
+      ],
+      "module_types": {
+        "02:00:00:5f:07:5a": "NAModule1"
+      }
+    },
+    {
+      "_id": "70:ee:50:2c:bf:d0",
+      "place": {
+        "location": [
+          6.426157,
+          59.396986
+        ],
+        "timezone": "Europe/Oslo",
+        "country": "NO",
+        "altitude": 622,
+        "street": "Fjellbergsskarvegen"
+      },
+      "mark": 10,
+      "measures": {
+        "02:00:00:2c:fc:04": {
+          "res": {
+            "1735620748": [
+              -4.4,
+              85
+            ]
+          },
+          "type": [
+            "temperature",
+            "humidity"
+          ]
+        },
+        "70:ee:50:2c:bf:d0": {
+          "res": {
+            "1735620763": [
+              933.7
+            ]
+          },
+          "type": [
+            "pressure"
+          ]
+        }
+      },
+      "modules": [
+        "02:00:00:2c:fc:04"
+      ],
+      "module_types": {
+        "02:00:00:2c:fc:04": "NAModule1"
+      }
+    },
+    {
+      "_id": "70:ee:50:83:cf:9c",
+      "place": {
+        "location": [
+          6.43868,
+          59.388424
+        ],
+        "timezone": "Europe/Oslo",
+        "country": "NO",
+        "altitude": 579,
+        "street": "Fjellbergsskarvegen"
+      },
+      "mark": 10,
+      "measures": {
+        "02:00:00:83:e7:ca": {
+          "res": {
+            "1735620518": [
+              -4.9,
+              92
+            ]
+          },
+          "type": [
+            "temperature",
+            "humidity"
+          ]
+        },
+        "70:ee:50:83:cf:9c": {
+          "res": {
+            "1735620565": [
+              1010.1
+            ]
+          },
+          "type": [
+            "pressure"
+          ]
+        }
+      },
+      "modules": [
+        "02:00:00:83:e7:ca"
+      ],
+      "module_types": {
+        "02:00:00:83:e7:ca": "NAModule1"
+      }
+    },
+    {
+      "_id": "70:ee:50:6b:7e:4a",
+      "place": {
+        "location": [
+          6.450052,
+          59.389866
+        ],
+        "timezone": "Europe/Oslo",
+        "country": "NO",
+        "altitude": 524,
+        "street": "Gullingvegen"
+      },
+      "mark": 10,
+      "measures": {
+        "02:00:00:6b:22:3e": {
+          "res": {
+            "1735620761": [
+              -4.7,
+              95
+            ]
+          },
+          "type": [
+            "temperature",
+            "humidity"
+          ]
+        },
+        "70:ee:50:6b:7e:4a": {
+          "res": {
+            "1735620803": [
+              1011.1
+            ]
+          },
+          "type": [
+            "pressure"
+          ]
+        }
+      },
+      "modules": [
+        "02:00:00:6b:22:3e"
+      ],
+      "module_types": {
+        "02:00:00:6b:22:3e": "NAModule1"
+      }
+    },
+    {
+      "_id": "70:ee:50:96:b5:4a",
+      "place": {
+        "location": [
+          6.43966007232666,
+          59.4027557373047
+        ],
+        "timezone": "Europe/Oslo",
+        "country": "NO",
+        "altitude": 579,
+        "city": "Froa",
+        "street": "Finnflota"
+      },
+      "mark": 10,
+      "measures": {
+        "02:00:00:96:af:c8": {
+          "res": {
+            "1735620479": [
+              -4.6,
+              89
+            ]
+          },
+          "type": [
+            "temperature",
+            "humidity"
+          ]
+        },
+        "70:ee:50:96:b5:4a": {
+          "res": {
+            "1735620527": [
+              1009.8
+            ]
+          },
+          "type": [
+            "pressure"
+          ]
+        },
+        "06:00:00:06:74:ba": {
+          "wind_strength": 9,
+          "wind_angle": 224,
+          "gust_strength": 18,
+          "gust_angle": 226,
+          "wind_timeutc": 1735620524
+        }
+      },
+      "modules": [
+        "06:00:00:06:74:ba",
+        "02:00:00:96:af:c8"
+      ],
+      "module_types": {
+        "06:00:00:06:74:ba": "NAModule2",
+        "02:00:00:96:af:c8": "NAModule1"
+      }
+    },
+    {
+      "_id": "70:ee:50:53:2b:08",
+      "place": {
+        "location": [
+          6.446868,
+          59.396285
+        ],
+        "timezone": "Europe/Berlin",
+        "country": "NO",
+        "altitude": 624,
+        "city": "Jøsenfjorden",
+        "street": "Hedlebrekk"
+      },
+      "mark": 10,
+      "measures": {
+        "02:00:00:53:12:32": {
+          "res": {
+            "1735620585": [
+              -4.8,
+              91
+            ]
+          },
+          "type": [
+            "temperature",
+            "humidity"
+          ]
+        },
+        "70:ee:50:53:2b:08": {
+          "res": {
+            "1735620634": [
+              1007.5
+            ]
+          },
+          "type": [
+            "pressure"
+          ]
+        }
+      },
+      "modules": [
+        "02:00:00:53:12:32"
+      ],
+      "module_types": {
+        "02:00:00:53:12:32": "NAModule1"
+      }
+    }
+  ]
+}

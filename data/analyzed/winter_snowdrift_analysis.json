@@ -1,0 +1,83 @@
+[
+  {
+    "period": "Vinter 2024-2025",
+    "start_date": "2024-12-01",
+    "end_date": "2025-03-31",
+    "data_points": 17280,
+    "patterns": {
+      "total_events": 20,
+      "total_duration": "40",
+      "avg_duration": 2.0,
+      "max_duration": "2",
+      "patterns": {
+        "wind": {
+          "avg_max_wind": 13.309999999999999,
+          "optimal_wind_range": "12.8-14.2 m/s"
+        },
+        "temperature": {
+          "avg_min_temp": -3.8150000000000004,
+          "optimal_temp_range": "-2.7 til -4.9°C"
+        },
+        "snow": {
+          "avg_depth_at_start": 17.89666666666667,
+          "avg_depth_change": -0.016666666666666607
+        }
+      },
+      "recommendations": []
+    }
+  },
+  {
+    "period": "Vinter 2023-2024",
+    "start_date": "2023-12-01",
+    "end_date": "2024-03-31",
+    "data_points": 17423,
+    "patterns": {
+      "total_events": 177,
+      "total_duration": "354",
+      "avg_duration": 2.0,
+      "max_duration": "2",
+      "patterns": {
+        "wind": {
+          "avg_max_wind": 11.827118644067797,
+          "optimal_wind_range": "10.5-13.1 m/s"
+        },
+        "temperature": {
+          "avg_min_temp": -6.122033898305085,
+          "optimal_temp_range": "-4.0 til -8.7°C"
+        },
+        "snow": {
+          "avg_depth_at_start": 43.2939736346516,
+          "avg_depth_change": -0.011299435028248548
+        }
+      },
+      "recommendations": []
+    }
+  },
+  {
+    "period": "Vinter 2022-2023",
+    "start_date": "2022-12-01",
+    "end_date": "2023-03-31",
+    "data_points": 17271,
+    "patterns": {
+      "total_events": 49,
+      "total_duration": "98",
+      "avg_duration": 2.0,
+      "max_duration": "2",
+      "patterns": {
+        "wind": {
+          "avg_max_wind": 11.202040816326532,
+          "optimal_wind_range": "8.3-13.5 m/s"
+        },
+        "temperature": {
+          "avg_min_temp": -4.6204081632653065,
+          "optimal_temp_range": "-1.6 til -8.4°C"
+        },
+        "snow": {
+          "avg_depth_at_start": 16.677551020408163,
+          "avg_depth_change": -0.06122448979591842
+        }
+      },
+      "recommendations": []
+    }
+  }
+]

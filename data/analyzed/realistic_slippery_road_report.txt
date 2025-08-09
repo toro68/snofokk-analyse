@@ -1,0 +1,80 @@
+
+🧊 FYSISK REALISTISK GLATT VEI-ANALYSE 2023-2024
+==============================================
+
+📊 HOVEDRESULTATER (Med fysisk realistiske kriterier)
+Antall glatt vei-perioder: 420
+Total varighet: 842.0 timer
+Gjennomsnittlig periodelengde: 2.0 timer
+Lengste periode: 3.0 timer
+
+🧊 GLATT VEI-TYPER FORDELING
+  • RIMFROST: 80 perioder, 160.0 timer (19.0%), maks risiko 100.0
+  • FREEZING_RAIN: 336 perioder, 672.0 timer (80.0%), maks risiko 100.0
+  • ICE_FORMATION: 1 perioder, 2.0 timer (0.2%), maks risiko 83.2
+  • REFREEZING: 3 perioder, 8.0 timer (0.7%), maks risiko 71.0
+
+🚨 FAREGRAD FORDELING
+  • EXTREME: 218 perioder (51.9%)
+  • HIGH: 198 perioder (47.1%)
+  • MEDIUM: 4 perioder (1.0%)
+
+📅 MÅNEDLIG FORDELING
+  • November: 26 perioder (6.2%)
+  • Desember: 81 perioder (19.3%)
+  • Januar: 80 perioder (19.0%)
+  • Februar: 111 perioder (26.4%)
+  • Mars: 67 perioder (16.0%)
+  • April: 55 perioder (13.1%)
+
+
+🚨 TOPP 5 FARLIGSTE PERIODER
+==========================
+
+1. 07.11.2023 04:00 - 07.11.2023 04:10
+   Type: RIMFROST | Varighet: 2.0t
+   Temperatur: -0.2°C til 0.2°C
+   Risikoscore: 100.0/100 | Faregrad: EXTREME
+   Målinger: 2 datapunkter
+   Luftfuktighet: 92.0% | Vind: 0.9 m/s
+2. 07.11.2023 07:00 - 07.11.2023 07:10
+   Type: RIMFROST | Varighet: 2.0t
+   Temperatur: 0.0°C til 0.3°C
+   Risikoscore: 100.0/100 | Faregrad: EXTREME
+   Målinger: 2 datapunkter
+   Luftfuktighet: 92.0% | Vind: 0.7 m/s
+3. 09.11.2023 05:00 - 09.11.2023 05:10
+   Type: RIMFROST | Varighet: 2.0t
+   Temperatur: -0.5°C til -0.2°C
+   Risikoscore: 100.0/100 | Faregrad: EXTREME
+   Målinger: 2 datapunkter
+   Luftfuktighet: 92.0% | Vind: 0.2 m/s
+4. 22.11.2023 07:00 - 22.11.2023 07:10
+   Type: FREEZING_RAIN | Varighet: 2.0t
+   Temperatur: -0.2°C til -0.1°C
+   Risikoscore: 100.0/100 | Faregrad: EXTREME
+   Målinger: 2 datapunkter
+   Luftfuktighet: 97.0% | Vind: 2.6 m/s | Nedbør: 2.10mm
+5. 22.11.2023 08:00 - 22.11.2023 08:10
+   Type: FREEZING_RAIN | Varighet: 2.0t
+   Temperatur: -0.3°C til -0.2°C
+   Risikoscore: 100.0/100 | Faregrad: EXTREME
+   Målinger: 2 datapunkter
+   Luftfuktighet: 97.0% | Vind: 2.3 m/s | Nedbør: 2.40mm
+
+🎯 FYSISK REALISTISKE KRITERIER BRUKT
+===================================
+• RIMFROST: Temp -2°C til 0°C + fuktighet ≥90% + vindstille + natt
+• IS-DANNELSE: Temp ≤-1°C + fuktighet ≥80% + temperaturfall >1°C/t
+• UNDERKJØLT REGN: Temp -1°C til +1°C + nedbør >0.1mm/h
+• REFRYZING: Tidligere smelting + temp ≤0°C + natt
+
+🔧 KONKLUSJON
+=============
+Med fysisk realistiske kriterier identifiserer vi:
+1. 420 faktiske glatt vei-perioder (ikke overestimering)
+2. Korrekt vektlegging av ulike risikofaktorer
+3. Realistisk faregrad-vurdering
+4. Berøpfei krav om både temperatur, fuktighet og vind
+
+Dette gir et MYE mer PRESIST bilde av glatt vei-risiko!

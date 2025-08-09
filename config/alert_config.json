@@ -1,0 +1,55 @@
+{
+    "frost_client_id": "43fefca2-a26b-415b-954d-ba9af37e3e1f",
+    "weather_station": "SN46220",
+    
+    "wind_strong": 11.5,
+    "wind_moderate": 6.5,
+    "wind_gust": 16.96,
+    "wind_dir_change": 37.83,
+    "wind_weight": 0.4,
+    
+    "temp_cold": -3.0,
+    "temp_cool": 0.0,
+    "temp_weight": 0.3,
+    
+    "snow_high": 2.0,
+    "snow_moderate": 1.2,
+    "snow_low": 0.5,
+    "snow_weight": 0.3,
+    
+    "min_duration": 2,
+    "humidity_max": 85.0,
+    "risk_threshold": 0.78,
+    "cooldown_hours": 12,
+    
+    "email_from": "kalvaknuten@gmail.com",
+    "email_to": "kalvaknuten@gmail.com",
+    "smtp_server": "smtp.gmail.com",
+    "smtp_username": "kalvaknuten",
+    "smtp_password": "klrv mhbt bjzg nrim",
+
+    "slippery_roads": {
+        "temp_min": 0.0,
+        "temp_max": 5.0,
+        "humidity_min": 85.0,
+        "precip_3h_min": 2.0,
+        "snow_depth_min": 10.0,
+        "snow_change_max": -0.3,
+        "fresh_snow_max": 1.0,
+        "cooldown_hours": 12,
+        "min_duration": 3,
+        "max_duration": 48,
+        "max_gap": 3
+    },
+
+    "daily_report": {
+        "season_start": "11-01",
+        "season_end": "05-01",
+        "report_time": "06:30",
+        "snow_threshold": 5.0,
+        "temp_threshold": 2.0,
+        "precip_threshold": 1.0,
+        "wind_threshold": 8.0,
+        "graph_hours": 24
+    }
+} 

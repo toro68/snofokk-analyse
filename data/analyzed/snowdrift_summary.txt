@@ -1,0 +1,17 @@
+=== Snøfokkanalyse ===
+
+Optimal vindterskel: 6 m/s
+Optimal temperaturterskel: -0.5°C
+Optimal luftfuktighetsterskel: 70%
+Totalt antall timer med sannsynlig snøfokk: 248
+
+Vindretningsstatistikk:
+count    27378.00000
+mean       177.89382
+std         89.40770
+min          0.00000
+25%        132.00000
+50%        156.00000
+75%        207.00000
+max        360.00000
+Name: wind_from_direction, dtype: float64

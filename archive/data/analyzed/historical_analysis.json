@@ -1,0 +1,19 @@
+[
+  {
+    "periode_start": "2018-02-06",
+    "periode_slutt": "2018-04-30",
+    "antall_dager": 83,
+    "antall_målinger": 2002,
+    "temperatur": {
+      "min": -16.6,
+      "max": 13.5,
+      "gjennomsnitt": -1.3923461730865434
+    },
+    "vind": {
+      "max_vindkast": 28.4,
+      "gjennomsnitt": 2.977928162415409
+    },
+    "snø": {
+      "max_dybde": 94.1,
+      "gjennomsnitt": 52.31988272921109,
+      "dager_med_snø": 

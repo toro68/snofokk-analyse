@@ -1,0 +1,144 @@
+# AI-regler for brøytesystem
+language: norsk  # All kommunikasjon skal være på norsk
+style: profesjonell  # Profesjonell men konverserende tone
+timezone: Europe/Oslo  # Tidssone for all datohåndtering
+
+# Kodestandard
+code_style:
+  - Følg PEP 8 for Python-kode
+  - Maksimal linjelengde er 79 tegn
+  - Bruk norske variabelnavn og kommentarer
+  - Dokumenter funksjoner med docstrings på norsk
+  - Logg viktige hendelser med logging-modulen
+  - Bruk f-strings for formatering
+  - Bruk type hints for bedre lesbarhet
+  - Del opp lange funksjoner i mindre, gjenbrukbare deler
+
+# Filstruktur
+project_structure:
+  scripts:
+    - Hovedscript i scripts/-mappen
+    - Hjelpefunksjoner i scripts/utils/
+    - Utdaterte script i scripts/arkivert/
+  data:
+    - Rådata i data/raw/
+    - Prosessert data i data/processed/
+    - Temporære filer i data/temp/
+    - Kart og grafer i data/output/
+  config:
+    - Hovedkonfig i config/
+    - Test-konfig i config/test/
+  logs:
+    - Separate loggfiler per script
+    - Roter logger hver uke
+    - Behold logger i 3 måneder
+
+# Sikkerhet
+security:
+  konfigurasjon:
+    - Aldri hardkod passord eller API-nøkler
+    - Bruk miljøvariabler for ekstra sensitiv data
+    - Krypter konfigurasjonsfiler i produksjon
+  validering:
+    - Valider all brukerinput
+    - Sjekk filrettigheter før skriving
+    - Sikre backup før kritiske operasjoner
+  feilhåndtering:
+    - Logg alle feil med stack trace
+    - Send varsler ved kritiske feil
+    - Implementer retry-mekanismer for nettverkskall
+
+# Datahåndtering
+data_handling:
+  datoformat:
+    - Lagre alle datoer i ISO-format med UTC
+    - Vis datoer i norsk format (DD.MM.YYYY)
+    - Håndter sommertid korrekt
+  kundedata:
+    - Konverter kundeID til string ved sammenligning
+    - Valider koordinater før bruk
+    - Sjekk at alle påkrevde felt er tilstede
+  backup:
+    - Ta backup før større dataendringer
+    - Behold ukentlige backups i 3 måneder
+    - Automatisk backup ved kritiske operasjoner
+
+# Kartgenerering
+map_generation:
+  kart:
+    - Bruk Folium for interaktive kart
+    - Sentrer kart på Fjellbergsskardet
+    - Zoom-nivå 16 som standard
+    - Bruk CartoDB positron som basiskart
+  markører:
+    - Blå markør for årsabonnement
+    - Rød markør for ukentlige bestillinger
+    - Tydelige kundenummer som labels
+    - Minimum 12px markørstørrelse for touch
+  output:
+    - Generer både HTML og PNG
+    - PNG med minimum 1920x1080 oppløsning
+    - Inkluder mobilvennlig tegnforklaring
+    - Optimaliser for utskrift
+
+# E-post
+email:
+  format:
+    - HTML-formatert hovedinnhold
+    - Inkluder ren tekst-versjon
+    - Norsk formatering av datoer og tall
+    - Konsistent font og stil
+  vedlegg:
+    - HTML-versjon av kart
+    - PNG-versjon av kart
+    - Maksimal vedleggstørrelse 10MB
+  innhold:
+    - Tydelig statistikk først
+    - Gruppér kunder etter rode
+    - Marker ukentlige bestillinger med stjerne
+    - Inkluder dato og tidspunkt for generering
+
+# Værdata
+weather:
+  api:
+    - Bruk Frost API for værdata
+    - Cache værdata i 15 minutter
+    - Implementer rate limiting
+    - Håndter API-feil grasiøst
+  varsler:
+    - Varsle ved > 10cm nysnø
+    - Varsle ved snøfokk (vind > 6 m/s og temp < -1°C)
+    - Varsle ved ekstremvær
+    - Send SMS ved kritiske varsler
+
+# Testing
+testing:
+  enhetstester:
+    - Test alle kritiske funksjoner
+    - Mock eksterne API-kall
+    - Test med realistiske testdata
+  integrasjonstester:
+    - Test hele brøyteplanleggingen
+    - Valider kartgenerering
+    - Test e-postutsending
+  logging:
+    - Logg alle testresultater
+    - Separate logger for tester
+    - Behold testlogger i 1 måned
+
+# Vedlikehold
+maintenance:
+  kode:
+    - Dokumenter alle større endringer
+    - Hold dependencies oppdatert
+    - Fjern utdatert kode
+    - Optimaliser ytelse der mulig
+  data:
+    - Rydd i gamle kartfiler ukentlig
+    - Arkiver gamle brøyteplaner månedlig
+    - Valider databaseintegritet ukentlig
+  overvåking:
+    - Overvåk diskplass
+    - Sjekk API-tilgjengelighet
+    - Monitor systemressurser
+    - Varsle ved unormale mønstre 

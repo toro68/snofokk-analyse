@@ -1,0 +1,73 @@
+BRØYTEPLAN FOR 20.02.2025
+
+Oversikt over tun som skal brøytes:
+(* = ukentlig bestilling)
+
+Rode 1:
+- 142
+- 145
+- 149
+- 156
+- 158
+- 160 *
+- 164
+- 168 *
+
+Rode 2:
+- 169 *
+- 175
+- 177
+- 179 *
+- 183
+- 191
+- 197
+- 199
+
+Rode 3:
+- 220
+- 222
+
+Rode 4:
+- 277
+- 283
+- 295
+- 299 *
+- 300
+- 305
+
+Rode 5:
+- 1 *
+- 3B
+- 3D
+- 5
+- 7
+- 9
+
+Rode 6:
+- 16
+- 18
+- 20
+- 28
+- 30
+- 36
+- 42
+- 46
+
+Rode 7:
+- 51
+- 55
+- 57
+- 59
+- 67
+
+Totalt 43 tun
+- 37 årsabonnement
+- 6 ukentlige bestillinger
+
+-------------------
+Se vedlagte filer for kart:
+- HTML-fil = Interaktivt kart
+- PDF-fil = Utskriftsvennlig kart
+
+Blå markører = Årsabonnement
+Røde markører = Ukentlig bestilling
