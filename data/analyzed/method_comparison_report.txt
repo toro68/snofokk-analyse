@@ -1,0 +1,21 @@
+
+🔍 SAMMENLIGNING AV SNØFOKK ANALYSEMETODER
+===================================================
+
+
+📊 FIXED ENHANCED
+---------------------------------------------------
+Totalt antall hendelser: 577
+Usynlig snøfokk: 64 hendelser
+Høy risiko hendelser: 88
+
+Hendelsestyper:
+  • Unknown: 40 (6.9%)
+  • Invisible Drift: 449 (77.8%)
+  • Eroding Drift: 43 (7.5%)
+  • Accumulating Drift: 45 (7.8%)
+
+Faregrad fordeling:
+  • MEDIUM: 85 (14.7%)
+  • HIGH: 492 (85.3%)
+

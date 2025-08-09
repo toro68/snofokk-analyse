@@ -1,0 +1,1797 @@
+2024-12-30 14:10:53,169 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/logs/app.log", inode=28781180, flags=10100, id=450457250): is_created, is_file
+2024-12-30 14:10:53,169 - fsevents - DEBUG - queue_event <FileCreatedEvent: event_type=created, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/logs/app.log', is_directory=False>
+2024-12-30 14:10:53,170 - fsevents - DEBUG - queue_event <DirModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/logs', is_directory=True>
+2024-12-30 14:11:05,385 - snofokk - INFO - Første observasjon inneholder følgende elementer:
+2024-12-30 14:11:05,386 - snofokk - INFO - air_temperature: -3.6
+2024-12-30 14:11:05,386 - snofokk - INFO - surface_snow_thickness: -1
+2024-12-30 14:11:05,386 - snofokk - INFO - wind_speed: 1.7
+2024-12-30 14:11:05,386 - snofokk - INFO - wind_from_direction: 183
+2024-12-30 14:11:05,386 - snofokk - INFO - relative_humidity: 74
+2024-12-30 14:11:05,386 - snofokk - INFO - max(wind_speed_of_gust PT1H): 4.4
+2024-12-30 14:11:05,386 - snofokk - INFO - max(wind_speed PT1H): 3
+2024-12-30 14:11:05,386 - snofokk - INFO - min(air_temperature PT1H): -3.6
+2024-12-30 14:11:05,386 - snofokk - INFO - max(air_temperature PT1H): -2.3
+2024-12-30 14:11:05,386 - snofokk - INFO - sum(duration_of_precipitation PT1H): 0
+2024-12-30 14:11:05,386 - snofokk - INFO - sum(precipitation_amount PT1H): 0
+2024-12-30 14:11:05,386 - snofokk - INFO - dew_point_temperature: -7.4
+2024-12-30 14:11:05,386 - snofokk - INFO - Eksempel på rådata fra API:
+2024-12-30 14:11:05,386 - snofokk - INFO - Tidspunkt: 2023-11-01T00:00:00.000Z
+2024-12-30 14:11:05,386 - snofokk - INFO - Tilgjengelige målinger:
+2024-12-30 14:11:05,386 - snofokk - INFO - Element: air_temperature, Verdi: -3.6
+2024-12-30 14:11:05,386 - snofokk - INFO - Element: surface_snow_thickness, Verdi: -1
+2024-12-30 14:11:05,386 - snofokk - INFO - Element: wind_speed, Verdi: 1.7
+2024-12-30 14:11:05,387 - snofokk - INFO - Element: wind_from_direction, Verdi: 183
+2024-12-30 14:11:05,387 - snofokk - INFO - Element: relative_humidity, Verdi: 74
+2024-12-30 14:11:05,387 - snofokk - INFO - Element: max(wind_speed_of_gust PT1H), Verdi: 4.4
+2024-12-30 14:11:05,387 - snofokk - INFO - Element: max(wind_speed PT1H), Verdi: 3
+2024-12-30 14:11:05,387 - snofokk - INFO - Element: min(air_temperature PT1H), Verdi: -3.6
+2024-12-30 14:11:05,387 - snofokk - INFO - Element: max(air_temperature PT1H), Verdi: -2.3
+2024-12-30 14:11:05,387 - snofokk - INFO - Element: sum(duration_of_precipitation PT1H), Verdi: 0
+2024-12-30 14:11:05,387 - snofokk - INFO - Element: sum(precipitation_amount PT1H), Verdi: 0
+2024-12-30 14:11:05,387 - snofokk - INFO - Element: dew_point_temperature, Verdi: -7.4
+2024-12-30 14:11:05,421 - snofokk - INFO - Snødybdedata analyse:
+2024-12-30 14:11:05,423 - snofokk - INFO - Unike verdier i surface_snow_thickness: [-1.   2.3  2.4  2.1  2.   2.5  2.8  2.9  3.1  3.7  4.   4.9  4.8  4.7
+  5.4  6.8  7.3  8.1  8.   7.9  7.8  7.7  7.6  7.4  7.2  7.   6.6  6.7
+  6.5  6.3  6.1  6.   5.8  5.6  5.1  5.3  5.5  5.2  5.   4.6  4.5  4.4
+  4.3  4.2  4.1  3.9  3.8  3.6  3.5  3.4  3.3 10.5 11.8 12.6 13.  11.2
+  9.8  8.3 10.2 10.7 12.2 15.  16.1 17.2 17.8 19.1 18.9 19.4 19.3 19.
+ 18.8 18.6 18.5 18.4 18.2 18.  17.6 17.5 17.4 17.1 17.  16.9 16.8 16.7
+ 16.6 16.5 16.2 16.  15.9 15.8 15.7 15.6 15.5 15.3 15.2 15.1 14.9 14.8
+ 14.7 14.5 14.4 14.6 16.4 18.1 14.  10.6  9.2  8.5  8.2  8.4  8.6  8.8
+  9.3 10.3 11.7 13.2 13.5 13.3 14.2 16.3 21.6 22.  21.9 23.3 29.  31.
+ 35.1 36.3 36.7 37.7 37.8 37.6 37.3 38.7 39.1 38.3 38.  37.4 37.2 36.5
+ 36.4 36.1 35.7 35.8 35.6 35.3 35.2 35.  34.9 34.8 34.4 34.1 33.9 33.7
+ 33.5 33.3 33.  32.8 32.7 32.5 32.4 32.1 31.8 31.7 31.6 31.4 31.2 30.7
+ 30.8 30.5 30.3 30.1 29.8 29.6 29.4 29.3 29.2 29.1 28.8 28.6 28.5 28.4
+ 28.1 28.2 28.  27.9 27.6 27.4 27.3 27.1 26.9 26.8 26.7 26.5 26.4 26.3
+ 26.1 26.2 26.  25.8 25.9 25.7 25.6 25.5 25.4  9.6  6.9  6.4  6.2  5.7
+  7.5  8.9  9.4 10.1 11.  11.3 10.   9.7  9.1  5.9  3.2  2.7  2.2  8.7
+ 13.8 15.4 17.9 18.7 19.8 20.1 22.9 23.5 29.9 30.2 36.8 37.  39.7 40.
+ 40.1 40.6 40.7 40.5 40.3 40.4 42.  44.4 46.  47.4 48.7 51.2 53.3 56.7
+ 56.5 56.  55.6 55.7 54.4 45.3 41.6 32.  29.5 27.5 25.3 25.2 30.4 30.
+ 35.9 35.4 34.7 34.5 34.3 33.8 33.6 33.1 32.9 32.3 36.  39.5 41.1 40.2
+ 39.2 37.9 36.6 34.2 36.9 37.5 42.4 42.2 41.9 41.7 41.8 41.5 41.4 41.2
+ 41.  40.9 38.5 29.7 30.6 31.3 38.9 44.1 43.8 43.4 43.2 43.5 42.3 42.7
+ 43.3 44.7 44.8 45.2 45.4 45.1 45.  44.9 44.6 44.5 44.3 40.8 39.  38.8
+ 38.6 38.4 38.2 37.1 36.2 34.6 34.  31.5 31.1 30.9 27.  27.2 27.7 27.8
+ 35.5 38.1 42.5 47.9 48.9 54.7 54.9 57.6 57.3 56.8 56.6 56.1 55.8 55.4
+ 55.3 55.1 55.  54.8 54.3 54.  53.9 53.7 53.8 53.6 53.  52.5 52.3 52.2
+ 52.1 52.  51.8 51.6 52.4 56.3 57.2 58.5 62.  63.5 63.6 63.8 64.7 64.6
+ 64.8 64.5 64.2 64.4 65.2 67.  67.7 69.3 69.7 70.  69.4 69.2 69.1 68.8
+ 70.9 70.5 70.1 69.8 69.6 69.5 73.7 73.8 73.6 73.2 72.8 72.7 72.4 72.1
+ 71.7 71.4 70.8 70.3 72.6 72.9 74.1 75.6 77.4 78.  77.9 77.1 76.6 76.2
+ 75.7 75.2 74.5 74.  75.1 76.3 77.3 78.9 80.9 81.8 81.1 81.4 80.8 80.2
+ 79.7 79.2 78.7 78.2 77.5 76.1 65.7 63.4 62.4 61.4 60.9 60.3 59.9 59.5
+ 58.8 59.4 59.2 59.6 61.6 61.5 61.9 62.6 62.5 62.8 61.3 61.2 61.  62.3
+ 63.2 62.9 62.7 62.1 64.  60.7 60.  59.3 58.6 58.3 57.8 57.7 57.4 56.9
+ 57.  56.4 55.9 55.2 54.5 54.6 58.1 57.1 55.5 53.4 53.2 52.8 52.9 52.7
+ 52.6 51.9 51.7 51.5 51.1 50.6 50.3 50.4 50.2 49.7 50.  49.9 50.1 49.8
+ 49.6 50.9 53.1 53.5 59.  67.1 71.1 74.2 74.3 73.5 73.4 73.3 73.1 73.
+ 72.5 72.2 72.3 75.4 75.8 79.6 81.7 82.3 83.2 84.1 84.8 87.5 90.7 90.8
+ 90.  89.  87.2 85.  83.1 81.5 80.7 77.8 75.  70.4 67.5 67.4 67.2 66.8
+ 66.1 65.9 65.8 65.6 66.4 66.7 66.6 66.3 66.  65.4 65.3 65.1 72.  70.6
+ 65.  66.9 68.7 67.8 68.  71.  69.9 68.3 65.5 64.3 68.5 74.7 74.6 74.4
+ 75.3 80.5 80.4 80.1 80.  79.9 80.6 79.8 79.3 63.1 63.  63.9 67.9 68.6
+ 62.2 61.8 61.7 63.3 67.6 71.3 71.2 70.2 61.1 60.8 60.6 59.7 54.2 54.1
+ 51.4 51.3 50.8 50.7 50.5 49.4 49.3 49.  48.8 48.5 48.3 48.2 48.4 48.6
+ 51.  60.4 60.1 63.7 71.5 68.1 66.5 59.8 59.1 58.7 58.2 57.5 56.2 49.1
+ 49.2 46.3 46.4 45.9 45.8 45.5 44.  44.2 43.9 43.6 43.7 43.1 43.  42.8
+ 42.9 42.1 41.3 39.8 33.4 33.2 32.6 31.9 32.2 58.9 58.  58.4 49.5 48.1
+ 46.9 46.7 45.6 39.9 39.3 39.4 28.9 28.7 28.3 26.6 24.7 23.9 22.7 22.2
+ 22.1 21.3 20.9 20.6 20.7 14.3 12.9 12.4 12.3 11.1 10.9 10.8 10.4  9.9
+  9.5 11.4 11.6 12. ]
+2024-12-30 14:11:05,423 - snofokk - INFO - Antall ikke-null verdier: 4344
+2024-12-30 14:11:05,423 - snofokk - INFO - Eksempel på første 5 snødybdeverdier:
+2024-12-30 14:11:05,423 - snofokk - INFO - timestamp
+2023-11-01 00:00:00   -1.0
+2023-11-01 01:00:00   -1.0
+2023-11-01 02:00:00   -1.0
+2023-11-01 03:00:00   -1.0
+2023-11-01 04:00:00   -1.0
+Name: surface_snow_thickness, dtype: float64
+2024-12-30 14:11:53,482 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450459138): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:11:53,484 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:11:57,917 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450459272): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:11:57,918 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:12:01,597 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450459432): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:12:01,598 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:12:05,552 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450459559): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:12:05,560 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:12:08,499 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450459706): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:12:08,502 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:12:18,607 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450460046): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:12:18,608 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:12:22,934 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450460186): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:12:22,936 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:12:25,574 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450460288): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:12:25,575 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:12:30,742 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450460434): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:12:30,743 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:12:37,073 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450460555): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:12:37,074 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:12:39,978 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450460686): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:12:39,978 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:12:40,800 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450460875): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:12:40,800 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:12:59,722 - snofokk - INFO - Første observasjon inneholder følgende elementer:
+2024-12-30 14:12:59,722 - snofokk - INFO - air_temperature: -3.6
+2024-12-30 14:12:59,722 - snofokk - INFO - surface_snow_thickness: -1
+2024-12-30 14:12:59,722 - snofokk - INFO - wind_speed: 1.7
+2024-12-30 14:12:59,722 - snofokk - INFO - wind_from_direction: 183
+2024-12-30 14:12:59,722 - snofokk - INFO - relative_humidity: 74
+2024-12-30 14:12:59,722 - snofokk - INFO - max(wind_speed_of_gust PT1H): 4.4
+2024-12-30 14:12:59,722 - snofokk - INFO - max(wind_speed PT1H): 3
+2024-12-30 14:12:59,722 - snofokk - INFO - min(air_temperature PT1H): -3.6
+2024-12-30 14:12:59,722 - snofokk - INFO - max(air_temperature PT1H): -2.3
+2024-12-30 14:12:59,722 - snofokk - INFO - sum(duration_of_precipitation PT1H): 0
+2024-12-30 14:12:59,722 - snofokk - INFO - sum(precipitation_amount PT1H): 0
+2024-12-30 14:12:59,723 - snofokk - INFO - dew_point_temperature: -7.4
+2024-12-30 14:12:59,723 - snofokk - INFO - Eksempel på rådata fra API:
+2024-12-30 14:12:59,723 - snofokk - INFO - Tidspunkt: 2023-11-01T00:00:00.000Z
+2024-12-30 14:12:59,723 - snofokk - INFO - Tilgjengelige målinger:
+2024-12-30 14:12:59,723 - snofokk - INFO - Element: air_temperature, Verdi: -3.6
+2024-12-30 14:12:59,723 - snofokk - INFO - Element: surface_snow_thickness, Verdi: -1
+2024-12-30 14:12:59,723 - snofokk - INFO - Element: wind_speed, Verdi: 1.7
+2024-12-30 14:12:59,723 - snofokk - INFO - Element: wind_from_direction, Verdi: 183
+2024-12-30 14:12:59,723 - snofokk - INFO - Element: relative_humidity, Verdi: 74
+2024-12-30 14:12:59,723 - snofokk - INFO - Element: max(wind_speed_of_gust PT1H), Verdi: 4.4
+2024-12-30 14:12:59,723 - snofokk - INFO - Element: max(wind_speed PT1H), Verdi: 3
+2024-12-30 14:12:59,723 - snofokk - INFO - Element: min(air_temperature PT1H), Verdi: -3.6
+2024-12-30 14:12:59,723 - snofokk - INFO - Element: max(air_temperature PT1H), Verdi: -2.3
+2024-12-30 14:12:59,723 - snofokk - INFO - Element: sum(duration_of_precipitation PT1H), Verdi: 0
+2024-12-30 14:12:59,723 - snofokk - INFO - Element: sum(precipitation_amount PT1H), Verdi: 0
+2024-12-30 14:12:59,723 - snofokk - INFO - Element: dew_point_temperature, Verdi: -7.4
+2024-12-30 14:12:59,757 - snofokk - INFO - Snødybdedata analyse:
+2024-12-30 14:12:59,761 - snofokk - INFO - Unike verdier i surface_snow_thickness: [-1.   2.3  2.4  2.1  2.   2.5  2.8  2.9  3.1  3.7  4.   4.9  4.8  4.7
+  5.4  6.8  7.3  8.1  8.   7.9  7.8  7.7  7.6  7.4  7.2  7.   6.6  6.7
+  6.5  6.3  6.1  6.   5.8  5.6  5.1  5.3  5.5  5.2  5.   4.6  4.5  4.4
+  4.3  4.2  4.1  3.9  3.8  3.6  3.5  3.4  3.3 10.5 11.8 12.6 13.  11.2
+  9.8  8.3 10.2 10.7 12.2 15.  16.1 17.2 17.8 19.1 18.9 19.4 19.3 19.
+ 18.8 18.6 18.5 18.4 18.2 18.  17.6 17.5 17.4 17.1 17.  16.9 16.8 16.7
+ 16.6 16.5 16.2 16.  15.9 15.8 15.7 15.6 15.5 15.3 15.2 15.1 14.9 14.8
+ 14.7 14.5 14.4 14.6 16.4 18.1 14.  10.6  9.2  8.5  8.2  8.4  8.6  8.8
+  9.3 10.3 11.7 13.2 13.5 13.3 14.2 16.3 21.6 22.  21.9 23.3 29.  31.
+ 35.1 36.3 36.7 37.7 37.8 37.6 37.3 38.7 39.1 38.3 38.  37.4 37.2 36.5
+ 36.4 36.1 35.7 35.8 35.6 35.3 35.2 35.  34.9 34.8 34.4 34.1 33.9 33.7
+ 33.5 33.3 33.  32.8 32.7 32.5 32.4 32.1 31.8 31.7 31.6 31.4 31.2 30.7
+ 30.8 30.5 30.3 30.1 29.8 29.6 29.4 29.3 29.2 29.1 28.8 28.6 28.5 28.4
+ 28.1 28.2 28.  27.9 27.6 27.4 27.3 27.1 26.9 26.8 26.7 26.5 26.4 26.3
+ 26.1 26.2 26.  25.8 25.9 25.7 25.6 25.5 25.4  9.6  6.9  6.4  6.2  5.7
+  7.5  8.9  9.4 10.1 11.  11.3 10.   9.7  9.1  5.9  3.2  2.7  2.2  8.7
+ 13.8 15.4 17.9 18.7 19.8 20.1 22.9 23.5 29.9 30.2 36.8 37.  39.7 40.
+ 40.1 40.6 40.7 40.5 40.3 40.4 42.  44.4 46.  47.4 48.7 51.2 53.3 56.7
+ 56.5 56.  55.6 55.7 54.4 45.3 41.6 32.  29.5 27.5 25.3 25.2 30.4 30.
+ 35.9 35.4 34.7 34.5 34.3 33.8 33.6 33.1 32.9 32.3 36.  39.5 41.1 40.2
+ 39.2 37.9 36.6 34.2 36.9 37.5 42.4 42.2 41.9 41.7 41.8 41.5 41.4 41.2
+ 41.  40.9 38.5 29.7 30.6 31.3 38.9 44.1 43.8 43.4 43.2 43.5 42.3 42.7
+ 43.3 44.7 44.8 45.2 45.4 45.1 45.  44.9 44.6 44.5 44.3 40.8 39.  38.8
+ 38.6 38.4 38.2 37.1 36.2 34.6 34.  31.5 31.1 30.9 27.  27.2 27.7 27.8
+ 35.5 38.1 42.5 47.9 48.9 54.7 54.9 57.6 57.3 56.8 56.6 56.1 55.8 55.4
+ 55.3 55.1 55.  54.8 54.3 54.  53.9 53.7 53.8 53.6 53.  52.5 52.3 52.2
+ 52.1 52.  51.8 51.6 52.4 56.3 57.2 58.5 62.  63.5 63.6 63.8 64.7 64.6
+ 64.8 64.5 64.2 64.4 65.2 67.  67.7 69.3 69.7 70.  69.4 69.2 69.1 68.8
+ 70.9 70.5 70.1 69.8 69.6 69.5 73.7 73.8 73.6 73.2 72.8 72.7 72.4 72.1
+ 71.7 71.4 70.8 70.3 72.6 72.9 74.1 75.6 77.4 78.  77.9 77.1 76.6 76.2
+ 75.7 75.2 74.5 74.  75.1 76.3 77.3 78.9 80.9 81.8 81.1 81.4 80.8 80.2
+ 79.7 79.2 78.7 78.2 77.5 76.1 65.7 63.4 62.4 61.4 60.9 60.3 59.9 59.5
+ 58.8 59.4 59.2 59.6 61.6 61.5 61.9 62.6 62.5 62.8 61.3 61.2 61.  62.3
+ 63.2 62.9 62.7 62.1 64.  60.7 60.  59.3 58.6 58.3 57.8 57.7 57.4 56.9
+ 57.  56.4 55.9 55.2 54.5 54.6 58.1 57.1 55.5 53.4 53.2 52.8 52.9 52.7
+ 52.6 51.9 51.7 51.5 51.1 50.6 50.3 50.4 50.2 49.7 50.  49.9 50.1 49.8
+ 49.6 50.9 53.1 53.5 59.  67.1 71.1 74.2 74.3 73.5 73.4 73.3 73.1 73.
+ 72.5 72.2 72.3 75.4 75.8 79.6 81.7 82.3 83.2 84.1 84.8 87.5 90.7 90.8
+ 90.  89.  87.2 85.  83.1 81.5 80.7 77.8 75.  70.4 67.5 67.4 67.2 66.8
+ 66.1 65.9 65.8 65.6 66.4 66.7 66.6 66.3 66.  65.4 65.3 65.1 72.  70.6
+ 65.  66.9 68.7 67.8 68.  71.  69.9 68.3 65.5 64.3 68.5 74.7 74.6 74.4
+ 75.3 80.5 80.4 80.1 80.  79.9 80.6 79.8 79.3 63.1 63.  63.9 67.9 68.6
+ 62.2 61.8 61.7 63.3 67.6 71.3 71.2 70.2 61.1 60.8 60.6 59.7 54.2 54.1
+ 51.4 51.3 50.8 50.7 50.5 49.4 49.3 49.  48.8 48.5 48.3 48.2 48.4 48.6
+ 51.  60.4 60.1 63.7 71.5 68.1 66.5 59.8 59.1 58.7 58.2 57.5 56.2 49.1
+ 49.2 46.3 46.4 45.9 45.8 45.5 44.  44.2 43.9 43.6 43.7 43.1 43.  42.8
+ 42.9 42.1 41.3 39.8 33.4 33.2 32.6 31.9 32.2 58.9 58.  58.4 49.5 48.1
+ 46.9 46.7 45.6 39.9 39.3 39.4 28.9 28.7 28.3 26.6 24.7 23.9 22.7 22.2
+ 22.1 21.3 20.9 20.6 20.7 14.3 12.9 12.4 12.3 11.1 10.9 10.8 10.4  9.9
+  9.5 11.4 11.6 12. ]
+2024-12-30 14:12:59,761 - snofokk - INFO - Antall ikke-null verdier: 4344
+2024-12-30 14:12:59,761 - snofokk - INFO - Eksempel på første 5 snødybdeverdier:
+2024-12-30 14:12:59,762 - snofokk - INFO - timestamp
+2023-11-01 00:00:00   -1.0
+2023-11-01 01:00:00   -1.0
+2023-11-01 02:00:00   -1.0
+2023-11-01 03:00:00   -1.0
+2023-11-01 04:00:00   -1.0
+Name: surface_snow_thickness, dtype: float64
+2024-12-30 14:12:59,773 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:12:59,980 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:12:59,980 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:12:59,980 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:12:59,981 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:13:40,044 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD", inode=17978313, flags=10400, id=450462277): is_file, is_inode_meta_mod
+2024-12-30 14:13:40,053 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD', is_directory=False>
+2024-12-30 14:13:40,681 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD", inode=17978313, flags=11400, id=450462358): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:13:40,681 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD', is_directory=False>
+2024-12-30 14:13:40,696 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects/maintenance.lock", inode=28781498, flags=10300, id=450462364): is_coalesced, is_created, is_file, is_removed
+2024-12-30 14:13:40,697 - fsevents - DEBUG - queue_event <FileCreatedEvent: event_type=created, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects/maintenance.lock', is_directory=False>
+2024-12-30 14:13:40,697 - fsevents - DEBUG - queue_event <DirModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects', is_directory=True>
+2024-12-30 14:13:40,697 - fsevents - DEBUG - queue_event <FileDeletedEvent: event_type=deleted, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects/maintenance.lock', is_directory=False>
+2024-12-30 14:13:40,698 - fsevents - DEBUG - queue_event <DirModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects', is_directory=True>
+2024-12-30 14:14:04,370 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450462751): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:14:04,371 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:14:06,117 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450462872): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:14:06,122 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:14:06,136 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450462875): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:14:06,136 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:14:09,083 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450462938): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:14:09,084 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:14:11,125 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450463113): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:14:11,126 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:14:14,720 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450463231): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:14:14,720 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:14:17,942 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450463379): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:14:17,943 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:14:21,346 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450463694): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:14:21,347 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:14:25,875 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450463881): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:14:25,880 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:14:35,694 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450463955): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:14:35,695 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:14:38,788 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450464039): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:14:38,788 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:14:39,258 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450464137): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:14:39,259 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:14:45,366 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450464304): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:14:45,367 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:14:50,015 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450464512): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:14:50,017 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:14:51,451 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450464661): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:14:51,451 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:14:52,168 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450464730): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:14:52,169 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:16:02,255 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450465579): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:16:02,256 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:16:12,641 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450465842): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:16:12,642 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:16:24,207 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450466157): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:16:24,209 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:16:27,440 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450466373): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:16:27,442 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:16:32,314 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450466521): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:16:32,320 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:16:37,870 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450466684): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:16:37,870 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:16:40,272 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450466857): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:16:40,272 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:16:40,781 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD", inode=17978313, flags=10400, id=450466904): is_file, is_inode_meta_mod
+2024-12-30 14:16:40,781 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD', is_directory=False>
+2024-12-30 14:16:41,365 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD", inode=17978313, flags=11400, id=450466922): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:16:41,365 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects/maintenance.lock", inode=28781822, flags=10300, id=450466928): is_coalesced, is_created, is_file, is_removed
+2024-12-30 14:16:41,365 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD', is_directory=False>
+2024-12-30 14:16:41,366 - fsevents - DEBUG - queue_event <FileCreatedEvent: event_type=created, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects/maintenance.lock', is_directory=False>
+2024-12-30 14:16:41,366 - fsevents - DEBUG - queue_event <DirModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects', is_directory=True>
+2024-12-30 14:16:41,366 - fsevents - DEBUG - queue_event <FileDeletedEvent: event_type=deleted, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects/maintenance.lock', is_directory=False>
+2024-12-30 14:16:41,366 - fsevents - DEBUG - queue_event <DirModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects', is_directory=True>
+2024-12-30 14:16:47,722 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450467029): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:16:47,725 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:16:48,638 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450467079): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:16:48,638 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:17:28,017 - snofokk - INFO - Første observasjon inneholder følgende elementer:
+2024-12-30 14:17:28,018 - snofokk - INFO - air_temperature: -3.6
+2024-12-30 14:17:28,018 - snofokk - INFO - surface_snow_thickness: -1
+2024-12-30 14:17:28,018 - snofokk - INFO - wind_speed: 1.7
+2024-12-30 14:17:28,018 - snofokk - INFO - wind_from_direction: 183
+2024-12-30 14:17:28,018 - snofokk - INFO - relative_humidity: 74
+2024-12-30 14:17:28,018 - snofokk - INFO - max(wind_speed_of_gust PT1H): 4.4
+2024-12-30 14:17:28,018 - snofokk - INFO - max(wind_speed PT1H): 3
+2024-12-30 14:17:28,018 - snofokk - INFO - min(air_temperature PT1H): -3.6
+2024-12-30 14:17:28,018 - snofokk - INFO - max(air_temperature PT1H): -2.3
+2024-12-30 14:17:28,018 - snofokk - INFO - sum(duration_of_precipitation PT1H): 0
+2024-12-30 14:17:28,018 - snofokk - INFO - sum(precipitation_amount PT1H): 0
+2024-12-30 14:17:28,018 - snofokk - INFO - dew_point_temperature: -7.4
+2024-12-30 14:17:28,018 - snofokk - INFO - Eksempel på rådata fra API:
+2024-12-30 14:17:28,018 - snofokk - INFO - Tidspunkt: 2023-11-01T00:00:00.000Z
+2024-12-30 14:17:28,018 - snofokk - INFO - Tilgjengelige målinger:
+2024-12-30 14:17:28,018 - snofokk - INFO - Element: air_temperature, Verdi: -3.6
+2024-12-30 14:17:28,018 - snofokk - INFO - Element: surface_snow_thickness, Verdi: -1
+2024-12-30 14:17:28,018 - snofokk - INFO - Element: wind_speed, Verdi: 1.7
+2024-12-30 14:17:28,018 - snofokk - INFO - Element: wind_from_direction, Verdi: 183
+2024-12-30 14:17:28,018 - snofokk - INFO - Element: relative_humidity, Verdi: 74
+2024-12-30 14:17:28,018 - snofokk - INFO - Element: max(wind_speed_of_gust PT1H), Verdi: 4.4
+2024-12-30 14:17:28,018 - snofokk - INFO - Element: max(wind_speed PT1H), Verdi: 3
+2024-12-30 14:17:28,018 - snofokk - INFO - Element: min(air_temperature PT1H), Verdi: -3.6
+2024-12-30 14:17:28,018 - snofokk - INFO - Element: max(air_temperature PT1H), Verdi: -2.3
+2024-12-30 14:17:28,018 - snofokk - INFO - Element: sum(duration_of_precipitation PT1H), Verdi: 0
+2024-12-30 14:17:28,018 - snofokk - INFO - Element: sum(precipitation_amount PT1H), Verdi: 0
+2024-12-30 14:17:28,018 - snofokk - INFO - Element: dew_point_temperature, Verdi: -7.4
+2024-12-30 14:17:28,065 - snofokk - INFO - Snødybdedata analyse:
+2024-12-30 14:17:28,072 - snofokk - INFO - Unike verdier i surface_snow_thickness: [-1.   2.3  2.4  2.1  2.   2.5  2.8  2.9  3.1  3.7  4.   4.9  4.8  4.7
+  5.4  6.8  7.3  8.1  8.   7.9  7.8  7.7  7.6  7.4  7.2  7.   6.6  6.7
+  6.5  6.3  6.1  6.   5.8  5.6  5.1  5.3  5.5  5.2  5.   4.6  4.5  4.4
+  4.3  4.2  4.1  3.9  3.8  3.6  3.5  3.4  3.3 10.5 11.8 12.6 13.  11.2
+  9.8  8.3 10.2 10.7 12.2 15.  16.1 17.2 17.8 19.1 18.9 19.4 19.3 19.
+ 18.8 18.6 18.5 18.4 18.2 18.  17.6 17.5 17.4 17.1 17.  16.9 16.8 16.7
+ 16.6 16.5 16.2 16.  15.9 15.8 15.7 15.6 15.5 15.3 15.2 15.1 14.9 14.8
+ 14.7 14.5 14.4 14.6 16.4 18.1 14.  10.6  9.2  8.5  8.2  8.4  8.6  8.8
+  9.3 10.3 11.7 13.2 13.5 13.3 14.2 16.3 21.6 22.  21.9 23.3 29.  31.
+ 35.1 36.3 36.7 37.7 37.8 37.6 37.3 38.7 39.1 38.3 38.  37.4 37.2 36.5
+ 36.4 36.1 35.7 35.8 35.6 35.3 35.2 35.  34.9 34.8 34.4 34.1 33.9 33.7
+ 33.5 33.3 33.  32.8 32.7 32.5 32.4 32.1 31.8 31.7 31.6 31.4 31.2 30.7
+ 30.8 30.5 30.3 30.1 29.8 29.6 29.4 29.3 29.2 29.1 28.8 28.6 28.5 28.4
+ 28.1 28.2 28.  27.9 27.6 27.4 27.3 27.1 26.9 26.8 26.7 26.5 26.4 26.3
+ 26.1 26.2 26.  25.8 25.9 25.7 25.6 25.5 25.4  9.6  6.9  6.4  6.2  5.7
+  7.5  8.9  9.4 10.1 11.  11.3 10.   9.7  9.1  5.9  3.2  2.7  2.2  8.7
+ 13.8 15.4 17.9 18.7 19.8 20.1 22.9 23.5 29.9 30.2 36.8 37.  39.7 40.
+ 40.1 40.6 40.7 40.5 40.3 40.4 42.  44.4 46.  47.4 48.7 51.2 53.3 56.7
+ 56.5 56.  55.6 55.7 54.4 45.3 41.6 32.  29.5 27.5 25.3 25.2 30.4 30.
+ 35.9 35.4 34.7 34.5 34.3 33.8 33.6 33.1 32.9 32.3 36.  39.5 41.1 40.2
+ 39.2 37.9 36.6 34.2 36.9 37.5 42.4 42.2 41.9 41.7 41.8 41.5 41.4 41.2
+ 41.  40.9 38.5 29.7 30.6 31.3 38.9 44.1 43.8 43.4 43.2 43.5 42.3 42.7
+ 43.3 44.7 44.8 45.2 45.4 45.1 45.  44.9 44.6 44.5 44.3 40.8 39.  38.8
+ 38.6 38.4 38.2 37.1 36.2 34.6 34.  31.5 31.1 30.9 27.  27.2 27.7 27.8
+ 35.5 38.1 42.5 47.9 48.9 54.7 54.9 57.6 57.3 56.8 56.6 56.1 55.8 55.4
+ 55.3 55.1 55.  54.8 54.3 54.  53.9 53.7 53.8 53.6 53.  52.5 52.3 52.2
+ 52.1 52.  51.8 51.6 52.4 56.3 57.2 58.5 62.  63.5 63.6 63.8 64.7 64.6
+ 64.8 64.5 64.2 64.4 65.2 67.  67.7 69.3 69.7 70.  69.4 69.2 69.1 68.8
+ 70.9 70.5 70.1 69.8 69.6 69.5 73.7 73.8 73.6 73.2 72.8 72.7 72.4 72.1
+ 71.7 71.4 70.8 70.3 72.6 72.9 74.1 75.6 77.4 78.  77.9 77.1 76.6 76.2
+ 75.7 75.2 74.5 74.  75.1 76.3 77.3 78.9 80.9 81.8 81.1 81.4 80.8 80.2
+ 79.7 79.2 78.7 78.2 77.5 76.1 65.7 63.4 62.4 61.4 60.9 60.3 59.9 59.5
+ 58.8 59.4 59.2 59.6 61.6 61.5 61.9 62.6 62.5 62.8 61.3 61.2 61.  62.3
+ 63.2 62.9 62.7 62.1 64.  60.7 60.  59.3 58.6 58.3 57.8 57.7 57.4 56.9
+ 57.  56.4 55.9 55.2 54.5 54.6 58.1 57.1 55.5 53.4 53.2 52.8 52.9 52.7
+ 52.6 51.9 51.7 51.5 51.1 50.6 50.3 50.4 50.2 49.7 50.  49.9 50.1 49.8
+ 49.6 50.9 53.1 53.5 59.  67.1 71.1 74.2 74.3 73.5 73.4 73.3 73.1 73.
+ 72.5 72.2 72.3 75.4 75.8 79.6 81.7 82.3 83.2 84.1 84.8 87.5 90.7 90.8
+ 90.  89.  87.2 85.  83.1 81.5 80.7 77.8 75.  70.4 67.5 67.4 67.2 66.8
+ 66.1 65.9 65.8 65.6 66.4 66.7 66.6 66.3 66.  65.4 65.3 65.1 72.  70.6
+ 65.  66.9 68.7 67.8 68.  71.  69.9 68.3 65.5 64.3 68.5 74.7 74.6 74.4
+ 75.3 80.5 80.4 80.1 80.  79.9 80.6 79.8 79.3 63.1 63.  63.9 67.9 68.6
+ 62.2 61.8 61.7 63.3 67.6 71.3 71.2 70.2 61.1 60.8 60.6 59.7 54.2 54.1
+ 51.4 51.3 50.8 50.7 50.5 49.4 49.3 49.  48.8 48.5 48.3 48.2 48.4 48.6
+ 51.  60.4 60.1 63.7 71.5 68.1 66.5 59.8 59.1 58.7 58.2 57.5 56.2 49.1
+ 49.2 46.3 46.4 45.9 45.8 45.5 44.  44.2 43.9 43.6 43.7 43.1 43.  42.8
+ 42.9 42.1 41.3 39.8 33.4 33.2 32.6 31.9 32.2 58.9 58.  58.4 49.5 48.1
+ 46.9 46.7 45.6 39.9 39.3 39.4 28.9 28.7 28.3 26.6 24.7 23.9 22.7 22.2
+ 22.1 21.3 20.9 20.6 20.7 14.3 12.9 12.4 12.3 11.1 10.9 10.8 10.4  9.9
+  9.5 11.4 11.6 12. ]
+2024-12-30 14:17:28,073 - snofokk - INFO - Antall ikke-null verdier: 4344
+2024-12-30 14:17:28,073 - snofokk - INFO - Eksempel på første 5 snødybdeverdier:
+2024-12-30 14:17:28,073 - snofokk - INFO - timestamp
+2023-11-01 00:00:00   -1.0
+2023-11-01 01:00:00   -1.0
+2023-11-01 02:00:00   -1.0
+2023-11-01 03:00:00   -1.0
+2023-11-01 04:00:00   -1.0
+Name: surface_snow_thickness, dtype: float64
+2024-12-30 14:17:28,083 - __main__ - INFO - Starter forbehandling av snødybdedata
+2024-12-30 14:17:28,083 - __main__ - INFO - Fant 0 negative snødybdeverdier før behandling
+2024-12-30 14:17:28,084 - __main__ - INFO - Interpolerer 864 manglende snødybdeverdier
+2024-12-30 14:17:28,086 - __main__ - INFO - Prosesserer 4344 værobservasjoner fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:17:28,308 - __main__ - INFO - Identifiserte 182 kritiske perioder
+2024-12-30 14:17:28,309 - __main__ - INFO - fetch_and_process_data: Tid=12.46s, Minne=+53.7MB
+2024-12-30 14:17:28,309 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:17:28,309 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:17:28,310 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:17:28,312 - __main__ - WARNING - 16 manglende verdier i wind_speed
+2024-12-30 14:17:28,312 - __main__ - WARNING - 16 manglende verdier i wind_from_direction
+2024-12-30 14:17:28,312 - __main__ - WARNING - 15 manglende verdier i max(wind_speed_of_gust PT1H)
+2024-12-30 14:17:28,312 - __main__ - WARNING - 15 manglende verdier i max(wind_speed PT1H)
+2024-12-30 14:18:19,261 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450469282): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:18:19,262 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:18:23,903 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450469435): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:18:23,903 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:18:28,626 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450469535): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:18:28,628 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:18:30,341 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450469634): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:18:30,342 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:18:33,772 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450469800): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:18:33,772 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:18:35,286 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450469945): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:18:35,287 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:18:37,972 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450470052): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:18:37,972 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:18:59,566 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450470370): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:18:59,573 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:19:00,647 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450470475): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:19:00,647 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:19:06,677 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450470571): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:19:06,678 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:19:10,219 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450470712): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:19:10,219 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:19:34,812 - snofokk - INFO - Første observasjon inneholder følgende elementer:
+2024-12-30 14:19:34,813 - snofokk - INFO - air_temperature: -3.6
+2024-12-30 14:19:34,813 - snofokk - INFO - surface_snow_thickness: -1
+2024-12-30 14:19:34,813 - snofokk - INFO - wind_speed: 1.7
+2024-12-30 14:19:34,813 - snofokk - INFO - wind_from_direction: 183
+2024-12-30 14:19:34,813 - snofokk - INFO - relative_humidity: 74
+2024-12-30 14:19:34,813 - snofokk - INFO - max(wind_speed_of_gust PT1H): 4.4
+2024-12-30 14:19:34,813 - snofokk - INFO - max(wind_speed PT1H): 3
+2024-12-30 14:19:34,813 - snofokk - INFO - min(air_temperature PT1H): -3.6
+2024-12-30 14:19:34,813 - snofokk - INFO - max(air_temperature PT1H): -2.3
+2024-12-30 14:19:34,813 - snofokk - INFO - sum(duration_of_precipitation PT1H): 0
+2024-12-30 14:19:34,813 - snofokk - INFO - sum(precipitation_amount PT1H): 0
+2024-12-30 14:19:34,813 - snofokk - INFO - dew_point_temperature: -7.4
+2024-12-30 14:19:34,814 - snofokk - INFO - Eksempel på rådata fra API:
+2024-12-30 14:19:34,814 - snofokk - INFO - Tidspunkt: 2023-11-01T00:00:00.000Z
+2024-12-30 14:19:34,814 - snofokk - INFO - Tilgjengelige målinger:
+2024-12-30 14:19:34,814 - snofokk - INFO - Element: air_temperature, Verdi: -3.6
+2024-12-30 14:19:34,814 - snofokk - INFO - Element: surface_snow_thickness, Verdi: -1
+2024-12-30 14:19:34,814 - snofokk - INFO - Element: wind_speed, Verdi: 1.7
+2024-12-30 14:19:34,814 - snofokk - INFO - Element: wind_from_direction, Verdi: 183
+2024-12-30 14:19:34,814 - snofokk - INFO - Element: relative_humidity, Verdi: 74
+2024-12-30 14:19:34,814 - snofokk - INFO - Element: max(wind_speed_of_gust PT1H), Verdi: 4.4
+2024-12-30 14:19:34,814 - snofokk - INFO - Element: max(wind_speed PT1H), Verdi: 3
+2024-12-30 14:19:34,814 - snofokk - INFO - Element: min(air_temperature PT1H), Verdi: -3.6
+2024-12-30 14:19:34,814 - snofokk - INFO - Element: max(air_temperature PT1H), Verdi: -2.3
+2024-12-30 14:19:34,814 - snofokk - INFO - Element: sum(duration_of_precipitation PT1H), Verdi: 0
+2024-12-30 14:19:34,814 - snofokk - INFO - Element: sum(precipitation_amount PT1H), Verdi: 0
+2024-12-30 14:19:34,814 - snofokk - INFO - Element: dew_point_temperature, Verdi: -7.4
+2024-12-30 14:19:34,847 - snofokk - INFO - Snødybdedata analyse:
+2024-12-30 14:19:34,850 - snofokk - INFO - Unike verdier i surface_snow_thickness: [-1.   2.3  2.4  2.1  2.   2.5  2.8  2.9  3.1  3.7  4.   4.9  4.8  4.7
+  5.4  6.8  7.3  8.1  8.   7.9  7.8  7.7  7.6  7.4  7.2  7.   6.6  6.7
+  6.5  6.3  6.1  6.   5.8  5.6  5.1  5.3  5.5  5.2  5.   4.6  4.5  4.4
+  4.3  4.2  4.1  3.9  3.8  3.6  3.5  3.4  3.3 10.5 11.8 12.6 13.  11.2
+  9.8  8.3 10.2 10.7 12.2 15.  16.1 17.2 17.8 19.1 18.9 19.4 19.3 19.
+ 18.8 18.6 18.5 18.4 18.2 18.  17.6 17.5 17.4 17.1 17.  16.9 16.8 16.7
+ 16.6 16.5 16.2 16.  15.9 15.8 15.7 15.6 15.5 15.3 15.2 15.1 14.9 14.8
+ 14.7 14.5 14.4 14.6 16.4 18.1 14.  10.6  9.2  8.5  8.2  8.4  8.6  8.8
+  9.3 10.3 11.7 13.2 13.5 13.3 14.2 16.3 21.6 22.  21.9 23.3 29.  31.
+ 35.1 36.3 36.7 37.7 37.8 37.6 37.3 38.7 39.1 38.3 38.  37.4 37.2 36.5
+ 36.4 36.1 35.7 35.8 35.6 35.3 35.2 35.  34.9 34.8 34.4 34.1 33.9 33.7
+ 33.5 33.3 33.  32.8 32.7 32.5 32.4 32.1 31.8 31.7 31.6 31.4 31.2 30.7
+ 30.8 30.5 30.3 30.1 29.8 29.6 29.4 29.3 29.2 29.1 28.8 28.6 28.5 28.4
+ 28.1 28.2 28.  27.9 27.6 27.4 27.3 27.1 26.9 26.8 26.7 26.5 26.4 26.3
+ 26.1 26.2 26.  25.8 25.9 25.7 25.6 25.5 25.4  9.6  6.9  6.4  6.2  5.7
+  7.5  8.9  9.4 10.1 11.  11.3 10.   9.7  9.1  5.9  3.2  2.7  2.2  8.7
+ 13.8 15.4 17.9 18.7 19.8 20.1 22.9 23.5 29.9 30.2 36.8 37.  39.7 40.
+ 40.1 40.6 40.7 40.5 40.3 40.4 42.  44.4 46.  47.4 48.7 51.2 53.3 56.7
+ 56.5 56.  55.6 55.7 54.4 45.3 41.6 32.  29.5 27.5 25.3 25.2 30.4 30.
+ 35.9 35.4 34.7 34.5 34.3 33.8 33.6 33.1 32.9 32.3 36.  39.5 41.1 40.2
+ 39.2 37.9 36.6 34.2 36.9 37.5 42.4 42.2 41.9 41.7 41.8 41.5 41.4 41.2
+ 41.  40.9 38.5 29.7 30.6 31.3 38.9 44.1 43.8 43.4 43.2 43.5 42.3 42.7
+ 43.3 44.7 44.8 45.2 45.4 45.1 45.  44.9 44.6 44.5 44.3 40.8 39.  38.8
+ 38.6 38.4 38.2 37.1 36.2 34.6 34.  31.5 31.1 30.9 27.  27.2 27.7 27.8
+ 35.5 38.1 42.5 47.9 48.9 54.7 54.9 57.6 57.3 56.8 56.6 56.1 55.8 55.4
+ 55.3 55.1 55.  54.8 54.3 54.  53.9 53.7 53.8 53.6 53.  52.5 52.3 52.2
+ 52.1 52.  51.8 51.6 52.4 56.3 57.2 58.5 62.  63.5 63.6 63.8 64.7 64.6
+ 64.8 64.5 64.2 64.4 65.2 67.  67.7 69.3 69.7 70.  69.4 69.2 69.1 68.8
+ 70.9 70.5 70.1 69.8 69.6 69.5 73.7 73.8 73.6 73.2 72.8 72.7 72.4 72.1
+ 71.7 71.4 70.8 70.3 72.6 72.9 74.1 75.6 77.4 78.  77.9 77.1 76.6 76.2
+ 75.7 75.2 74.5 74.  75.1 76.3 77.3 78.9 80.9 81.8 81.1 81.4 80.8 80.2
+ 79.7 79.2 78.7 78.2 77.5 76.1 65.7 63.4 62.4 61.4 60.9 60.3 59.9 59.5
+ 58.8 59.4 59.2 59.6 61.6 61.5 61.9 62.6 62.5 62.8 61.3 61.2 61.  62.3
+ 63.2 62.9 62.7 62.1 64.  60.7 60.  59.3 58.6 58.3 57.8 57.7 57.4 56.9
+ 57.  56.4 55.9 55.2 54.5 54.6 58.1 57.1 55.5 53.4 53.2 52.8 52.9 52.7
+ 52.6 51.9 51.7 51.5 51.1 50.6 50.3 50.4 50.2 49.7 50.  49.9 50.1 49.8
+ 49.6 50.9 53.1 53.5 59.  67.1 71.1 74.2 74.3 73.5 73.4 73.3 73.1 73.
+ 72.5 72.2 72.3 75.4 75.8 79.6 81.7 82.3 83.2 84.1 84.8 87.5 90.7 90.8
+ 90.  89.  87.2 85.  83.1 81.5 80.7 77.8 75.  70.4 67.5 67.4 67.2 66.8
+ 66.1 65.9 65.8 65.6 66.4 66.7 66.6 66.3 66.  65.4 65.3 65.1 72.  70.6
+ 65.  66.9 68.7 67.8 68.  71.  69.9 68.3 65.5 64.3 68.5 74.7 74.6 74.4
+ 75.3 80.5 80.4 80.1 80.  79.9 80.6 79.8 79.3 63.1 63.  63.9 67.9 68.6
+ 62.2 61.8 61.7 63.3 67.6 71.3 71.2 70.2 61.1 60.8 60.6 59.7 54.2 54.1
+ 51.4 51.3 50.8 50.7 50.5 49.4 49.3 49.  48.8 48.5 48.3 48.2 48.4 48.6
+ 51.  60.4 60.1 63.7 71.5 68.1 66.5 59.8 59.1 58.7 58.2 57.5 56.2 49.1
+ 49.2 46.3 46.4 45.9 45.8 45.5 44.  44.2 43.9 43.6 43.7 43.1 43.  42.8
+ 42.9 42.1 41.3 39.8 33.4 33.2 32.6 31.9 32.2 58.9 58.  58.4 49.5 48.1
+ 46.9 46.7 45.6 39.9 39.3 39.4 28.9 28.7 28.3 26.6 24.7 23.9 22.7 22.2
+ 22.1 21.3 20.9 20.6 20.7 14.3 12.9 12.4 12.3 11.1 10.9 10.8 10.4  9.9
+  9.5 11.4 11.6 12. ]
+2024-12-30 14:19:34,851 - snofokk - INFO - Antall ikke-null verdier: 4344
+2024-12-30 14:19:34,851 - snofokk - INFO - Eksempel på første 5 snødybdeverdier:
+2024-12-30 14:19:34,851 - snofokk - INFO - timestamp
+2023-11-01 00:00:00   -1.0
+2023-11-01 01:00:00   -1.0
+2023-11-01 02:00:00   -1.0
+2023-11-01 03:00:00   -1.0
+2023-11-01 04:00:00   -1.0
+Name: surface_snow_thickness, dtype: float64
+2024-12-30 14:19:34,868 - __main__ - INFO - Starter forbehandling av snødybdedata
+2024-12-30 14:19:34,868 - __main__ - INFO - Fant 0 negative snødybdeverdier før behandling
+2024-12-30 14:19:34,869 - __main__ - INFO - Interpolerer 864 manglende snødybdeverdier
+2024-12-30 14:19:34,870 - __main__ - INFO - Prosesserer 4344 værobservasjoner fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:19:35,072 - __main__ - INFO - Identifiserte 182 kritiske perioder
+2024-12-30 14:19:35,072 - __main__ - INFO - fetch_and_process_data: Tid=12.58s, Minne=+62.7MB
+2024-12-30 14:19:35,073 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:19:35,073 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:19:35,074 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:19:35,075 - __main__ - WARNING - 16 manglende verdier i wind_speed
+2024-12-30 14:19:35,075 - __main__ - WARNING - 16 manglende verdier i wind_from_direction
+2024-12-30 14:19:35,075 - __main__ - WARNING - 15 manglende verdier i max(wind_speed_of_gust PT1H)
+2024-12-30 14:19:35,075 - __main__ - WARNING - 15 manglende verdier i max(wind_speed PT1H)
+2024-12-30 14:19:52,841 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD", inode=17978313, flags=10400, id=450472073): is_file, is_inode_meta_mod
+2024-12-30 14:19:52,841 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD', is_directory=False>
+2024-12-30 14:19:53,401 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD", inode=17978313, flags=11400, id=450472102): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:19:53,402 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects/maintenance.lock", inode=28782165, flags=10300, id=450472108): is_coalesced, is_created, is_file, is_removed
+2024-12-30 14:19:53,402 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD', is_directory=False>
+2024-12-30 14:19:53,402 - fsevents - DEBUG - queue_event <FileCreatedEvent: event_type=created, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects/maintenance.lock', is_directory=False>
+2024-12-30 14:19:53,402 - fsevents - DEBUG - queue_event <DirModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects', is_directory=True>
+2024-12-30 14:19:53,403 - fsevents - DEBUG - queue_event <FileDeletedEvent: event_type=deleted, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects/maintenance.lock', is_directory=False>
+2024-12-30 14:19:53,403 - fsevents - DEBUG - queue_event <DirModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects', is_directory=True>
+2024-12-30 14:20:24,519 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450472738): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:20:24,520 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:20:25,959 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450472922): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:20:25,959 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:20:31,174 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450473113): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:20:31,175 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:20:32,237 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450473214): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:20:32,238 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:20:47,412 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450473495): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:20:47,414 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:20:52,468 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450473583): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:20:52,468 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:20:53,579 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450473682): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:20:53,580 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:20:59,719 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450473849): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:20:59,721 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:21:02,768 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450474002): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:21:02,769 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:21:06,520 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450474071): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:21:06,521 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:21:15,305 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450474286): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:21:15,306 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:21:42,148 - snofokk - INFO - Første observasjon inneholder følgende elementer:
+2024-12-30 14:21:42,149 - snofokk - INFO - air_temperature: -3.6
+2024-12-30 14:21:42,149 - snofokk - INFO - surface_snow_thickness: -1
+2024-12-30 14:21:42,149 - snofokk - INFO - wind_speed: 1.7
+2024-12-30 14:21:42,149 - snofokk - INFO - wind_from_direction: 183
+2024-12-30 14:21:42,149 - snofokk - INFO - relative_humidity: 74
+2024-12-30 14:21:42,149 - snofokk - INFO - max(wind_speed_of_gust PT1H): 4.4
+2024-12-30 14:21:42,149 - snofokk - INFO - max(wind_speed PT1H): 3
+2024-12-30 14:21:42,149 - snofokk - INFO - min(air_temperature PT1H): -3.6
+2024-12-30 14:21:42,149 - snofokk - INFO - max(air_temperature PT1H): -2.3
+2024-12-30 14:21:42,149 - snofokk - INFO - sum(duration_of_precipitation PT1H): 0
+2024-12-30 14:21:42,149 - snofokk - INFO - sum(precipitation_amount PT1H): 0
+2024-12-30 14:21:42,149 - snofokk - INFO - dew_point_temperature: -7.4
+2024-12-30 14:21:42,149 - snofokk - INFO - Eksempel på rådata fra API:
+2024-12-30 14:21:42,149 - snofokk - INFO - Tidspunkt: 2023-11-01T00:00:00.000Z
+2024-12-30 14:21:42,149 - snofokk - INFO - Tilgjengelige målinger:
+2024-12-30 14:21:42,149 - snofokk - INFO - Element: air_temperature, Verdi: -3.6
+2024-12-30 14:21:42,149 - snofokk - INFO - Element: surface_snow_thickness, Verdi: -1
+2024-12-30 14:21:42,150 - snofokk - INFO - Element: wind_speed, Verdi: 1.7
+2024-12-30 14:21:42,150 - snofokk - INFO - Element: wind_from_direction, Verdi: 183
+2024-12-30 14:21:42,150 - snofokk - INFO - Element: relative_humidity, Verdi: 74
+2024-12-30 14:21:42,150 - snofokk - INFO - Element: max(wind_speed_of_gust PT1H), Verdi: 4.4
+2024-12-30 14:21:42,150 - snofokk - INFO - Element: max(wind_speed PT1H), Verdi: 3
+2024-12-30 14:21:42,150 - snofokk - INFO - Element: min(air_temperature PT1H), Verdi: -3.6
+2024-12-30 14:21:42,150 - snofokk - INFO - Element: max(air_temperature PT1H), Verdi: -2.3
+2024-12-30 14:21:42,150 - snofokk - INFO - Element: sum(duration_of_precipitation PT1H), Verdi: 0
+2024-12-30 14:21:42,150 - snofokk - INFO - Element: sum(precipitation_amount PT1H), Verdi: 0
+2024-12-30 14:21:42,150 - snofokk - INFO - Element: dew_point_temperature, Verdi: -7.4
+2024-12-30 14:21:42,183 - snofokk - INFO - Snødybdedata analyse:
+2024-12-30 14:21:42,184 - snofokk - INFO - Unike verdier i surface_snow_thickness: [-1.   2.3  2.4  2.1  2.   2.5  2.8  2.9  3.1  3.7  4.   4.9  4.8  4.7
+  5.4  6.8  7.3  8.1  8.   7.9  7.8  7.7  7.6  7.4  7.2  7.   6.6  6.7
+  6.5  6.3  6.1  6.   5.8  5.6  5.1  5.3  5.5  5.2  5.   4.6  4.5  4.4
+  4.3  4.2  4.1  3.9  3.8  3.6  3.5  3.4  3.3 10.5 11.8 12.6 13.  11.2
+  9.8  8.3 10.2 10.7 12.2 15.  16.1 17.2 17.8 19.1 18.9 19.4 19.3 19.
+ 18.8 18.6 18.5 18.4 18.2 18.  17.6 17.5 17.4 17.1 17.  16.9 16.8 16.7
+ 16.6 16.5 16.2 16.  15.9 15.8 15.7 15.6 15.5 15.3 15.2 15.1 14.9 14.8
+ 14.7 14.5 14.4 14.6 16.4 18.1 14.  10.6  9.2  8.5  8.2  8.4  8.6  8.8
+  9.3 10.3 11.7 13.2 13.5 13.3 14.2 16.3 21.6 22.  21.9 23.3 29.  31.
+ 35.1 36.3 36.7 37.7 37.8 37.6 37.3 38.7 39.1 38.3 38.  37.4 37.2 36.5
+ 36.4 36.1 35.7 35.8 35.6 35.3 35.2 35.  34.9 34.8 34.4 34.1 33.9 33.7
+ 33.5 33.3 33.  32.8 32.7 32.5 32.4 32.1 31.8 31.7 31.6 31.4 31.2 30.7
+ 30.8 30.5 30.3 30.1 29.8 29.6 29.4 29.3 29.2 29.1 28.8 28.6 28.5 28.4
+ 28.1 28.2 28.  27.9 27.6 27.4 27.3 27.1 26.9 26.8 26.7 26.5 26.4 26.3
+ 26.1 26.2 26.  25.8 25.9 25.7 25.6 25.5 25.4  9.6  6.9  6.4  6.2  5.7
+  7.5  8.9  9.4 10.1 11.  11.3 10.   9.7  9.1  5.9  3.2  2.7  2.2  8.7
+ 13.8 15.4 17.9 18.7 19.8 20.1 22.9 23.5 29.9 30.2 36.8 37.  39.7 40.
+ 40.1 40.6 40.7 40.5 40.3 40.4 42.  44.4 46.  47.4 48.7 51.2 53.3 56.7
+ 56.5 56.  55.6 55.7 54.4 45.3 41.6 32.  29.5 27.5 25.3 25.2 30.4 30.
+ 35.9 35.4 34.7 34.5 34.3 33.8 33.6 33.1 32.9 32.3 36.  39.5 41.1 40.2
+ 39.2 37.9 36.6 34.2 36.9 37.5 42.4 42.2 41.9 41.7 41.8 41.5 41.4 41.2
+ 41.  40.9 38.5 29.7 30.6 31.3 38.9 44.1 43.8 43.4 43.2 43.5 42.3 42.7
+ 43.3 44.7 44.8 45.2 45.4 45.1 45.  44.9 44.6 44.5 44.3 40.8 39.  38.8
+ 38.6 38.4 38.2 37.1 36.2 34.6 34.  31.5 31.1 30.9 27.  27.2 27.7 27.8
+ 35.5 38.1 42.5 47.9 48.9 54.7 54.9 57.6 57.3 56.8 56.6 56.1 55.8 55.4
+ 55.3 55.1 55.  54.8 54.3 54.  53.9 53.7 53.8 53.6 53.  52.5 52.3 52.2
+ 52.1 52.  51.8 51.6 52.4 56.3 57.2 58.5 62.  63.5 63.6 63.8 64.7 64.6
+ 64.8 64.5 64.2 64.4 65.2 67.  67.7 69.3 69.7 70.  69.4 69.2 69.1 68.8
+ 70.9 70.5 70.1 69.8 69.6 69.5 73.7 73.8 73.6 73.2 72.8 72.7 72.4 72.1
+ 71.7 71.4 70.8 70.3 72.6 72.9 74.1 75.6 77.4 78.  77.9 77.1 76.6 76.2
+ 75.7 75.2 74.5 74.  75.1 76.3 77.3 78.9 80.9 81.8 81.1 81.4 80.8 80.2
+ 79.7 79.2 78.7 78.2 77.5 76.1 65.7 63.4 62.4 61.4 60.9 60.3 59.9 59.5
+ 58.8 59.4 59.2 59.6 61.6 61.5 61.9 62.6 62.5 62.8 61.3 61.2 61.  62.3
+ 63.2 62.9 62.7 62.1 64.  60.7 60.  59.3 58.6 58.3 57.8 57.7 57.4 56.9
+ 57.  56.4 55.9 55.2 54.5 54.6 58.1 57.1 55.5 53.4 53.2 52.8 52.9 52.7
+ 52.6 51.9 51.7 51.5 51.1 50.6 50.3 50.4 50.2 49.7 50.  49.9 50.1 49.8
+ 49.6 50.9 53.1 53.5 59.  67.1 71.1 74.2 74.3 73.5 73.4 73.3 73.1 73.
+ 72.5 72.2 72.3 75.4 75.8 79.6 81.7 82.3 83.2 84.1 84.8 87.5 90.7 90.8
+ 90.  89.  87.2 85.  83.1 81.5 80.7 77.8 75.  70.4 67.5 67.4 67.2 66.8
+ 66.1 65.9 65.8 65.6 66.4 66.7 66.6 66.3 66.  65.4 65.3 65.1 72.  70.6
+ 65.  66.9 68.7 67.8 68.  71.  69.9 68.3 65.5 64.3 68.5 74.7 74.6 74.4
+ 75.3 80.5 80.4 80.1 80.  79.9 80.6 79.8 79.3 63.1 63.  63.9 67.9 68.6
+ 62.2 61.8 61.7 63.3 67.6 71.3 71.2 70.2 61.1 60.8 60.6 59.7 54.2 54.1
+ 51.4 51.3 50.8 50.7 50.5 49.4 49.3 49.  48.8 48.5 48.3 48.2 48.4 48.6
+ 51.  60.4 60.1 63.7 71.5 68.1 66.5 59.8 59.1 58.7 58.2 57.5 56.2 49.1
+ 49.2 46.3 46.4 45.9 45.8 45.5 44.  44.2 43.9 43.6 43.7 43.1 43.  42.8
+ 42.9 42.1 41.3 39.8 33.4 33.2 32.6 31.9 32.2 58.9 58.  58.4 49.5 48.1
+ 46.9 46.7 45.6 39.9 39.3 39.4 28.9 28.7 28.3 26.6 24.7 23.9 22.7 22.2
+ 22.1 21.3 20.9 20.6 20.7 14.3 12.9 12.4 12.3 11.1 10.9 10.8 10.4  9.9
+  9.5 11.4 11.6 12. ]
+2024-12-30 14:21:42,185 - snofokk - INFO - Antall ikke-null verdier: 4344
+2024-12-30 14:21:42,185 - snofokk - INFO - Eksempel på første 5 snødybdeverdier:
+2024-12-30 14:21:42,185 - snofokk - INFO - timestamp
+2023-11-01 00:00:00   -1.0
+2023-11-01 01:00:00   -1.0
+2023-11-01 02:00:00   -1.0
+2023-11-01 03:00:00   -1.0
+2023-11-01 04:00:00   -1.0
+Name: surface_snow_thickness, dtype: float64
+2024-12-30 14:21:42,193 - __main__ - INFO - Starter forbehandling av snødybdedata
+2024-12-30 14:21:42,194 - __main__ - INFO - Fant 0 negative snødybdeverdier før behandling
+2024-12-30 14:21:42,195 - __main__ - INFO - Interpolerer 864 manglende snødybdeverdier
+2024-12-30 14:21:42,195 - __main__ - INFO - Prosesserer 4344 værobservasjoner fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:21:42,399 - __main__ - INFO - Identifiserte 182 kritiske perioder
+2024-12-30 14:21:42,400 - __main__ - INFO - fetch_and_process_data: Tid=11.51s, Minne=+54.4MB
+2024-12-30 14:21:42,400 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:21:42,400 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:21:42,400 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:21:42,402 - __main__ - WARNING - 16 manglende verdier i wind_speed
+2024-12-30 14:21:42,402 - __main__ - WARNING - 16 manglende verdier i wind_from_direction
+2024-12-30 14:21:42,402 - __main__ - WARNING - 15 manglende verdier i max(wind_speed_of_gust PT1H)
+2024-12-30 14:21:42,402 - __main__ - WARNING - 15 manglende verdier i max(wind_speed PT1H)
+2024-12-30 14:24:26,576 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450479884): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:24:26,577 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:24:34,816 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450479985): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:24:34,817 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:24:47,923 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450480264): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:24:47,931 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:24:49,204 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450480363): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:24:49,205 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:24:52,784 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450480480): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:24:52,787 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:24:52,798 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450480483): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:24:52,799 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:24:56,618 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450480640): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:24:56,622 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:25:12,317 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450481113): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:25:12,319 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:25:13,606 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450481236): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:25:13,606 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:25:20,389 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450481404): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:25:20,390 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:25:21,538 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450481494): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:25:21,538 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:25:25,359 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450481580): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:25:25,360 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:25:29,303 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450481839): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:25:29,305 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:25:50,865 - snofokk - INFO - Første observasjon inneholder følgende elementer:
+2024-12-30 14:25:50,866 - snofokk - INFO - air_temperature: -3.6
+2024-12-30 14:25:50,866 - snofokk - INFO - surface_snow_thickness: -1
+2024-12-30 14:25:50,866 - snofokk - INFO - wind_speed: 1.7
+2024-12-30 14:25:50,866 - snofokk - INFO - wind_from_direction: 183
+2024-12-30 14:25:50,866 - snofokk - INFO - relative_humidity: 74
+2024-12-30 14:25:50,866 - snofokk - INFO - max(wind_speed_of_gust PT1H): 4.4
+2024-12-30 14:25:50,866 - snofokk - INFO - max(wind_speed PT1H): 3
+2024-12-30 14:25:50,866 - snofokk - INFO - min(air_temperature PT1H): -3.6
+2024-12-30 14:25:50,866 - snofokk - INFO - max(air_temperature PT1H): -2.3
+2024-12-30 14:25:50,867 - snofokk - INFO - sum(duration_of_precipitation PT1H): 0
+2024-12-30 14:25:50,867 - snofokk - INFO - sum(precipitation_amount PT1H): 0
+2024-12-30 14:25:50,867 - snofokk - INFO - dew_point_temperature: -7.4
+2024-12-30 14:25:50,867 - snofokk - INFO - Eksempel på rådata fra API:
+2024-12-30 14:25:50,867 - snofokk - INFO - Tidspunkt: 2023-11-01T00:00:00.000Z
+2024-12-30 14:25:50,867 - snofokk - INFO - Tilgjengelige målinger:
+2024-12-30 14:25:50,867 - snofokk - INFO - Element: air_temperature, Verdi: -3.6
+2024-12-30 14:25:50,867 - snofokk - INFO - Element: surface_snow_thickness, Verdi: -1
+2024-12-30 14:25:50,867 - snofokk - INFO - Element: wind_speed, Verdi: 1.7
+2024-12-30 14:25:50,867 - snofokk - INFO - Element: wind_from_direction, Verdi: 183
+2024-12-30 14:25:50,867 - snofokk - INFO - Element: relative_humidity, Verdi: 74
+2024-12-30 14:25:50,867 - snofokk - INFO - Element: max(wind_speed_of_gust PT1H), Verdi: 4.4
+2024-12-30 14:25:50,867 - snofokk - INFO - Element: max(wind_speed PT1H), Verdi: 3
+2024-12-30 14:25:50,867 - snofokk - INFO - Element: min(air_temperature PT1H), Verdi: -3.6
+2024-12-30 14:25:50,867 - snofokk - INFO - Element: max(air_temperature PT1H), Verdi: -2.3
+2024-12-30 14:25:50,867 - snofokk - INFO - Element: sum(duration_of_precipitation PT1H), Verdi: 0
+2024-12-30 14:25:50,867 - snofokk - INFO - Element: sum(precipitation_amount PT1H), Verdi: 0
+2024-12-30 14:25:50,867 - snofokk - INFO - Element: dew_point_temperature, Verdi: -7.4
+2024-12-30 14:25:50,909 - snofokk - INFO - Snødybdedata analyse:
+2024-12-30 14:25:50,912 - snofokk - INFO - Unike verdier i surface_snow_thickness: [-1.   2.3  2.4  2.1  2.   2.5  2.8  2.9  3.1  3.7  4.   4.9  4.8  4.7
+  5.4  6.8  7.3  8.1  8.   7.9  7.8  7.7  7.6  7.4  7.2  7.   6.6  6.7
+  6.5  6.3  6.1  6.   5.8  5.6  5.1  5.3  5.5  5.2  5.   4.6  4.5  4.4
+  4.3  4.2  4.1  3.9  3.8  3.6  3.5  3.4  3.3 10.5 11.8 12.6 13.  11.2
+  9.8  8.3 10.2 10.7 12.2 15.  16.1 17.2 17.8 19.1 18.9 19.4 19.3 19.
+ 18.8 18.6 18.5 18.4 18.2 18.  17.6 17.5 17.4 17.1 17.  16.9 16.8 16.7
+ 16.6 16.5 16.2 16.  15.9 15.8 15.7 15.6 15.5 15.3 15.2 15.1 14.9 14.8
+ 14.7 14.5 14.4 14.6 16.4 18.1 14.  10.6  9.2  8.5  8.2  8.4  8.6  8.8
+  9.3 10.3 11.7 13.2 13.5 13.3 14.2 16.3 21.6 22.  21.9 23.3 29.  31.
+ 35.1 36.3 36.7 37.7 37.8 37.6 37.3 38.7 39.1 38.3 38.  37.4 37.2 36.5
+ 36.4 36.1 35.7 35.8 35.6 35.3 35.2 35.  34.9 34.8 34.4 34.1 33.9 33.7
+ 33.5 33.3 33.  32.8 32.7 32.5 32.4 32.1 31.8 31.7 31.6 31.4 31.2 30.7
+ 30.8 30.5 30.3 30.1 29.8 29.6 29.4 29.3 29.2 29.1 28.8 28.6 28.5 28.4
+ 28.1 28.2 28.  27.9 27.6 27.4 27.3 27.1 26.9 26.8 26.7 26.5 26.4 26.3
+ 26.1 26.2 26.  25.8 25.9 25.7 25.6 25.5 25.4  9.6  6.9  6.4  6.2  5.7
+  7.5  8.9  9.4 10.1 11.  11.3 10.   9.7  9.1  5.9  3.2  2.7  2.2  8.7
+ 13.8 15.4 17.9 18.7 19.8 20.1 22.9 23.5 29.9 30.2 36.8 37.  39.7 40.
+ 40.1 40.6 40.7 40.5 40.3 40.4 42.  44.4 46.  47.4 48.7 51.2 53.3 56.7
+ 56.5 56.  55.6 55.7 54.4 45.3 41.6 32.  29.5 27.5 25.3 25.2 30.4 30.
+ 35.9 35.4 34.7 34.5 34.3 33.8 33.6 33.1 32.9 32.3 36.  39.5 41.1 40.2
+ 39.2 37.9 36.6 34.2 36.9 37.5 42.4 42.2 41.9 41.7 41.8 41.5 41.4 41.2
+ 41.  40.9 38.5 29.7 30.6 31.3 38.9 44.1 43.8 43.4 43.2 43.5 42.3 42.7
+ 43.3 44.7 44.8 45.2 45.4 45.1 45.  44.9 44.6 44.5 44.3 40.8 39.  38.8
+ 38.6 38.4 38.2 37.1 36.2 34.6 34.  31.5 31.1 30.9 27.  27.2 27.7 27.8
+ 35.5 38.1 42.5 47.9 48.9 54.7 54.9 57.6 57.3 56.8 56.6 56.1 55.8 55.4
+ 55.3 55.1 55.  54.8 54.3 54.  53.9 53.7 53.8 53.6 53.  52.5 52.3 52.2
+ 52.1 52.  51.8 51.6 52.4 56.3 57.2 58.5 62.  63.5 63.6 63.8 64.7 64.6
+ 64.8 64.5 64.2 64.4 65.2 67.  67.7 69.3 69.7 70.  69.4 69.2 69.1 68.8
+ 70.9 70.5 70.1 69.8 69.6 69.5 73.7 73.8 73.6 73.2 72.8 72.7 72.4 72.1
+ 71.7 71.4 70.8 70.3 72.6 72.9 74.1 75.6 77.4 78.  77.9 77.1 76.6 76.2
+ 75.7 75.2 74.5 74.  75.1 76.3 77.3 78.9 80.9 81.8 81.1 81.4 80.8 80.2
+ 79.7 79.2 78.7 78.2 77.5 76.1 65.7 63.4 62.4 61.4 60.9 60.3 59.9 59.5
+ 58.8 59.4 59.2 59.6 61.6 61.5 61.9 62.6 62.5 62.8 61.3 61.2 61.  62.3
+ 63.2 62.9 62.7 62.1 64.  60.7 60.  59.3 58.6 58.3 57.8 57.7 57.4 56.9
+ 57.  56.4 55.9 55.2 54.5 54.6 58.1 57.1 55.5 53.4 53.2 52.8 52.9 52.7
+ 52.6 51.9 51.7 51.5 51.1 50.6 50.3 50.4 50.2 49.7 50.  49.9 50.1 49.8
+ 49.6 50.9 53.1 53.5 59.  67.1 71.1 74.2 74.3 73.5 73.4 73.3 73.1 73.
+ 72.5 72.2 72.3 75.4 75.8 79.6 81.7 82.3 83.2 84.1 84.8 87.5 90.7 90.8
+ 90.  89.  87.2 85.  83.1 81.5 80.7 77.8 75.  70.4 67.5 67.4 67.2 66.8
+ 66.1 65.9 65.8 65.6 66.4 66.7 66.6 66.3 66.  65.4 65.3 65.1 72.  70.6
+ 65.  66.9 68.7 67.8 68.  71.  69.9 68.3 65.5 64.3 68.5 74.7 74.6 74.4
+ 75.3 80.5 80.4 80.1 80.  79.9 80.6 79.8 79.3 63.1 63.  63.9 67.9 68.6
+ 62.2 61.8 61.7 63.3 67.6 71.3 71.2 70.2 61.1 60.8 60.6 59.7 54.2 54.1
+ 51.4 51.3 50.8 50.7 50.5 49.4 49.3 49.  48.8 48.5 48.3 48.2 48.4 48.6
+ 51.  60.4 60.1 63.7 71.5 68.1 66.5 59.8 59.1 58.7 58.2 57.5 56.2 49.1
+ 49.2 46.3 46.4 45.9 45.8 45.5 44.  44.2 43.9 43.6 43.7 43.1 43.  42.8
+ 42.9 42.1 41.3 39.8 33.4 33.2 32.6 31.9 32.2 58.9 58.  58.4 49.5 48.1
+ 46.9 46.7 45.6 39.9 39.3 39.4 28.9 28.7 28.3 26.6 24.7 23.9 22.7 22.2
+ 22.1 21.3 20.9 20.6 20.7 14.3 12.9 12.4 12.3 11.1 10.9 10.8 10.4  9.9
+  9.5 11.4 11.6 12. ]
+2024-12-30 14:25:50,913 - snofokk - INFO - Antall ikke-null verdier: 4344
+2024-12-30 14:25:50,913 - snofokk - INFO - Eksempel på første 5 snødybdeverdier:
+2024-12-30 14:25:50,913 - snofokk - INFO - timestamp
+2023-11-01 00:00:00   -1.0
+2023-11-01 01:00:00   -1.0
+2023-11-01 02:00:00   -1.0
+2023-11-01 03:00:00   -1.0
+2023-11-01 04:00:00   -1.0
+Name: surface_snow_thickness, dtype: float64
+2024-12-30 14:25:50,926 - __main__ - INFO - Starter forbehandling av snødybdedata
+2024-12-30 14:25:50,926 - __main__ - INFO - Fant 0 negative snødybdeverdier før behandling
+2024-12-30 14:25:50,927 - __main__ - INFO - Interpolerer 864 manglende snødybdeverdier
+2024-12-30 14:25:50,929 - __main__ - INFO - Prosesserer 4344 værobservasjoner fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:25:51,140 - __main__ - INFO - Identifiserte 182 kritiske perioder
+2024-12-30 14:25:51,140 - __main__ - INFO - fetch_and_process_data: Tid=11.92s, Minne=+54.7MB
+2024-12-30 14:25:58,709 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD", inode=17978313, flags=10400, id=450483018): is_file, is_inode_meta_mod
+2024-12-30 14:25:58,709 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD', is_directory=False>
+2024-12-30 14:25:59,268 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD", inode=17978313, flags=11400, id=450483021): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:25:59,268 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD', is_directory=False>
+2024-12-30 14:25:59,279 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects/maintenance.lock", inode=28782919, flags=10300, id=450483027): is_coalesced, is_created, is_file, is_removed
+2024-12-30 14:25:59,279 - fsevents - DEBUG - queue_event <FileCreatedEvent: event_type=created, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects/maintenance.lock', is_directory=False>
+2024-12-30 14:25:59,280 - fsevents - DEBUG - queue_event <DirModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects', is_directory=True>
+2024-12-30 14:25:59,280 - fsevents - DEBUG - queue_event <FileDeletedEvent: event_type=deleted, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects/maintenance.lock', is_directory=False>
+2024-12-30 14:25:59,281 - fsevents - DEBUG - queue_event <DirModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects', is_directory=True>
+2024-12-30 14:26:36,264 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450483523): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:26:36,268 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:26:41,691 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450483712): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:26:41,693 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:27:30,286 - snofokk - INFO - Første observasjon inneholder følgende elementer:
+2024-12-30 14:27:30,287 - snofokk - INFO - air_temperature: -3.6
+2024-12-30 14:27:30,287 - snofokk - INFO - surface_snow_thickness: -1
+2024-12-30 14:27:30,287 - snofokk - INFO - wind_speed: 1.7
+2024-12-30 14:27:30,287 - snofokk - INFO - wind_from_direction: 183
+2024-12-30 14:27:30,287 - snofokk - INFO - relative_humidity: 74
+2024-12-30 14:27:30,287 - snofokk - INFO - max(wind_speed_of_gust PT1H): 4.4
+2024-12-30 14:27:30,288 - snofokk - INFO - max(wind_speed PT1H): 3
+2024-12-30 14:27:30,288 - snofokk - INFO - min(air_temperature PT1H): -3.6
+2024-12-30 14:27:30,288 - snofokk - INFO - max(air_temperature PT1H): -2.3
+2024-12-30 14:27:30,288 - snofokk - INFO - sum(duration_of_precipitation PT1H): 0
+2024-12-30 14:27:30,288 - snofokk - INFO - sum(precipitation_amount PT1H): 0
+2024-12-30 14:27:30,288 - snofokk - INFO - dew_point_temperature: -7.4
+2024-12-30 14:27:30,288 - snofokk - INFO - Eksempel på rådata fra API:
+2024-12-30 14:27:30,288 - snofokk - INFO - Tidspunkt: 2023-11-01T00:00:00.000Z
+2024-12-30 14:27:30,288 - snofokk - INFO - Tilgjengelige målinger:
+2024-12-30 14:27:30,289 - snofokk - INFO - Element: air_temperature, Verdi: -3.6
+2024-12-30 14:27:30,289 - snofokk - INFO - Element: surface_snow_thickness, Verdi: -1
+2024-12-30 14:27:30,289 - snofokk - INFO - Element: wind_speed, Verdi: 1.7
+2024-12-30 14:27:30,289 - snofokk - INFO - Element: wind_from_direction, Verdi: 183
+2024-12-30 14:27:30,289 - snofokk - INFO - Element: relative_humidity, Verdi: 74
+2024-12-30 14:27:30,289 - snofokk - INFO - Element: max(wind_speed_of_gust PT1H), Verdi: 4.4
+2024-12-30 14:27:30,289 - snofokk - INFO - Element: max(wind_speed PT1H), Verdi: 3
+2024-12-30 14:27:30,289 - snofokk - INFO - Element: min(air_temperature PT1H), Verdi: -3.6
+2024-12-30 14:27:30,289 - snofokk - INFO - Element: max(air_temperature PT1H), Verdi: -2.3
+2024-12-30 14:27:30,289 - snofokk - INFO - Element: sum(duration_of_precipitation PT1H), Verdi: 0
+2024-12-30 14:27:30,289 - snofokk - INFO - Element: sum(precipitation_amount PT1H), Verdi: 0
+2024-12-30 14:27:30,289 - snofokk - INFO - Element: dew_point_temperature, Verdi: -7.4
+2024-12-30 14:27:30,330 - snofokk - INFO - Snødybdedata analyse:
+2024-12-30 14:27:30,333 - snofokk - INFO - Unike verdier i surface_snow_thickness: [-1.   2.3  2.4  2.1  2.   2.5  2.8  2.9  3.1  3.7  4.   4.9  4.8  4.7
+  5.4  6.8  7.3  8.1  8.   7.9  7.8  7.7  7.6  7.4  7.2  7.   6.6  6.7
+  6.5  6.3  6.1  6.   5.8  5.6  5.1  5.3  5.5  5.2  5.   4.6  4.5  4.4
+  4.3  4.2  4.1  3.9  3.8  3.6  3.5  3.4  3.3 10.5 11.8 12.6 13.  11.2
+  9.8  8.3 10.2 10.7 12.2 15.  16.1 17.2 17.8 19.1 18.9 19.4 19.3 19.
+ 18.8 18.6 18.5 18.4 18.2 18.  17.6 17.5 17.4 17.1 17.  16.9 16.8 16.7
+ 16.6 16.5 16.2 16.  15.9 15.8 15.7 15.6 15.5 15.3 15.2 15.1 14.9 14.8
+ 14.7 14.5 14.4 14.6 16.4 18.1 14.  10.6  9.2  8.5  8.2  8.4  8.6  8.8
+  9.3 10.3 11.7 13.2 13.5 13.3 14.2 16.3 21.6 22.  21.9 23.3 29.  31.
+ 35.1 36.3 36.7 37.7 37.8 37.6 37.3 38.7 39.1 38.3 38.  37.4 37.2 36.5
+ 36.4 36.1 35.7 35.8 35.6 35.3 35.2 35.  34.9 34.8 34.4 34.1 33.9 33.7
+ 33.5 33.3 33.  32.8 32.7 32.5 32.4 32.1 31.8 31.7 31.6 31.4 31.2 30.7
+ 30.8 30.5 30.3 30.1 29.8 29.6 29.4 29.3 29.2 29.1 28.8 28.6 28.5 28.4
+ 28.1 28.2 28.  27.9 27.6 27.4 27.3 27.1 26.9 26.8 26.7 26.5 26.4 26.3
+ 26.1 26.2 26.  25.8 25.9 25.7 25.6 25.5 25.4  9.6  6.9  6.4  6.2  5.7
+  7.5  8.9  9.4 10.1 11.  11.3 10.   9.7  9.1  5.9  3.2  2.7  2.2  8.7
+ 13.8 15.4 17.9 18.7 19.8 20.1 22.9 23.5 29.9 30.2 36.8 37.  39.7 40.
+ 40.1 40.6 40.7 40.5 40.3 40.4 42.  44.4 46.  47.4 48.7 51.2 53.3 56.7
+ 56.5 56.  55.6 55.7 54.4 45.3 41.6 32.  29.5 27.5 25.3 25.2 30.4 30.
+ 35.9 35.4 34.7 34.5 34.3 33.8 33.6 33.1 32.9 32.3 36.  39.5 41.1 40.2
+ 39.2 37.9 36.6 34.2 36.9 37.5 42.4 42.2 41.9 41.7 41.8 41.5 41.4 41.2
+ 41.  40.9 38.5 29.7 30.6 31.3 38.9 44.1 43.8 43.4 43.2 43.5 42.3 42.7
+ 43.3 44.7 44.8 45.2 45.4 45.1 45.  44.9 44.6 44.5 44.3 40.8 39.  38.8
+ 38.6 38.4 38.2 37.1 36.2 34.6 34.  31.5 31.1 30.9 27.  27.2 27.7 27.8
+ 35.5 38.1 42.5 47.9 48.9 54.7 54.9 57.6 57.3 56.8 56.6 56.1 55.8 55.4
+ 55.3 55.1 55.  54.8 54.3 54.  53.9 53.7 53.8 53.6 53.  52.5 52.3 52.2
+ 52.1 52.  51.8 51.6 52.4 56.3 57.2 58.5 62.  63.5 63.6 63.8 64.7 64.6
+ 64.8 64.5 64.2 64.4 65.2 67.  67.7 69.3 69.7 70.  69.4 69.2 69.1 68.8
+ 70.9 70.5 70.1 69.8 69.6 69.5 73.7 73.8 73.6 73.2 72.8 72.7 72.4 72.1
+ 71.7 71.4 70.8 70.3 72.6 72.9 74.1 75.6 77.4 78.  77.9 77.1 76.6 76.2
+ 75.7 75.2 74.5 74.  75.1 76.3 77.3 78.9 80.9 81.8 81.1 81.4 80.8 80.2
+ 79.7 79.2 78.7 78.2 77.5 76.1 65.7 63.4 62.4 61.4 60.9 60.3 59.9 59.5
+ 58.8 59.4 59.2 59.6 61.6 61.5 61.9 62.6 62.5 62.8 61.3 61.2 61.  62.3
+ 63.2 62.9 62.7 62.1 64.  60.7 60.  59.3 58.6 58.3 57.8 57.7 57.4 56.9
+ 57.  56.4 55.9 55.2 54.5 54.6 58.1 57.1 55.5 53.4 53.2 52.8 52.9 52.7
+ 52.6 51.9 51.7 51.5 51.1 50.6 50.3 50.4 50.2 49.7 50.  49.9 50.1 49.8
+ 49.6 50.9 53.1 53.5 59.  67.1 71.1 74.2 74.3 73.5 73.4 73.3 73.1 73.
+ 72.5 72.2 72.3 75.4 75.8 79.6 81.7 82.3 83.2 84.1 84.8 87.5 90.7 90.8
+ 90.  89.  87.2 85.  83.1 81.5 80.7 77.8 75.  70.4 67.5 67.4 67.2 66.8
+ 66.1 65.9 65.8 65.6 66.4 66.7 66.6 66.3 66.  65.4 65.3 65.1 72.  70.6
+ 65.  66.9 68.7 67.8 68.  71.  69.9 68.3 65.5 64.3 68.5 74.7 74.6 74.4
+ 75.3 80.5 80.4 80.1 80.  79.9 80.6 79.8 79.3 63.1 63.  63.9 67.9 68.6
+ 62.2 61.8 61.7 63.3 67.6 71.3 71.2 70.2 61.1 60.8 60.6 59.7 54.2 54.1
+ 51.4 51.3 50.8 50.7 50.5 49.4 49.3 49.  48.8 48.5 48.3 48.2 48.4 48.6
+ 51.  60.4 60.1 63.7 71.5 68.1 66.5 59.8 59.1 58.7 58.2 57.5 56.2 49.1
+ 49.2 46.3 46.4 45.9 45.8 45.5 44.  44.2 43.9 43.6 43.7 43.1 43.  42.8
+ 42.9 42.1 41.3 39.8 33.4 33.2 32.6 31.9 32.2 58.9 58.  58.4 49.5 48.1
+ 46.9 46.7 45.6 39.9 39.3 39.4 28.9 28.7 28.3 26.6 24.7 23.9 22.7 22.2
+ 22.1 21.3 20.9 20.6 20.7 14.3 12.9 12.4 12.3 11.1 10.9 10.8 10.4  9.9
+  9.5 11.4 11.6 12. ]
+2024-12-30 14:27:30,333 - snofokk - INFO - Antall ikke-null verdier: 4344
+2024-12-30 14:27:30,333 - snofokk - INFO - Eksempel på første 5 snødybdeverdier:
+2024-12-30 14:27:30,334 - snofokk - INFO - timestamp
+2023-11-01 00:00:00   -1.0
+2023-11-01 01:00:00   -1.0
+2023-11-01 02:00:00   -1.0
+2023-11-01 03:00:00   -1.0
+2023-11-01 04:00:00   -1.0
+Name: surface_snow_thickness, dtype: float64
+2024-12-30 14:27:30,344 - __main__ - INFO - Starter forbehandling av snødybdedata
+2024-12-30 14:27:30,344 - __main__ - INFO - Fant 0 negative snødybdeverdier før behandling
+2024-12-30 14:27:30,345 - __main__ - INFO - Interpolerer 864 manglende snødybdeverdier
+2024-12-30 14:27:30,348 - __main__ - INFO - Prosesserer 4344 værobservasjoner fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:27:30,555 - __main__ - INFO - Identifiserte 182 kritiske perioder
+2024-12-30 14:27:30,556 - __main__ - INFO - fetch_and_process_data: Tid=12.51s, Minne=+55.2MB
+2024-12-30 14:28:29,574 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450486459): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:28:29,575 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:28:32,131 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450486609): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:28:32,132 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:28:54,796 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450486881): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:28:54,798 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:28:58,832 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450487046): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:28:58,833 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:28:59,355 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD", inode=17978313, flags=10400, id=450487136): is_file, is_inode_meta_mod
+2024-12-30 14:28:59,355 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD', is_directory=False>
+2024-12-30 14:28:59,911 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450487145): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:28:59,911 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:29:00,213 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD", inode=17978313, flags=11400, id=450487148): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:29:00,213 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects/maintenance.lock", inode=28783189, flags=10100, id=450487151): is_created, is_file
+2024-12-30 14:29:00,214 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/FETCH_HEAD', is_directory=False>
+2024-12-30 14:29:00,214 - fsevents - DEBUG - queue_event <FileCreatedEvent: event_type=created, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects/maintenance.lock', is_directory=False>
+2024-12-30 14:29:00,214 - fsevents - DEBUG - queue_event <DirModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects', is_directory=True>
+2024-12-30 14:29:00,225 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects/maintenance.lock", inode=28783189, flags=10300, id=450487154): is_coalesced, is_created, is_file, is_removed
+2024-12-30 14:29:00,225 - fsevents - DEBUG - queue_event <FileDeletedEvent: event_type=deleted, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects/maintenance.lock', is_directory=False>
+2024-12-30 14:29:00,227 - fsevents - DEBUG - queue_event <DirModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/.git/objects', is_directory=True>
+2024-12-30 14:29:03,533 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450487263): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:29:03,534 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:29:07,632 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450487325): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:29:07,632 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:29:37,834 - snofokk - INFO - Første observasjon inneholder følgende elementer:
+2024-12-30 14:29:37,835 - snofokk - INFO - air_temperature: -3.6
+2024-12-30 14:29:37,835 - snofokk - INFO - surface_snow_thickness: -1
+2024-12-30 14:29:37,835 - snofokk - INFO - wind_speed: 1.7
+2024-12-30 14:29:37,835 - snofokk - INFO - wind_from_direction: 183
+2024-12-30 14:29:37,836 - snofokk - INFO - relative_humidity: 74
+2024-12-30 14:29:37,836 - snofokk - INFO - max(wind_speed_of_gust PT1H): 4.4
+2024-12-30 14:29:37,836 - snofokk - INFO - max(wind_speed PT1H): 3
+2024-12-30 14:29:37,836 - snofokk - INFO - min(air_temperature PT1H): -3.6
+2024-12-30 14:29:37,836 - snofokk - INFO - max(air_temperature PT1H): -2.3
+2024-12-30 14:29:37,836 - snofokk - INFO - sum(duration_of_precipitation PT1H): 0
+2024-12-30 14:29:37,836 - snofokk - INFO - sum(precipitation_amount PT1H): 0
+2024-12-30 14:29:37,836 - snofokk - INFO - dew_point_temperature: -7.4
+2024-12-30 14:29:37,836 - snofokk - INFO - Eksempel på rådata fra API:
+2024-12-30 14:29:37,836 - snofokk - INFO - Tidspunkt: 2023-11-01T00:00:00.000Z
+2024-12-30 14:29:37,836 - snofokk - INFO - Tilgjengelige målinger:
+2024-12-30 14:29:37,836 - snofokk - INFO - Element: air_temperature, Verdi: -3.6
+2024-12-30 14:29:37,836 - snofokk - INFO - Element: surface_snow_thickness, Verdi: -1
+2024-12-30 14:29:37,836 - snofokk - INFO - Element: wind_speed, Verdi: 1.7
+2024-12-30 14:29:37,836 - snofokk - INFO - Element: wind_from_direction, Verdi: 183
+2024-12-30 14:29:37,836 - snofokk - INFO - Element: relative_humidity, Verdi: 74
+2024-12-30 14:29:37,837 - snofokk - INFO - Element: max(wind_speed_of_gust PT1H), Verdi: 4.4
+2024-12-30 14:29:37,837 - snofokk - INFO - Element: max(wind_speed PT1H), Verdi: 3
+2024-12-30 14:29:37,837 - snofokk - INFO - Element: min(air_temperature PT1H), Verdi: -3.6
+2024-12-30 14:29:37,837 - snofokk - INFO - Element: max(air_temperature PT1H), Verdi: -2.3
+2024-12-30 14:29:37,837 - snofokk - INFO - Element: sum(duration_of_precipitation PT1H), Verdi: 0
+2024-12-30 14:29:37,837 - snofokk - INFO - Element: sum(precipitation_amount PT1H), Verdi: 0
+2024-12-30 14:29:37,837 - snofokk - INFO - Element: dew_point_temperature, Verdi: -7.4
+2024-12-30 14:29:37,869 - snofokk - INFO - Snødybdedata analyse:
+2024-12-30 14:29:37,871 - snofokk - INFO - Unike verdier i surface_snow_thickness: [-1.   2.3  2.4  2.1  2.   2.5  2.8  2.9  3.1  3.7  4.   4.9  4.8  4.7
+  5.4  6.8  7.3  8.1  8.   7.9  7.8  7.7  7.6  7.4  7.2  7.   6.6  6.7
+  6.5  6.3  6.1  6.   5.8  5.6  5.1  5.3  5.5  5.2  5.   4.6  4.5  4.4
+  4.3  4.2  4.1  3.9  3.8  3.6  3.5  3.4  3.3 10.5 11.8 12.6 13.  11.2
+  9.8  8.3 10.2 10.7 12.2 15.  16.1 17.2 17.8 19.1 18.9 19.4 19.3 19.
+ 18.8 18.6 18.5 18.4 18.2 18.  17.6 17.5 17.4 17.1 17.  16.9 16.8 16.7
+ 16.6 16.5 16.2 16.  15.9 15.8 15.7 15.6 15.5 15.3 15.2 15.1 14.9 14.8
+ 14.7 14.5 14.4 14.6 16.4 18.1 14.  10.6  9.2  8.5  8.2  8.4  8.6  8.8
+  9.3 10.3 11.7 13.2 13.5 13.3 14.2 16.3 21.6 22.  21.9 23.3 29.  31.
+ 35.1 36.3 36.7 37.7 37.8 37.6 37.3 38.7 39.1 38.3 38.  37.4 37.2 36.5
+ 36.4 36.1 35.7 35.8 35.6 35.3 35.2 35.  34.9 34.8 34.4 34.1 33.9 33.7
+ 33.5 33.3 33.  32.8 32.7 32.5 32.4 32.1 31.8 31.7 31.6 31.4 31.2 30.7
+ 30.8 30.5 30.3 30.1 29.8 29.6 29.4 29.3 29.2 29.1 28.8 28.6 28.5 28.4
+ 28.1 28.2 28.  27.9 27.6 27.4 27.3 27.1 26.9 26.8 26.7 26.5 26.4 26.3
+ 26.1 26.2 26.  25.8 25.9 25.7 25.6 25.5 25.4  9.6  6.9  6.4  6.2  5.7
+  7.5  8.9  9.4 10.1 11.  11.3 10.   9.7  9.1  5.9  3.2  2.7  2.2  8.7
+ 13.8 15.4 17.9 18.7 19.8 20.1 22.9 23.5 29.9 30.2 36.8 37.  39.7 40.
+ 40.1 40.6 40.7 40.5 40.3 40.4 42.  44.4 46.  47.4 48.7 51.2 53.3 56.7
+ 56.5 56.  55.6 55.7 54.4 45.3 41.6 32.  29.5 27.5 25.3 25.2 30.4 30.
+ 35.9 35.4 34.7 34.5 34.3 33.8 33.6 33.1 32.9 32.3 36.  39.5 41.1 40.2
+ 39.2 37.9 36.6 34.2 36.9 37.5 42.4 42.2 41.9 41.7 41.8 41.5 41.4 41.2
+ 41.  40.9 38.5 29.7 30.6 31.3 38.9 44.1 43.8 43.4 43.2 43.5 42.3 42.7
+ 43.3 44.7 44.8 45.2 45.4 45.1 45.  44.9 44.6 44.5 44.3 40.8 39.  38.8
+ 38.6 38.4 38.2 37.1 36.2 34.6 34.  31.5 31.1 30.9 27.  27.2 27.7 27.8
+ 35.5 38.1 42.5 47.9 48.9 54.7 54.9 57.6 57.3 56.8 56.6 56.1 55.8 55.4
+ 55.3 55.1 55.  54.8 54.3 54.  53.9 53.7 53.8 53.6 53.  52.5 52.3 52.2
+ 52.1 52.  51.8 51.6 52.4 56.3 57.2 58.5 62.  63.5 63.6 63.8 64.7 64.6
+ 64.8 64.5 64.2 64.4 65.2 67.  67.7 69.3 69.7 70.  69.4 69.2 69.1 68.8
+ 70.9 70.5 70.1 69.8 69.6 69.5 73.7 73.8 73.6 73.2 72.8 72.7 72.4 72.1
+ 71.7 71.4 70.8 70.3 72.6 72.9 74.1 75.6 77.4 78.  77.9 77.1 76.6 76.2
+ 75.7 75.2 74.5 74.  75.1 76.3 77.3 78.9 80.9 81.8 81.1 81.4 80.8 80.2
+ 79.7 79.2 78.7 78.2 77.5 76.1 65.7 63.4 62.4 61.4 60.9 60.3 59.9 59.5
+ 58.8 59.4 59.2 59.6 61.6 61.5 61.9 62.6 62.5 62.8 61.3 61.2 61.  62.3
+ 63.2 62.9 62.7 62.1 64.  60.7 60.  59.3 58.6 58.3 57.8 57.7 57.4 56.9
+ 57.  56.4 55.9 55.2 54.5 54.6 58.1 57.1 55.5 53.4 53.2 52.8 52.9 52.7
+ 52.6 51.9 51.7 51.5 51.1 50.6 50.3 50.4 50.2 49.7 50.  49.9 50.1 49.8
+ 49.6 50.9 53.1 53.5 59.  67.1 71.1 74.2 74.3 73.5 73.4 73.3 73.1 73.
+ 72.5 72.2 72.3 75.4 75.8 79.6 81.7 82.3 83.2 84.1 84.8 87.5 90.7 90.8
+ 90.  89.  87.2 85.  83.1 81.5 80.7 77.8 75.  70.4 67.5 67.4 67.2 66.8
+ 66.1 65.9 65.8 65.6 66.4 66.7 66.6 66.3 66.  65.4 65.3 65.1 72.  70.6
+ 65.  66.9 68.7 67.8 68.  71.  69.9 68.3 65.5 64.3 68.5 74.7 74.6 74.4
+ 75.3 80.5 80.4 80.1 80.  79.9 80.6 79.8 79.3 63.1 63.  63.9 67.9 68.6
+ 62.2 61.8 61.7 63.3 67.6 71.3 71.2 70.2 61.1 60.8 60.6 59.7 54.2 54.1
+ 51.4 51.3 50.8 50.7 50.5 49.4 49.3 49.  48.8 48.5 48.3 48.2 48.4 48.6
+ 51.  60.4 60.1 63.7 71.5 68.1 66.5 59.8 59.1 58.7 58.2 57.5 56.2 49.1
+ 49.2 46.3 46.4 45.9 45.8 45.5 44.  44.2 43.9 43.6 43.7 43.1 43.  42.8
+ 42.9 42.1 41.3 39.8 33.4 33.2 32.6 31.9 32.2 58.9 58.  58.4 49.5 48.1
+ 46.9 46.7 45.6 39.9 39.3 39.4 28.9 28.7 28.3 26.6 24.7 23.9 22.7 22.2
+ 22.1 21.3 20.9 20.6 20.7 14.3 12.9 12.4 12.3 11.1 10.9 10.8 10.4  9.9
+  9.5 11.4 11.6 12. ]
+2024-12-30 14:29:37,871 - snofokk - INFO - Antall ikke-null verdier: 4344
+2024-12-30 14:29:37,871 - snofokk - INFO - Eksempel på første 5 snødybdeverdier:
+2024-12-30 14:29:37,872 - snofokk - INFO - timestamp
+2023-11-01 00:00:00   -1.0
+2023-11-01 01:00:00   -1.0
+2023-11-01 02:00:00   -1.0
+2023-11-01 03:00:00   -1.0
+2023-11-01 04:00:00   -1.0
+Name: surface_snow_thickness, dtype: float64
+2024-12-30 14:29:37,880 - __main__ - INFO - Starter forbehandling av snødybdedata
+2024-12-30 14:29:37,880 - __main__ - INFO - Fant 0 negative snødybdeverdier før behandling
+2024-12-30 14:29:37,881 - __main__ - INFO - Interpolerer 864 manglende snødybdeverdier
+2024-12-30 14:29:37,881 - __main__ - INFO - Prosesserer 4344 værobservasjoner fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:29:38,083 - __main__ - INFO - Identifiserte 182 kritiske perioder
+2024-12-30 14:29:38,083 - __main__ - INFO - fetch_and_process_data: Tid=12.71s, Minne=+61.6MB
+2024-12-30 14:29:38,083 - __main__ - INFO - fetch_and_process_data: Tid=12.72s, Minne=+61.6MB
+2024-12-30 14:30:06,202 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450490604): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:30:06,204 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:30:07,711 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450490724): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:30:07,713 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:30:11,757 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450490851): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:30:11,758 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:30:16,461 - fsevents - DEBUG - NativeEvent(path="/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py", inode=18501727, flags=11400, id=450491061): is_file, is_inode_meta_mod, is_modified
+2024-12-30 14:30:16,463 - fsevents - DEBUG - queue_event <FileModifiedEvent: event_type=modified, src_path='/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-test/app.py', is_directory=False>
+2024-12-30 14:41:24,336 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:41:24,338 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:41:24,338 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:41:24,597 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:41:24,597 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:43:49,817 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:43:49,818 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:43:49,818 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:43:50,026 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:43:50,026 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:44:32,010 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:44:32,011 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:44:32,011 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:44:32,236 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:44:32,236 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:45:29,657 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:45:29,658 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:45:29,658 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:45:29,865 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:45:29,865 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:45:32,169 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:45:32,169 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:45:32,171 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:45:32,171 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:45:32,171 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:45:32,171 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:45:32,430 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:45:32,430 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:45:32,430 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:45:32,430 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:48:01,141 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:48:01,143 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:48:01,143 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:48:01,470 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:48:01,470 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:48:08,721 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:48:08,721 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:48:08,727 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:48:08,727 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:48:08,727 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:48:08,727 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:48:08,995 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:48:08,995 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:48:08,995 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:48:08,995 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:48:54,568 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:48:54,569 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:48:54,569 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:48:54,773 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:48:54,774 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:50:06,073 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:50:06,074 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:50:06,074 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:50:06,287 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:50:06,287 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:50:09,527 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:50:09,527 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:50:09,528 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:50:09,528 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:50:09,528 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:50:09,528 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:50:09,766 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:50:09,766 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:50:09,767 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:50:09,767 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:54:07,276 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:54:07,277 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:54:07,277 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:54:07,496 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:54:07,496 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:58:14,786 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:58:14,786 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:58:14,786 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:58:14,786 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 14:58:14,788 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:58:14,789 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:58:14,788 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:58:14,789 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 14:58:14,789 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:58:14,789 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:58:14,789 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:58:14,789 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 14:58:15,253 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:58:15,253 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:58:15,272 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:58:15,272 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:58:15,281 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:58:15,281 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 14:58:15,281 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 14:58:15,281 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:02:22,841 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:02:22,842 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:02:22,842 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:02:23,064 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 15:02:23,064 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:03:49,161 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:03:49,161 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:03:49,162 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:03:49,163 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:03:49,162 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:03:49,163 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:03:49,163 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:03:49,163 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:03:49,163 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:03:49,163 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:03:49,163 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:03:49,163 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:03:49,660 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 15:03:49,660 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 15:03:49,662 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:03:49,662 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:03:49,689 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 15:03:49,689 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 15:03:49,689 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:03:49,689 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:06:27,040 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:06:27,041 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:06:27,041 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:06:27,249 - __main__ - DEBUG - Antall kritiske perioder funnet: 182
+2024-12-30 15:06:27,249 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:09:19,885 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:09:19,886 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:09:19,886 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:09:19,920 - __main__ - DEBUG - Antall kritiske perioder funnet: 145
+2024-12-30 15:09:19,920 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:12:25,462 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:12:25,463 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:12:25,464 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:12:25,500 - __main__ - DEBUG - Antall kritiske perioder funnet: 145
+2024-12-30 15:12:25,501 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:13:41,018 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:13:41,019 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:13:41,019 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:13:41,036 - __main__ - DEBUG - Antall kritiske perioder funnet: 77
+2024-12-30 15:13:41,036 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:13:48,890 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:13:48,890 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:13:48,891 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:13:48,891 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:13:48,892 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:13:48,892 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:13:48,930 - __main__ - DEBUG - Antall kritiske perioder funnet: 77
+2024-12-30 15:13:48,930 - __main__ - DEBUG - Antall kritiske perioder funnet: 77
+2024-12-30 15:13:48,930 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:13:48,930 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:16:12,577 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:16:12,578 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:16:12,579 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:16:12,596 - __main__ - DEBUG - Antall kritiske perioder funnet: 77
+2024-12-30 15:16:12,596 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:38:30,106 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:38:30,107 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:38:30,108 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:38:30,128 - __main__ - DEBUG - Antall kritiske perioder funnet: 77
+2024-12-30 15:38:30,128 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:40:24,871 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:40:24,872 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:40:24,872 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:40:24,965 - __main__ - DEBUG - Antall kritiske perioder funnet: 25
+2024-12-30 15:40:24,965 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:41:43,048 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:41:43,048 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:41:43,111 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:41:43,111 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:41:43,111 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:41:43,111 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:41:43,319 - __main__ - DEBUG - Antall kritiske perioder funnet: 21
+2024-12-30 15:41:43,319 - __main__ - DEBUG - Antall kritiske perioder funnet: 21
+2024-12-30 15:41:43,320 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:41:43,320 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:41:50,151 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:41:50,151 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:41:50,151 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:41:50,154 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:41:50,154 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:41:50,154 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:41:50,155 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:41:50,155 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:41:50,155 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:41:50,261 - __main__ - DEBUG - Antall kritiske perioder funnet: 21
+2024-12-30 15:41:50,261 - __main__ - DEBUG - Antall kritiske perioder funnet: 21
+2024-12-30 15:41:50,261 - __main__ - DEBUG - Antall kritiske perioder funnet: 21
+2024-12-30 15:41:50,261 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:41:50,261 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:41:50,261 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:42:30,923 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:42:30,923 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:42:30,923 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:42:30,923 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:42:30,928 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:42:30,928 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:42:30,928 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:42:30,928 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:42:30,929 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:42:30,929 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:42:30,929 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:42:30,929 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:42:31,075 - __main__ - DEBUG - Antall kritiske perioder funnet: 24
+2024-12-30 15:42:31,075 - __main__ - DEBUG - Antall kritiske perioder funnet: 24
+2024-12-30 15:42:31,075 - __main__ - DEBUG - Antall kritiske perioder funnet: 24
+2024-12-30 15:42:31,075 - __main__ - DEBUG - Antall kritiske perioder funnet: 24
+2024-12-30 15:42:31,075 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:42:31,075 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:42:31,075 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:42:31,075 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:42:32,343 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:42:32,343 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:42:32,343 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:42:32,343 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:42:32,343 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 15:42:32,344 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:42:32,344 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:42:32,344 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:42:32,344 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:42:32,344 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 15:42:32,344 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:42:32,344 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:42:32,344 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:42:32,344 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:42:32,344 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 15:42:32,444 - __main__ - DEBUG - Antall kritiske perioder funnet: 22
+2024-12-30 15:42:32,444 - __main__ - DEBUG - Antall kritiske perioder funnet: 22
+2024-12-30 15:42:32,444 - __main__ - DEBUG - Antall kritiske perioder funnet: 22
+2024-12-30 15:42:32,444 - __main__ - DEBUG - Antall kritiske perioder funnet: 22
+2024-12-30 15:42:32,444 - __main__ - DEBUG - Antall kritiske perioder funnet: 22
+2024-12-30 15:42:32,445 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:42:32,445 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:42:32,445 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:42:32,445 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 15:42:32,445 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 17:36:45,693 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 17:36:45,694 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 17:36:45,694 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 17:36:45,781 - __main__ - DEBUG - Antall kritiske perioder funnet: 25
+2024-12-30 17:36:45,781 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 17:38:30,364 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 17:38:30,365 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 17:38:30,365 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 17:38:30,455 - __main__ - DEBUG - Antall kritiske perioder funnet: 25
+2024-12-30 17:38:30,455 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 18:29:39,229 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:29:39,230 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:29:39,230 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:29:39,230 - __main__ - DEBUG - Dato-format for API: start=2023-11-01, end=2024-04-30
+2024-12-30 18:30:57,263 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:30:57,264 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:30:57,264 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:31:10,659 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:32:35,253 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:32:35,254 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:32:35,254 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:32:47,955 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:32:56,886 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:32:56,886 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:32:56,889 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:32:56,889 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:32:56,889 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:32:56,889 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:32:56,893 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:32:56,893 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:32:59,370 - __main__ - DEBUG - Valgt år: 2024
+2024-12-30 18:32:59,370 - __main__ - DEBUG - Valgt år: 2024
+2024-12-30 18:32:59,370 - __main__ - DEBUG - Valgt år: 2024
+2024-12-30 18:32:59,371 - __main__ - DEBUG - Startdato: 2024-11-01 (<class 'datetime.date'>)
+2024-12-30 18:32:59,371 - __main__ - DEBUG - Startdato: 2024-11-01 (<class 'datetime.date'>)
+2024-12-30 18:32:59,371 - __main__ - DEBUG - Startdato: 2024-11-01 (<class 'datetime.date'>)
+2024-12-30 18:32:59,372 - __main__ - DEBUG - Sluttdato: 2025-04-30 (<class 'datetime.date'>)
+2024-12-30 18:32:59,372 - __main__ - DEBUG - Sluttdato: 2025-04-30 (<class 'datetime.date'>)
+2024-12-30 18:32:59,372 - __main__ - DEBUG - Sluttdato: 2025-04-30 (<class 'datetime.date'>)
+2024-12-30 18:33:03,451 - __main__ - INFO - Data hentet: 1434 rader fra 2024-11-01 00:00:00 til 2024-12-30 17:00:00
+2024-12-30 18:33:03,451 - __main__ - INFO - Data hentet: 1434 rader fra 2024-11-01 00:00:00 til 2024-12-30 17:00:00
+2024-12-30 18:33:03,451 - __main__ - INFO - Data hentet: 1434 rader fra 2024-11-01 00:00:00 til 2024-12-30 17:00:00
+2024-12-30 18:33:49,181 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:33:49,181 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:33:49,181 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:33:53,678 - __main__ - DEBUG - Valgt år: 2024
+2024-12-30 18:33:53,678 - __main__ - DEBUG - Valgt år: 2024
+2024-12-30 18:33:53,679 - __main__ - DEBUG - Startdato: 2024-11-01 (<class 'datetime.date'>)
+2024-12-30 18:33:53,679 - __main__ - DEBUG - Startdato: 2024-11-01 (<class 'datetime.date'>)
+2024-12-30 18:33:53,680 - __main__ - DEBUG - Sluttdato: 2025-04-30 (<class 'datetime.date'>)
+2024-12-30 18:33:53,680 - __main__ - DEBUG - Sluttdato: 2025-04-30 (<class 'datetime.date'>)
+2024-12-30 18:33:58,449 - __main__ - INFO - Data hentet: 1434 rader fra 2024-11-01 00:00:00 til 2024-12-30 17:00:00
+2024-12-30 18:33:58,449 - __main__ - INFO - Data hentet: 1434 rader fra 2024-11-01 00:00:00 til 2024-12-30 17:00:00
+2024-12-30 18:33:58,451 - __main__ - DEBUG - Unike snødybdeverdier etter korrigering: [ nan  2.7  3.4  4.3  4.   5.1  8.3  9.4 10.2  9.7  9.2  9.6 10.6 11.1
+ 13.5 14.3 14.6 14.4 14.  13.9 13.7 13.4 13.8 13.6 13.3 13.1 13.2 12.9
+ 13.  12.8 12.5 12.4 12.3 12.2 12.1 12.  11.9 11.8 11.7 14.1 14.5 14.2
+ 11.2 10.4  9.9  9.3  8.7  7.1  6.3  5.8  5.3  4.8  3.6  3.5  3.   2.6
+  2.5  2.   3.9  7.6  7.7  7.5  7.3  7.   6.7  6.6  6.5  6.4  6.2  6.
+  5.9  5.7  5.6  5.5  5.4  5.   4.9  4.7  4.6  4.5  4.4  4.2  4.1  3.7
+  3.3  3.2  2.8  2.9  3.1  2.3  2.2  2.4  3.8  6.1  2.1  6.9  7.4  7.2
+  6.8  7.8 10.  12.7 16.2 15.2 15.  10.3  8.8  7.9 17.3 18.6 19.6 20.3
+ 19.8 18.9 21.8 23.3 22.8 24.  24.6 25.3 26.2 27.1 27.9 29.1 34.4 35.5
+ 35.4 36.6 37.3 37.6 38.6 38.2 38.8 38.4 38.5 39.8 39.4 39.1 38.9 38.
+ 37.7 37.5 37.1 36.9 36.8 36.3 36.4 36.2 36.  35.8 35.7 35.6 37.4 38.7
+ 40.3 41.  40.9 40.5 40.2 39.9 39.5 36.7 35.2 34.7 34.1 33.3 32.9 32.7
+ 32.5 31.6 31.2 30.9 29.9 29.7 29.5 28.8 28.2 27.5 27.3 26.5 26.3 25.7
+ 25.4 25.5 25.1 24.8 24.4 24.1 23.7 23.2 22.7 22.3 21.6 21.2 20.9 20.5
+ 20.2 19.1 19.  18.3 17.7 17.2 16.9 16.7 16.5 16.6 16.4 16.3 16.  15.7
+ 15.1 14.9 14.7 12.6 11.6 11.5 11.4 10.8 10.7 10.5  9.1  8.5  8.2  8.
+  8.1 11.3 18.4 20.7 20.4 20.8 20.6 20.  19.4 19.3]
+2024-12-30 18:33:58,451 - __main__ - DEBUG - Unike snødybdeverdier etter korrigering: [ nan  2.7  3.4  4.3  4.   5.1  8.3  9.4 10.2  9.7  9.2  9.6 10.6 11.1
+ 13.5 14.3 14.6 14.4 14.  13.9 13.7 13.4 13.8 13.6 13.3 13.1 13.2 12.9
+ 13.  12.8 12.5 12.4 12.3 12.2 12.1 12.  11.9 11.8 11.7 14.1 14.5 14.2
+ 11.2 10.4  9.9  9.3  8.7  7.1  6.3  5.8  5.3  4.8  3.6  3.5  3.   2.6
+  2.5  2.   3.9  7.6  7.7  7.5  7.3  7.   6.7  6.6  6.5  6.4  6.2  6.
+  5.9  5.7  5.6  5.5  5.4  5.   4.9  4.7  4.6  4.5  4.4  4.2  4.1  3.7
+  3.3  3.2  2.8  2.9  3.1  2.3  2.2  2.4  3.8  6.1  2.1  6.9  7.4  7.2
+  6.8  7.8 10.  12.7 16.2 15.2 15.  10.3  8.8  7.9 17.3 18.6 19.6 20.3
+ 19.8 18.9 21.8 23.3 22.8 24.  24.6 25.3 26.2 27.1 27.9 29.1 34.4 35.5
+ 35.4 36.6 37.3 37.6 38.6 38.2 38.8 38.4 38.5 39.8 39.4 39.1 38.9 38.
+ 37.7 37.5 37.1 36.9 36.8 36.3 36.4 36.2 36.  35.8 35.7 35.6 37.4 38.7
+ 40.3 41.  40.9 40.5 40.2 39.9 39.5 36.7 35.2 34.7 34.1 33.3 32.9 32.7
+ 32.5 31.6 31.2 30.9 29.9 29.7 29.5 28.8 28.2 27.5 27.3 26.5 26.3 25.7
+ 25.4 25.5 25.1 24.8 24.4 24.1 23.7 23.2 22.7 22.3 21.6 21.2 20.9 20.5
+ 20.2 19.1 19.  18.3 17.7 17.2 16.9 16.7 16.5 16.6 16.4 16.3 16.  15.7
+ 15.1 14.9 14.7 12.6 11.6 11.5 11.4 10.8 10.7 10.5  9.1  8.5  8.2  8.
+  8.1 11.3 18.4 20.7 20.4 20.8 20.6 20.  19.4 19.3]
+2024-12-30 18:34:37,811 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:34:37,811 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:34:37,812 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:34:43,183 - __main__ - DEBUG - Valgt år: 2024
+2024-12-30 18:34:43,183 - __main__ - DEBUG - Valgt år: 2024
+2024-12-30 18:34:43,184 - __main__ - DEBUG - Startdato: 2024-11-01 (<class 'datetime.date'>)
+2024-12-30 18:34:43,184 - __main__ - DEBUG - Startdato: 2024-11-01 (<class 'datetime.date'>)
+2024-12-30 18:34:43,185 - __main__ - DEBUG - Sluttdato: 2025-04-30 (<class 'datetime.date'>)
+2024-12-30 18:34:43,185 - __main__ - DEBUG - Sluttdato: 2025-04-30 (<class 'datetime.date'>)
+2024-12-30 18:34:48,107 - __main__ - INFO - Data hentet: 1434 rader fra 2024-11-01 00:00:00 til 2024-12-30 17:00:00
+2024-12-30 18:34:48,107 - __main__ - INFO - Data hentet: 1434 rader fra 2024-11-01 00:00:00 til 2024-12-30 17:00:00
+2024-12-30 18:34:48,109 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:34:48,109 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:34:48,110 - __main__ - INFO - Total antall målinger: 1434
+2024-12-30 18:34:48,110 - __main__ - INFO - Total antall målinger: 1434
+2024-12-30 18:34:48,110 - __main__ - INFO - Gyldige snødybdemålinger: 1057
+2024-12-30 18:34:48,110 - __main__ - INFO - Gyldige snødybdemålinger: 1057
+2024-12-30 18:34:48,110 - __main__ - INFO - Gjennomsnittlig snødybde: 9.0 cm
+2024-12-30 18:34:48,110 - __main__ - INFO - Gjennomsnittlig snødybde: 9.0 cm
+2024-12-30 18:34:55,927 - __main__ - DEBUG - Valgt år: 2022
+2024-12-30 18:34:55,927 - __main__ - DEBUG - Valgt år: 2022
+2024-12-30 18:34:55,927 - __main__ - DEBUG - Valgt år: 2022
+2024-12-30 18:34:55,929 - __main__ - DEBUG - Startdato: 2022-11-01 (<class 'datetime.date'>)
+2024-12-30 18:34:55,929 - __main__ - DEBUG - Startdato: 2022-11-01 (<class 'datetime.date'>)
+2024-12-30 18:34:55,929 - __main__ - DEBUG - Startdato: 2022-11-01 (<class 'datetime.date'>)
+2024-12-30 18:34:55,930 - __main__ - DEBUG - Sluttdato: 2023-04-30 (<class 'datetime.date'>)
+2024-12-30 18:34:55,930 - __main__ - DEBUG - Sluttdato: 2023-04-30 (<class 'datetime.date'>)
+2024-12-30 18:34:55,930 - __main__ - DEBUG - Sluttdato: 2023-04-30 (<class 'datetime.date'>)
+2024-12-30 18:35:08,039 - __main__ - INFO - Data hentet: 4320 rader fra 2022-11-01 00:00:00 til 2023-04-29 23:00:00
+2024-12-30 18:35:08,039 - __main__ - INFO - Data hentet: 4320 rader fra 2022-11-01 00:00:00 til 2023-04-29 23:00:00
+2024-12-30 18:35:08,039 - __main__ - INFO - Data hentet: 4320 rader fra 2022-11-01 00:00:00 til 2023-04-29 23:00:00
+2024-12-30 18:35:08,042 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:35:08,042 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:35:08,042 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:35:08,042 - __main__ - INFO - Total antall målinger: 4320
+2024-12-30 18:35:08,042 - __main__ - INFO - Total antall målinger: 4320
+2024-12-30 18:35:08,042 - __main__ - INFO - Total antall målinger: 4320
+2024-12-30 18:35:08,042 - __main__ - INFO - Gyldige snødybdemålinger: 3426
+2024-12-30 18:35:08,042 - __main__ - INFO - Gyldige snødybdemålinger: 3426
+2024-12-30 18:35:08,042 - __main__ - INFO - Gyldige snødybdemålinger: 3426
+2024-12-30 18:35:08,042 - __main__ - INFO - Gjennomsnittlig snødybde: 33.5 cm
+2024-12-30 18:35:08,042 - __main__ - INFO - Gjennomsnittlig snødybde: 33.5 cm
+2024-12-30 18:35:08,042 - __main__ - INFO - Gjennomsnittlig snødybde: 33.5 cm
+2024-12-30 18:36:13,783 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:36:13,784 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:36:13,784 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:36:26,642 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:36:26,646 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:36:26,646 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:36:26,647 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:36:26,647 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:37:21,457 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:37:21,457 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:37:21,458 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:37:34,409 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:37:34,411 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:37:34,412 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:37:34,412 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:37:34,412 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:37:42,442 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:37:42,442 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:37:42,444 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:37:42,444 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:37:42,444 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:37:42,444 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:37:42,448 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:37:42,448 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:37:42,454 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:37:42,454 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:37:42,454 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:37:42,454 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:37:42,454 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:37:42,454 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:37:42,454 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:37:42,454 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:37:42,683 - __main__ - DEBUG - Forsøker å hente data for perioden 2023-11-01 til 2024-04-30
+2024-12-30 18:37:42,683 - __main__ - DEBUG - Forsøker å hente data for perioden 2023-11-01 til 2024-04-30
+2024-12-30 18:37:42,684 - __main__ - DEBUG - API-parametre: start_date=2023-11-01, end_date=2024-04-30
+2024-12-30 18:37:42,684 - __main__ - DEBUG - API-parametre: start_date=2023-11-01, end_date=2024-04-30
+2024-12-30 18:37:42,684 - __main__ - DEBUG - Data mottatt: 4344 rader
+2024-12-30 18:37:42,684 - __main__ - DEBUG - Data mottatt: 4344 rader
+2024-12-30 18:37:42,685 - __main__ - DEBUG - Tidsperiode: 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:37:42,685 - __main__ - DEBUG - Tidsperiode: 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:37:42,685 - __main__ - DEBUG - Kolonner: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 18:37:42,685 - __main__ - DEBUG - Kolonner: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 18:37:42,685 - __main__ - DEBUG - Filtrerer data basert på valgt tidsperiode
+2024-12-30 18:37:42,685 - __main__ - DEBUG - Filtrerer data basert på valgt tidsperiode
+2024-12-30 18:37:42,686 - __main__ - DEBUG - Filtrerte data: 4344 rader
+2024-12-30 18:37:42,686 - __main__ - DEBUG - Filtrerte data: 4344 rader
+2024-12-30 18:37:42,686 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 18:37:42,686 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 18:37:42,686 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:37:42,686 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:37:42,687 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 18:37:42,687 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 18:37:42,764 - __main__ - DEBUG - Antall kritiske perioder funnet: 25
+2024-12-30 18:37:42,764 - __main__ - DEBUG - Antall kritiske perioder funnet: 25
+2024-12-30 18:37:42,764 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 18:37:42,764 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 18:39:19,018 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:39:19,019 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:39:19,019 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:39:32,909 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:39:32,912 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:39:32,912 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:39:32,912 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:39:32,912 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:40:05,131 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:40:05,132 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:40:05,132 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:40:17,557 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:17,560 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:40:17,560 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:40:17,560 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:40:17,560 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:40:24,505 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:40:24,505 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:40:24,506 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:40:24,506 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:40:24,506 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:40:24,506 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:40:24,510 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:24,510 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:24,518 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:40:24,518 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:40:24,519 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:40:24,519 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:40:24,519 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:40:24,519 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:40:24,519 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:40:24,519 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:40:24,751 - __main__ - DEBUG - Forsøker å hente data for perioden 2023-11-01 til 2024-04-30
+2024-12-30 18:40:24,751 - __main__ - DEBUG - Forsøker å hente data for perioden 2023-11-01 til 2024-04-30
+2024-12-30 18:40:24,751 - __main__ - DEBUG - API-parametre: start_date=2023-11-01, end_date=2024-04-30
+2024-12-30 18:40:24,751 - __main__ - DEBUG - API-parametre: start_date=2023-11-01, end_date=2024-04-30
+2024-12-30 18:40:24,752 - __main__ - DEBUG - Data mottatt: 4344 rader
+2024-12-30 18:40:24,752 - __main__ - DEBUG - Data mottatt: 4344 rader
+2024-12-30 18:40:24,752 - __main__ - DEBUG - Tidsperiode: 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:24,752 - __main__ - DEBUG - Tidsperiode: 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:24,752 - __main__ - DEBUG - Kolonner: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 18:40:24,752 - __main__ - DEBUG - Kolonner: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 18:40:24,752 - __main__ - DEBUG - Filtrerer data basert på valgt tidsperiode
+2024-12-30 18:40:24,752 - __main__ - DEBUG - Filtrerer data basert på valgt tidsperiode
+2024-12-30 18:40:24,753 - __main__ - DEBUG - Filtrerte data: 4344 rader
+2024-12-30 18:40:24,753 - __main__ - DEBUG - Filtrerte data: 4344 rader
+2024-12-30 18:40:24,753 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 18:40:24,753 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 18:40:24,754 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:24,754 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:24,754 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 18:40:24,754 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 18:40:24,837 - __main__ - DEBUG - Antall kritiske perioder funnet: 25
+2024-12-30 18:40:24,837 - __main__ - DEBUG - Antall kritiske perioder funnet: 25
+2024-12-30 18:40:24,838 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 18:40:24,838 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 18:40:38,600 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:40:38,600 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:40:38,600 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:40:38,602 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:40:38,602 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:40:38,602 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:40:38,602 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:40:38,602 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:40:38,602 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:40:38,607 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:38,607 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:38,607 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:38,617 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:40:38,617 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:40:38,617 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:40:38,618 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:40:38,618 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:40:38,618 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:40:38,618 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:40:38,618 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:40:38,618 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:40:38,618 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:40:38,618 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:40:38,618 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:40:40,610 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:40:40,610 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:40:40,610 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:40:40,610 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:40:40,610 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:40:40,610 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:40:40,610 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:40:40,610 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:40:40,611 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:40:40,611 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:40:40,611 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:40:40,611 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:40:40,614 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:40,614 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:40,614 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:40,614 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:40,625 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:40:40,625 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:40:40,625 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:40:40,625 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:40:40,625 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:40:40,625 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:40:40,625 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:40:40,625 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:40:40,626 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:40:40,626 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:40:40,626 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:40:40,626 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:40:40,626 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:40:40,626 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:40:40,626 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:40:40,626 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:40:40,842 - __main__ - DEBUG - Forsøker å hente data for perioden 2023-11-01 til 2024-04-30
+2024-12-30 18:40:40,842 - __main__ - DEBUG - Forsøker å hente data for perioden 2023-11-01 til 2024-04-30
+2024-12-30 18:40:40,842 - __main__ - DEBUG - Forsøker å hente data for perioden 2023-11-01 til 2024-04-30
+2024-12-30 18:40:40,842 - __main__ - DEBUG - Forsøker å hente data for perioden 2023-11-01 til 2024-04-30
+2024-12-30 18:40:40,842 - __main__ - DEBUG - API-parametre: start_date=2023-11-01, end_date=2024-04-30
+2024-12-30 18:40:40,842 - __main__ - DEBUG - API-parametre: start_date=2023-11-01, end_date=2024-04-30
+2024-12-30 18:40:40,842 - __main__ - DEBUG - API-parametre: start_date=2023-11-01, end_date=2024-04-30
+2024-12-30 18:40:40,842 - __main__ - DEBUG - API-parametre: start_date=2023-11-01, end_date=2024-04-30
+2024-12-30 18:40:40,843 - __main__ - DEBUG - Data mottatt: 4344 rader
+2024-12-30 18:40:40,843 - __main__ - DEBUG - Data mottatt: 4344 rader
+2024-12-30 18:40:40,843 - __main__ - DEBUG - Data mottatt: 4344 rader
+2024-12-30 18:40:40,843 - __main__ - DEBUG - Data mottatt: 4344 rader
+2024-12-30 18:40:40,843 - __main__ - DEBUG - Tidsperiode: 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:40,843 - __main__ - DEBUG - Tidsperiode: 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:40,843 - __main__ - DEBUG - Tidsperiode: 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:40,843 - __main__ - DEBUG - Tidsperiode: 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:40,843 - __main__ - DEBUG - Kolonner: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 18:40:40,843 - __main__ - DEBUG - Kolonner: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 18:40:40,843 - __main__ - DEBUG - Kolonner: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 18:40:40,843 - __main__ - DEBUG - Kolonner: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 18:40:40,843 - __main__ - DEBUG - Filtrerer data basert på valgt tidsperiode
+2024-12-30 18:40:40,843 - __main__ - DEBUG - Filtrerer data basert på valgt tidsperiode
+2024-12-30 18:40:40,843 - __main__ - DEBUG - Filtrerer data basert på valgt tidsperiode
+2024-12-30 18:40:40,843 - __main__ - DEBUG - Filtrerer data basert på valgt tidsperiode
+2024-12-30 18:40:40,844 - __main__ - DEBUG - Filtrerte data: 4344 rader
+2024-12-30 18:40:40,844 - __main__ - DEBUG - Filtrerte data: 4344 rader
+2024-12-30 18:40:40,844 - __main__ - DEBUG - Filtrerte data: 4344 rader
+2024-12-30 18:40:40,844 - __main__ - DEBUG - Filtrerte data: 4344 rader
+2024-12-30 18:40:40,844 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 18:40:40,844 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 18:40:40,844 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 18:40:40,844 - __main__ - DEBUG - Korrigerer negative snødybdeverdier
+2024-12-30 18:40:40,845 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:40,845 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:40,845 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:40,845 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:40,845 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 18:40:40,845 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 18:40:40,845 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 18:40:40,845 - __main__ - DEBUG - Kolonner i datasettet: ['air_temperature', 'surface_snow_thickness', 'wind_speed', 'wind_from_direction', 'relative_humidity', 'max(wind_speed_of_gust PT1H)', 'max(wind_speed PT1H)', 'min(air_temperature PT1H)', 'max(air_temperature PT1H)', 'sum(duration_of_precipitation PT1H)', 'sum(precipitation_amount PT1H)', 'dew_point_temperature']
+2024-12-30 18:40:40,926 - __main__ - DEBUG - Antall kritiske perioder funnet: 25
+2024-12-30 18:40:40,926 - __main__ - DEBUG - Antall kritiske perioder funnet: 25
+2024-12-30 18:40:40,926 - __main__ - DEBUG - Antall kritiske perioder funnet: 25
+2024-12-30 18:40:40,926 - __main__ - DEBUG - Antall kritiske perioder funnet: 25
+2024-12-30 18:40:40,926 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 18:40:40,926 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 18:40:40,926 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 18:40:40,926 - __main__ - WARNING - Fant 864 manglende snødybdeverdier
+2024-12-30 18:40:59,724 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:40:59,724 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:40:59,724 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:40:59,724 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:40:59,724 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:40:59,728 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:40:59,728 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:40:59,728 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:40:59,728 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:40:59,728 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:40:59,728 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:40:59,728 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:40:59,728 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:40:59,728 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:40:59,728 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:40:59,741 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:59,741 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:59,741 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:59,741 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:59,741 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:40:59,778 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:40:59,778 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:40:59,778 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:40:59,778 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:40:59,778 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:40:59,778 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:40:59,778 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:40:59,778 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:40:59,778 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:40:59,778 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:40:59,779 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:40:59,779 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:40:59,779 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:40:59,779 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:40:59,779 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:40:59,780 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:40:59,780 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:40:59,780 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:40:59,780 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:40:59,780 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:02,200 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:02,200 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:02,200 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:02,200 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:02,200 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:02,200 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:02,201 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:02,201 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:02,201 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:02,201 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:02,201 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:02,201 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:02,201 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:02,201 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:02,201 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:02,201 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:02,201 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:02,201 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:02,205 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:02,205 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:02,205 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:02,205 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:02,205 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:02,205 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:02,210 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:02,210 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:02,210 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:02,210 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:02,210 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:02,210 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:02,212 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:02,212 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:02,212 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:02,212 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:02,212 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:02,212 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:02,214 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:02,214 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:02,214 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:02,214 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:02,214 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:02,214 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:02,214 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:02,214 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:02,214 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:02,214 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:02,214 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:02,214 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:03,745 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:03,745 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:03,745 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:03,745 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:03,745 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:03,745 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:03,745 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:03,747 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:03,747 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:03,747 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:03,747 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:03,747 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:03,747 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:03,747 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:03,747 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:03,747 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:03,747 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:03,747 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:03,747 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:03,747 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:03,747 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:03,751 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:03,751 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:03,751 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:03,751 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:03,751 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:03,751 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:03,751 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:03,756 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:03,756 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:03,756 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:03,756 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:03,756 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:03,756 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:03,756 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:03,760 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:03,760 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:03,760 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:03,760 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:03,760 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:03,760 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:03,760 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:03,760 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:03,760 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:03,760 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:03,760 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:03,760 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:03,760 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:03,760 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:03,761 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:03,761 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:03,761 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:03,761 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:03,761 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:03,761 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:03,761 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:05,387 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:05,387 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:05,387 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:05,387 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:05,387 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:05,387 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:05,387 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:05,387 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:41:05,388 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:05,388 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:05,388 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:05,388 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:05,388 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:05,388 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:05,388 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:05,388 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:41:05,389 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:05,389 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:05,389 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:05,389 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:05,389 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:05,389 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:05,389 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:05,389 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:41:05,392 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:05,392 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:05,392 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:05,392 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:05,392 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:05,392 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:05,392 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:05,392 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:41:05,397 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:05,397 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:05,397 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:05,397 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:05,397 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:05,397 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:05,397 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:05,397 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:41:05,398 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:05,398 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:05,398 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:05,398 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:05,398 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:05,398 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:05,398 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:05,398 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:41:05,400 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:05,400 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:05,400 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:05,400 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:05,400 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:05,400 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:05,400 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:05,400 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:41:05,401 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:05,401 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:05,401 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:05,401 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:05,401 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:05,401 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:05,401 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:41:05,401 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:47:39,561 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:47:39,562 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:47:39,562 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:48:29,819 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:48:29,820 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:48:29,820 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:48:41,512 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:48:41,515 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:48:41,515 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:48:41,515 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:48:41,515 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:53:13,403 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:53:13,403 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:53:13,403 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:53:25,462 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:53:25,465 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:53:25,465 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:53:25,465 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:53:25,465 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm
+2024-12-30 18:54:15,322 - __main__ - DEBUG - Valgt år: 2023
+2024-12-30 18:54:15,323 - __main__ - DEBUG - Startdato: 2023-11-01 (<class 'datetime.date'>)
+2024-12-30 18:54:15,323 - __main__ - DEBUG - Sluttdato: 2024-04-30 (<class 'datetime.date'>)
+2024-12-30 18:54:28,690 - __main__ - INFO - Data hentet: 4344 rader fra 2023-11-01 00:00:00 til 2024-04-29 23:00:00
+2024-12-30 18:54:28,692 - __main__ - INFO - Snødybdestatistikk:
+2024-12-30 18:54:28,692 - __main__ - INFO - Total antall målinger: 4344
+2024-12-30 18:54:28,692 - __main__ - INFO - Gyldige snødybdemålinger: 4329
+2024-12-30 18:54:28,692 - __main__ - INFO - Gjennomsnittlig snødybde: 31.6 cm

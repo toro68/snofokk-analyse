@@ -1,0 +1,71 @@
+Analyse av risiko for glatte veier
+================================
+
+Analyseperiode: 2023-11-01 00:00:00 til 2024-04-30 23:00:00
+
+Kriterier for glatte veier:
+- Minst 10.0 cm snø på bakken
+- Temperatur mellom 0.0°C og 5.0°C
+- Høy luftfuktighet (>85.0%)
+- Minst 2.0mm nedbør siste 3 timer
+- Betydelig minkende snødybde (<-0.3 cm/t)
+- Ikke betydelig nysnø (<1.0 mm/t)
+
+Total antall observasjoner: 4368
+Antall tilfeller med risiko for glatte veier: 27
+Antall separate perioder med risiko: 20
+Gjennomsnittlig varighet av perioder: 3.0 timer
+
+Statistikk for perioder med risiko:
+- Temperatur: 1.7°C (min: 0.0°C, max: 4.5°C)
+- Luftfuktighet: 94.5% (min: 87.0%, max: 99.0%)
+- Snødybde: 47.8 cm (min: 10.7 cm, max: 81.1 cm)
+
+
+De 5 lengste periodene med risiko:
+--------------------------------
+Fra: 2023-12-15 00:00
+Til: 2023-12-15 03:00
+Varighet: 3.0 timer
+Maks snødybde: 11.3 cm
+Temperatur: 0.2°C til 1.0°C
+Endring i snødybde: -0.3 cm
+Total nedbør: 3.1 mm
+Maks 3-timers nedbør: 2.7 mm
+
+Fra: 2023-12-28 16:00
+Til: 2023-12-28 19:00
+Varighet: 3.0 timer
+Maks snødybde: 30.7 cm
+Temperatur: 0.8°C til 1.2°C
+Endring i snødybde: -0.4 cm
+Total nedbør: 1.5 mm
+Maks 3-timers nedbør: 2.1 mm
+
+Fra: 2023-12-29 12:00
+Til: 2023-12-29 15:00
+Varighet: 3.0 timer
+Maks snødybde: 42.3 cm
+Temperatur: 0.1°C til 1.0°C
+Endring i snødybde: -2.2 cm
+Total nedbør: 0.7 mm
+Maks 3-timers nedbør: 9.3 mm
+
+Fra: 2024-01-21 00:00
+Til: 2024-01-21 03:00
+Varighet: 3.0 timer
+Maks snødybde: 77.1 cm
+Temperatur: 0.8°C til 1.8°C
+Endring i snødybde: -2.3 cm
+Total nedbør: 1.7 mm
+Maks 3-timers nedbør: 2.8 mm
+
+Fra: 2024-01-21 14:00
+Til: 2024-01-21 17:00
+Varighet: 3.0 timer
+Maks snødybde: 81.4 cm
+Temperatur: 0.1°C til 1.0°C
+Endring i snødybde: -1.6 cm
+Total nedbør: 1.9 mm
+Maks 3-timers nedbør: 3.9 mm
+

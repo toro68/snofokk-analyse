@@ -1,0 +1,38 @@
+{
+  "snow_drift": {
+    "min_wind_speed": 10.0,
+    "max_temperature": -1.0,
+    "min_duration_hours": 2,
+    "min_snow_depth_variance": 5.0,
+    "severity_weight_wind": 0.4,
+    "severity_weight_temp": 0.3,
+    "severity_weight_snow": 0.3,
+    "alert_threshold": 75
+  },
+  "slippery_road": {
+    "max_temperature": 1.0,
+    "min_humidity": 85.0,
+    "min_precipitation": 0.1,
+    "frost_temp_threshold": 0.0,
+    "ice_temp_threshold": -1.0,
+    "min_duration_hours": 1,
+    "risk_weight_temp": 0.4,
+    "risk_weight_humidity": 0.3,
+    "risk_weight_precip": 0.3,
+    "alert_threshold": 60
+  },
+  "alerts": {
+    "snow_drift_enabled": true,
+    "slippery_road_enabled": true,
+    "advance_warning_hours": 4,
+    "monitoring_start_hour": 6,
+    "monitoring_end_hour": 22,
+    "email_alerts": false,
+    "sms_alerts": false,
+    "log_alerts": true
+  },
+  "data_source": "frost_api",
+  "default_station": "SN46220",
+  "analysis_period_days": 7,
+  "historical_years": 3
+}

@@ -1,0 +1,92 @@
+[
+  {
+    "id": "SN76923",
+    "name": "GULLFAKS C",
+    "elevation": 80,
+    "valid_from": "1989-11-01T00:00:00.000Z",
+    "valid_to": "",
+    "geometry": {
+      "@type": "Point",
+      "coordinates": [
+        2.2687,
+        61.2042
+      ],
+      "nearest": false
+    }
+  },
+  {
+    "id": "SN50360",
+    "name": "FV49 GULLBOTN",
+    "elevation": 250,
+    "valid_from": "2011-01-01T00:00:00.000Z",
+    "valid_to": "",
+    "geometry": {
+      "@type": "Point",
+      "coordinates": [
+        5.65017,
+        60.39817
+      ],
+      "nearest": false
+    }
+  },
+  {
+    "id": "SN50865",
+    "name": "GULLFJELLET",
+    "elevation": 345,
+    "valid_from": "2016-08-10T00:00:00.000Z",
+    "valid_to": "",
+    "geometry": {
+      "@type": "Point",
+      "coordinates": [
+        5.542,
+        60.3828
+      ],
+      "nearest": false
+    }
+  },
+  {
+    "id": "SN17280",
+    "name": "GULLHOLMEN",
+    "elevation": 14,
+    "valid_from": "2000-11-01T00:00:00.000Z",
+    "valid_to": "",
+    "geometry": {
+      "@type": "Point",
+      "coordinates": [
+        10.578,
+        59.4352
+      ],
+      "nearest": false
+    }
+  },
+  {
+    "id": "SN76916",
+    "name": "GULLFAKS - BØYE",
+    "elevation": 0,
+    "valid_from": "2025-01-31T00:00:00.000Z",
+    "valid_to": "",
+    "geometry": {
+      "@type": "Point",
+      "coordinates": [
+        2.1313,
+        61.0948
+      ],
+      "nearest": false
+    }
+  },
+  {
+    "id": "SN46220",
+    "name": "GULLINGEN SKISENTER",
+    "elevation": 639,
+    "valid_from": "2018-02-06T00:00:00.000Z",
+    "valid_to": "",
+    "geometry": {
+      "@type": "Point",
+      "coordinates": [
+        6.4697,
+        59.4128
+      ],
+      "nearest": false
+    }
+  }
+]

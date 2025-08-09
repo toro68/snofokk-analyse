@@ -154,100 +154,93 @@ def identify_risk_periods(df, min_duration=3):
     
     return pd.DataFrame(periods)
 
-def calculate_snow_drift_risk(df: pd.DataFrame, params: Dict[str, float]) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Beregner snøfokk-risiko basert på værdata og parametre
-    """
-    min_duration = params.get('min_duration', 2)  # Bruker 2 som standardverdi
+def calculate_snow_drift_risk(df: pd.DataFrame, params: dict) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Beregner risiko for snøfokk basert på værdata og parametre."""
+    risk_df = pd.DataFrame(index=df.index)
     
-    df = df.copy()
+    # Beregn risikoscore basert på vind, temperatur og snødybde
+    wind_risk = np.zeros(len(df))
+    temp_risk = np.zeros(len(df))
+    snow_risk = np.zeros(len(df))
     
-    # Valider input data
-    required_columns = {
-        'surface_snow_thickness': -1.0,  # Endret standardverdi til -1.0
-        'wind_speed': 0.0,
-        'wind_from_direction': 0.0,
-        'air_temperature': 0.0
-    }
-
-    # Sjekk og legg til manglende kolonner
-    missing_columns = []
-    for col, default_value in required_columns.items():
-        if col not in df.columns:
-            logging.warning(f"Manglende kolonne '{col}' - bruker standardverdi {default_value}")
-            df[col] = default_value
-            missing_columns.append(col)
-
-    if missing_columns:
-        st.warning(f"""
-            Følgende data mangler fra værstasjonen: {', '.join(missing_columns)}. 
-            Analysen vil fortsette med standardverdier, men resultatet kan være mindre presist.
-            For snødybde betyr -1 at det ikke er snø på bakken.
-            """)
-
-    # Sikre beregninger med fillna()
-    df['snow_depth_change'] = df['surface_snow_thickness'].diff().fillna(0)
-    df['sustained_wind'] = df['wind_speed'].rolling(window=2, min_periods=1).mean().fillna(0)
-    df['wind_dir_change'] = df['wind_from_direction'].diff().abs().fillna(0)
+    # Vindrisiko - sett til 0 når vindstyrken er under 6 m/s
+    mask_wind = df['wind_speed'] >= 6.0
+    wind_risk[mask_wind & (df['wind_speed'] >= params['wind_strong'])] = 1.0
+    wind_risk[mask_wind & (df['wind_speed'] >= params['wind_moderate']) & (df['wind_speed'] < params['wind_strong'])] = 0.5
     
-    # Sikrere måte å håndtere snødybdeendringer
-    df['prev_snow_depth'] = df['surface_snow_thickness'].shift()
-    mask = (df['surface_snow_thickness'] == -1) | (df['prev_snow_depth'] == -1)
-    df.loc[mask, 'snow_depth_change'] = 0
-    df.drop('prev_snow_depth', axis=1, inplace=True)  # Fjern hjelpkolonnen
-
-    def calculate_risk_score(row):
-        """Beregner risikoscore for en enkelt rad"""
-        score = 0
-        
-        # Vindrisiko
-        if row['wind_speed'] >= params['wind_strong']:
-            score += 40 * params['wind_weight']
-        elif row['wind_speed'] >= params['wind_moderate']:
-            score += 20 * params['wind_weight']
-            
-        if 'max(wind_speed_of_gust PT1H)' in row and row['max(wind_speed_of_gust PT1H)'] >= params['wind_gust']:
-            score += 10 * params['wind_weight']
-            
-        if row['wind_dir_change'] >= params['wind_dir_change']:
-            score += 10 * params['wind_weight']
-        
-        # Temperaturrisiko
-        if row['air_temperature'] <= params['temp_cold']:
-            score += 20 * params['temp_weight']
-        elif row['air_temperature'] <= params['temp_cool']:
-            score += 10 * params['temp_weight']
-        
-        # Snørisiko
-        if abs(row['snow_depth_change']) >= params['snow_high']:
-            score += 40 * params['snow_weight']
-        elif abs(row['snow_depth_change']) >= params['snow_moderate']:
-            score += 20 * params['snow_weight']
-        elif abs(row['snow_depth_change']) >= params['snow_low']:
-            score += 10 * params['snow_weight']
-        
-        return min(100, score)
+    # Temperaturrisiko
+    temp_risk[df['air_temperature'] <= params['temp_cold']] = 1.0
+    temp_risk[(df['air_temperature'] > params['temp_cold']) & (df['air_temperature'] <= params['temp_cool'])] = 0.5
     
-    # Beregn risikoscore
-    df['risk_score'] = df.apply(calculate_risk_score, axis=1)
-    df['risk_level'] = pd.cut(df['risk_score'], 
-                           bins=[-np.inf, 30, 50, 70, np.inf],
-                           labels=['Lav', 'Moderat', 'Høy', 'Kritisk'])
+    # Snørisiko - sjekk om det er snø tilgjengelig
+    snow_available = df['surface_snow_thickness'] > 0
+    snow_risk[snow_available & (df['surface_snow_thickness'].diff().abs() >= params['snow_high'])] = 1.0
+    snow_risk[snow_available & (df['surface_snow_thickness'].diff().abs() >= params['snow_moderate']) & 
+              (df['surface_snow_thickness'].diff().abs() < params['snow_high'])] = 0.5
     
-    # Legg til periode-ID for sammenhengende risikoperioder
-    # En ny periode starter når risk_score går fra 0 til over 0 eller omvendt
-    risk_threshold = 30  # Juster denne verdien etter behov
-    df['is_risk'] = df['risk_score'] > risk_threshold
-    df['period_start'] = df['is_risk'].ne(df['is_risk'].shift()).cumsum()
-    df['period_id'] = np.where(df['is_risk'], df['period_start'], np.nan)
+    # Beregn total risikoscore - vektet sum av risikoene
+    risk_df['risk_score'] = (
+        params['wind_weight'] * wind_risk +
+        params['temp_weight'] * temp_risk +
+        params['snow_weight'] * snow_risk
+    )
     
-    # Fjern midlertidige kolonner
-    df = df.drop(['is_risk', 'period_start'], axis=1)
+    # Sett risiko til 0 når vindstyrken er under 6 m/s
+    risk_df.loc[df['wind_speed'] < 6.0, 'risk_score'] = 0.0
     
-    # Identifiser perioder med sikker min_duration
-    periods_df = identify_risk_periods(df, min_duration=min_duration)
+    # Identifiser kritiske perioder
+    critical_periods = []
+    current_period = None
+    min_duration = int(params['min_duration'])  # Timer
     
-    return df, periods_df
+    for i, (timestamp, row) in enumerate(risk_df.iterrows()):
+        if row['risk_score'] > 0.6 and current_period is None:
+            # Start ny periode
+            current_period = {
+                'start_time': timestamp,
+                'max_risk_score': row['risk_score'],
+                'avg_risk_score': row['risk_score'],
+                'max_wind': df.iloc[i]['wind_speed'],
+                'min_temp': df.iloc[i]['air_temperature'],
+                'scores': [row['risk_score']]
+            }
+        elif row['risk_score'] > 0.6 and current_period is not None:
+            # Oppdater periode
+            current_period['max_risk_score'] = max(current_period['max_risk_score'], row['risk_score'])
+            current_period['max_wind'] = max(current_period['max_wind'], df.iloc[i]['wind_speed'])
+            current_period['min_temp'] = min(current_period['min_temp'], df.iloc[i]['air_temperature'])
+            current_period['scores'].append(row['risk_score'])
+        elif row['risk_score'] <= 0.6 and current_period is not None:
+            # Avslutt periode
+            duration = len(current_period['scores'])
+            if duration >= min_duration:
+                current_period['end_time'] = timestamp
+                current_period['duration'] = duration
+                current_period['avg_risk_score'] = sum(current_period['scores']) / duration
+                current_period['risk_level'] = 'Høy' if current_period['max_risk_score'] > 0.8 else 'Moderat'
+                critical_periods.append(current_period)
+            current_period = None
+    
+    # Håndter siste periode hvis den fortsatt er aktiv
+    if current_period is not None:
+        duration = len(current_period['scores'])
+        if duration >= min_duration:
+            current_period['end_time'] = risk_df.index[-1]
+            current_period['duration'] = duration
+            current_period['avg_risk_score'] = sum(current_period['scores']) / duration
+            current_period['risk_level'] = 'Høy' if current_period['max_risk_score'] > 0.8 else 'Moderat'
+            critical_periods.append(current_period)
+    
+    # Konverter kritiske perioder til DataFrame
+    if critical_periods:
+        periods_df = pd.DataFrame(critical_periods)
+    else:
+        periods_df = pd.DataFrame(columns=[
+            'start_time', 'end_time', 'duration', 'max_risk_score',
+            'avg_risk_score', 'max_wind', 'min_temp', 'risk_level'
+        ])
+    
+    return risk_df, periods_df
 
 def create_rolling_stats(df: DataFrame, 
                         columns: List[str], 
@@ -595,3 +588,215 @@ def preprocess_critical_periods(df: DataFrame) -> DataFrame:
     except Exception as e:
         logging.error(f"Feil i vindretningsanalyse: {str(e)}", exc_info=True)
         return df
+
+def validate_parameters(params: Dict[str, float]) -> Tuple[bool, str]:
+    """
+    Validerer parametre mot definerte grenser og logiske regler
+    """
+    try:
+        # Sjekk at alle nødvendige parametre er til stede
+        required_params = {
+            'wind_weight', 'temp_weight', 'snow_weight',
+            'wind_strong', 'wind_moderate', 'wind_gust',
+            'wind_dir_change', 'temp_cold', 'temp_cool',
+            'snow_high', 'snow_moderate', 'snow_low',
+            'min_duration'
+        }
+        
+        missing_params = required_params - set(params.keys())
+        if missing_params:
+            return False, f"Manglende parametre: {missing_params}"
+            
+        # Sjekk at vektene summerer til 1.0
+        weights_sum = params['wind_weight'] + params['temp_weight'] + params['snow_weight']
+        if not np.isclose(weights_sum, 1.0, rtol=1e-5):
+            return False, f"Vektene må summere til 1.0 (nåværende sum: {weights_sum:.2f})"
+            
+        # Sjekk logiske relasjoner mellom terskelverdier
+        if not (params['wind_strong'] > params['wind_moderate']):
+            return False, "Sterk vind terskel må være høyere enn moderat vind terskel"
+            
+        if not (params['temp_cold'] < params['temp_cool']):
+            return False, "Kald temperatur terskel må være lavere enn kjølig temperatur terskel"
+            
+        if not (params['snow_high'] > params['snow_moderate'] > params['snow_low']):
+            return False, "Snøendringsterskler må være i riktig rekkefølge (høy > moderat > lav)"
+            
+        # Sjekk at alle verdier er positive der det er logisk
+        for param in ['wind_strong', 'wind_moderate', 'wind_gust', 'wind_dir_change',
+                     'snow_high', 'snow_moderate', 'snow_low', 'min_duration']:
+            if params[param] < 0:
+                return False, f"Parameter {param} kan ikke være negativ"
+                
+        return True, "Alle parametre er gyldige"
+        
+    except Exception as e:
+        return False, f"Valideringsfeil: {str(e)}"
+
+def optimize_parameters(df: pd.DataFrame, weights: Dict[str, float]) -> Dict[str, float]:
+    """
+    Optimaliserer parametere basert på historiske data og brukerens vektlegging.
+    
+    Args:
+        df: DataFrame med værdata
+        weights: Dict med vekter for ulike optimaliseringskriterier
+        
+    Returns:
+        Dict med optimale parameterverdier
+    """
+    best_params = DEFAULT_PARAMS.copy()
+    best_score = float('-inf')
+    
+    # Definer søkeområder for hver parameter
+    param_ranges = {
+        'wind_strong': np.arange(10, 21, 2),      # Fra 10 til 20 m/s
+        'wind_moderate': np.arange(5, 16, 2),     # Fra 5 til 15 m/s
+        'wind_gust': np.arange(12, 26, 3),        # Fra 12 til 25 m/s
+        'wind_dir_change': np.arange(30, 91, 15), # Fra 30 til 90 grader
+        'temp_cold': np.arange(-20, -4, 3),       # Fra -20 til -5°C
+        'temp_cool': np.arange(-10, 1, 2),        # Fra -10 til 0°C
+        'snow_high': np.arange(5, 16, 2),         # Fra 5 til 15 cm
+        'snow_moderate': np.arange(2, 11, 2),     # Fra 2 til 10 cm
+        'snow_low': np.arange(0.5, 5.5, 1),       # Fra 0.5 til 5 cm
+    }
+    
+    # Grid search over parameterrommet
+    total_iterations = np.prod([len(range_) for range_ in param_ranges.values()])
+    current_iteration = 0
+    
+    for wind_strong in param_ranges['wind_strong']:
+        for wind_moderate in param_ranges['wind_moderate']:
+            if wind_moderate >= wind_strong:
+                continue
+                
+            for wind_gust in param_ranges['wind_gust']:
+                for wind_dir_change in param_ranges['wind_dir_change']:
+                    for temp_cold in param_ranges['temp_cold']:
+                        for temp_cool in param_ranges['temp_cool']:
+                            if temp_cool <= temp_cold:
+                                continue
+                                
+                            for snow_high in param_ranges['snow_high']:
+                                for snow_moderate in param_ranges['snow_moderate']:
+                                    if snow_moderate >= snow_high:
+                                        continue
+                                        
+                                    for snow_low in param_ranges['snow_low']:
+                                        if snow_low >= snow_moderate:
+                                            continue
+                                            
+                                        current_iteration += 1
+                                        if current_iteration % 1000 == 0:
+                                            logger.info(f"Optimalisering: {current_iteration}/{total_iterations} iterasjoner fullført")
+                                        
+                                        # Test parametersett
+                                        params = {
+                                            'wind_strong': float(wind_strong),
+                                            'wind_moderate': float(wind_moderate),
+                                            'wind_gust': float(wind_gust),
+                                            'wind_dir_change': float(wind_dir_change),
+                                            'temp_cold': float(temp_cold),
+                                            'temp_cool': float(temp_cool),
+                                            'snow_high': float(snow_high),
+                                            'snow_moderate': float(snow_moderate),
+                                            'snow_low': float(snow_low),
+                                            'wind_weight': 0.4,
+                                            'temp_weight': 0.3,
+                                            'snow_weight': 0.3,
+                                            'min_duration': 2
+                                        }
+                                        
+                                        try:
+                                            # Beregn risiko med disse parametrene
+                                            risk_df, periods_df = calculate_snow_drift_risk(df, params)
+                                            
+                                            if periods_df.empty:
+                                                continue
+                                            
+                                            # Beregn metrikker
+                                            metrics = {
+                                                'antall_perioder': len(periods_df),
+                                                'varighet': periods_df['duration'].mean(),
+                                                'risiko_score': periods_df['max_risk_score'].mean()
+                                            }
+                                            
+                                            # Normaliser metrikker
+                                            normalized_metrics = {
+                                                'antall_perioder': min(1.0, metrics['antall_perioder'] / 100),
+                                                'varighet': min(1.0, metrics['varighet'] / 24),
+                                                'risiko_score': min(1.0, metrics['risiko_score'] / 100)
+                                            }
+                                            
+                                            # Beregn vektet score
+                                            score = sum(weights[key] * normalized_metrics[key] for key in weights)
+                                            
+                                            # Oppdater beste parametere hvis bedre score
+                                            if score > best_score:
+                                                best_score = score
+                                                best_params = params.copy()
+                                                logger.info(f"Ny beste score funnet: {score:.3f}")
+                                                
+                                        except Exception as e:
+                                            logger.warning(f"Feil under testing av parametersett: {str(e)}")
+                                            continue
+    
+    return best_params
+
+def calculate_optimization_score(periods_df: pd.DataFrame, weights: Dict[str, float]) -> float:
+    """
+    Beregner en vektet score for et parametersett.
+    
+    Args:
+        periods_df: DataFrame med kritiske perioder
+        weights: Dict med vekter for ulike kriterier
+        
+    Returns:
+        float: Samlet score
+    """
+    if periods_df.empty:
+        return float('-inf')
+    
+    # Beregn metrikker
+    metrics = {
+        'antall_perioder': len(periods_df),
+        'varighet': periods_df['duration'].mean(),
+        'risiko_score': periods_df['max_risk_score'].max()
+    }
+    
+    # Normaliser metrikker
+    normalized_metrics = {
+        'antall_perioder': min(1.0, metrics['antall_perioder'] / 100),  # Maks 100 perioder
+        'varighet': min(1.0, metrics['varighet'] / 24),                 # Maks 24 timer
+        'risiko_score': min(1.0, metrics['risiko_score'] / 100)        # Allerede 0-100
+    }
+    
+    # Beregn vektet sum
+    score = sum(weights[key] * normalized_metrics[key] for key in weights)
+    
+    return score
+
+def validate_parameters(params: Dict[str, float], df: pd.DataFrame) -> Dict[str, Any]:
+    """
+    Validerer et sett med parametere mot historiske data.
+    
+    Args:
+        params: Dict med parameterverdier
+        df: DataFrame med værdata
+        
+    Returns:
+        Dict med valideringsresultater
+    """
+    # Beregn risiko med parametrene
+    risk_df, periods_df = calculate_snow_drift_risk(df, params)
+    
+    # Beregn nøkkelstatistikk
+    validation = {
+        'Antall kritiske perioder': len(periods_df),
+        'Gjennomsnittlig varighet (timer)': periods_df['duration'].mean() if not periods_df.empty else 0,
+        'Maksimal risikoscore': periods_df['max_risk_score'].max() if not periods_df.empty else 0,
+        'Gjennomsnittlig risikoscore': periods_df['avg_risk_score'].mean() if not periods_df.empty else 0,
+        'Perioder per måned': len(periods_df) / (len(df) / (24 * 30)),  # Antall perioder per 30 dager
+        'Dekningsgrad': len(risk_df[risk_df['risk_score'] > 0]) / len(risk_df) * 100  # Prosent av tid med risiko
+    }
+    
+    return validation

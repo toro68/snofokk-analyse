@@ -1,0 +1,19 @@
+{
+    "frost_client_id": "43fefca2-a26b-415b-954d-ba9af37e3e1f",
+    "weather_station": "SN46220",
+    
+    "email_from": "kalvaknuten@gmail.com",
+    "email_to": "kalvaknuten@gmail.com",
+    "smtp_server": "smtp.gmail.com",
+    "smtp_username": "kalvaknuten",
+    "smtp_password": "klrv mhbt bjzg nrim",
+
+    "snow_alert": {
+        "snow_threshold": 8.0,
+        "temp_threshold": 0.0,
+        "precip_threshold": 0.1,
+        "plowing_hours": 6,
+        "cooldown_hours": 12,
+        "check_hours": 6
+    }
+} 

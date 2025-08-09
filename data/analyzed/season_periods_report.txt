@@ -1,0 +1,55 @@
+
+🏔️ BRØYTESESONG 2023-2024 SNØFOKK-ANALYSE
+================================================
+
+📅 PERIODE: 1. november 2023 - 30. april 2024
+🏔️ STASJON: Gullingen Skisenter (SN46220)
+
+📊 HOVEDRESULTATER
+Total antall snøfokk-PERIODER: 447
+(Ikke timer - men sammenhengende perioder!)
+
+Samlet varighet: 447.0 timer
+Gjennomsnittlig periodelengde: 1.0 timer
+Lengste periode: 1.0 timer
+
+🏷️ SNØFOKK-TYPER
+  • Usynlig snøfokk: 447 perioder (100.0%)
+
+⚠️ FAREGRAD FORDELING
+  • HIGH: 412 perioder (92.2%)
+  • LOW: 25 perioder (5.6%)
+  • MEDIUM: 10 perioder (2.2%)
+
+📅 MÅNEDLIG FORDELING
+  • November 2023: 43 perioder (9.6%)
+  • Desember 2023: 120 perioder (26.8%)
+  • Januar 2024: 91 perioder (20.4%)
+  • Februar 2024: 118 perioder (26.4%)
+  • Mars 2024: 48 perioder (10.7%)
+  • April 2024: 27 perioder (6.0%)
+
+🌬️ VINDRETNING ANALYSE
+  • 135.0° (SE): 126 perioder (28.2%)
+  • 157.5° (SSE): 114 perioder (25.5%)
+  • 180.0° (S): 89 perioder (19.9%)
+
+
+🚨 KRITISKE OBSERVASJONER
+• Vindretning er kritisk for snøfokk-risiko
+• NW-NE (315-45°) og SE-SW (135-225°) mest problematisk
+• Usynlig snøfokk dominerer (ingen endring i snødybde)
+• Brøytesesongen 2023-2024 hadde 447 distinkte snøfokk-perioder
+
+🎯 FORKLARING AV "USYNLIG SNØFOKK"
+Usynlig snøfokk oppstår når:
+• Vind flytter allerede liggende snø horisontalt
+• Snødybde ved målestasjon endres ikke merkbart
+• Veier kan likevel bli dekket av snø som blåser inn
+• Særlig farlig fordi det ikke registreres av snøsensorer
+
+🔧 ANBEFALINGER
+1. Overvåk spesielt NW-NE og SE-SW vindretninger
+2. Økt beredskap ved vindstyrke >6 m/s og temp <-1°C
+3. Kombiner snødybde-data med vindretning for varsling
+4. Implementer sanntids vindretning-varsling

@@ -1,0 +1,618 @@
+2025-02-27 06:52:34,247 - INFO - Opprettet nødvendige mapper
+2025-02-27 06:52:34,248 - INFO - Starter analyse av vinterperioder fra 2018 til 2025
+2025-02-27 06:52:34,248 - INFO - Prosesserer vinterperiode 2017-11-01 til 2018-05-01
+2025-02-27 06:52:34,248 - INFO - Henter data fra 2017-11-01 til 2017-12-01
+2025-02-27 06:52:34,608 - ERROR - API-feil 412: {
+  "@context" : "https://frost.met.no/schema",
+  "@type" : "ErrorResponse",
+  "apiVersion" : "v0",
+  "license" : "https://creativecommons.org/licenses/by/3.0/no/",
+  "createdAt" : "2025-02-27T05:52:34Z",
+  "queryTime" : 0.219,
+  "currentLink" : "https://frost.met.no/observations/v0.jsonld?sources=SN46220&referencetime=2017-11-01%2F2017-12-01&elements=air_temperature%2Csurface_snow_thickness%2Cwind_speed%2Cwind_from_direction%2Crelative_humidity%2Cmax%28wind_speed_of_gust+PT1H%29%2Cmax%28wind_speed+PT1H%29%2Cmin%28air_temperature+PT1H%29%2Cmax%28air_temperature+PT1H%29%2Csum%28duration_of_precipitation+PT1H%29%2Csum%28precipitation_amount+PT1H%29%2Cdew_point_temperature&timeresolutions=PT1H",
+  "error" : {
+    "code" : 412,
+    "message" : "412",
+    "reason" : "No time series found for this combination of parameters, check /observations/availableTimeSeries for more information."
+  }
+}
+2025-02-27 06:52:34,609 - WARNING - Kunne ikke hente data for 2017-11-01 til 2017-12-01
+2025-02-27 06:52:34,609 - INFO - Henter data fra 2017-12-01 til 2017-12-31
+2025-02-27 06:52:34,855 - ERROR - API-feil 412: {
+  "@context" : "https://frost.met.no/schema",
+  "@type" : "ErrorResponse",
+  "apiVersion" : "v0",
+  "license" : "https://creativecommons.org/licenses/by/3.0/no/",
+  "createdAt" : "2025-02-27T05:52:34Z",
+  "queryTime" : 0.173,
+  "currentLink" : "https://frost.met.no/observations/v0.jsonld?sources=SN46220&referencetime=2017-12-01%2F2017-12-31&elements=air_temperature%2Csurface_snow_thickness%2Cwind_speed%2Cwind_from_direction%2Crelative_humidity%2Cmax%28wind_speed_of_gust+PT1H%29%2Cmax%28wind_speed+PT1H%29%2Cmin%28air_temperature+PT1H%29%2Cmax%28air_temperature+PT1H%29%2Csum%28duration_of_precipitation+PT1H%29%2Csum%28precipitation_amount+PT1H%29%2Cdew_point_temperature&timeresolutions=PT1H",
+  "error" : {
+    "code" : 412,
+    "message" : "412",
+    "reason" : "No time series found for this combination of parameters, check /observations/availableTimeSeries for more information."
+  }
+}
+2025-02-27 06:52:34,855 - WARNING - Kunne ikke hente data for 2017-12-01 til 2017-12-31
+2025-02-27 06:52:34,855 - INFO - Henter data fra 2017-12-31 til 2018-01-30
+2025-02-27 06:52:35,091 - ERROR - API-feil 412: {
+  "@context" : "https://frost.met.no/schema",
+  "@type" : "ErrorResponse",
+  "apiVersion" : "v0",
+  "license" : "https://creativecommons.org/licenses/by/3.0/no/",
+  "createdAt" : "2025-02-27T05:52:34Z",
+  "queryTime" : 0.161,
+  "currentLink" : "https://frost.met.no/observations/v0.jsonld?sources=SN46220&referencetime=2017-12-31%2F2018-01-30&elements=air_temperature%2Csurface_snow_thickness%2Cwind_speed%2Cwind_from_direction%2Crelative_humidity%2Cmax%28wind_speed_of_gust+PT1H%29%2Cmax%28wind_speed+PT1H%29%2Cmin%28air_temperature+PT1H%29%2Cmax%28air_temperature+PT1H%29%2Csum%28duration_of_precipitation+PT1H%29%2Csum%28precipitation_amount+PT1H%29%2Cdew_point_temperature&timeresolutions=PT1H",
+  "error" : {
+    "code" : 412,
+    "message" : "412",
+    "reason" : "No time series found for this combination of parameters, check /observations/availableTimeSeries for more information."
+  }
+}
+2025-02-27 06:52:35,092 - WARNING - Kunne ikke hente data for 2017-12-31 til 2018-01-30
+2025-02-27 06:52:35,093 - INFO - Henter data fra 2018-01-30 til 2018-03-01
+2025-02-27 06:52:36,206 - INFO - Data cachet til data/processed/frost_data_2018-01-30_to_2018-03-01.csv
+2025-02-27 06:52:36,208 - INFO - Hentet data for periode 2018-01-30 til 2018-03-01
+2025-02-27 06:52:36,208 - INFO - Henter data fra 2018-03-01 til 2018-03-31
+2025-02-27 06:52:37,532 - INFO - Data cachet til data/processed/frost_data_2018-03-01_to_2018-03-31.csv
+2025-02-27 06:52:37,534 - INFO - Hentet data for periode 2018-03-01 til 2018-03-31
+2025-02-27 06:52:37,534 - INFO - Henter data fra 2018-03-31 til 2018-04-30
+2025-02-27 06:52:39,035 - INFO - Data cachet til data/processed/frost_data_2018-03-31_to_2018-04-30.csv
+2025-02-27 06:52:39,036 - INFO - Hentet data for periode 2018-03-31 til 2018-04-30
+2025-02-27 06:52:39,036 - INFO - Henter data fra 2018-04-30 til 2018-05-01
+2025-02-27 06:52:39,553 - INFO - Data cachet til data/processed/frost_data_2018-04-30_to_2018-05-01.csv
+2025-02-27 06:52:39,553 - INFO - Hentet data for periode 2018-04-30 til 2018-05-01
+2025-02-27 06:52:39,558 - INFO - Fullført analyse av Vinter 2017-2018
+2025-02-27 06:52:39,558 - INFO - Prosesserer vinterperiode 2018-11-01 til 2019-05-01
+2025-02-27 06:52:39,559 - INFO - Henter data fra 2018-11-01 til 2018-12-01
+2025-02-27 06:52:40,782 - INFO - Data cachet til data/processed/frost_data_2018-11-01_to_2018-12-01.csv
+2025-02-27 06:52:40,784 - INFO - Hentet data for periode 2018-11-01 til 2018-12-01
+2025-02-27 06:52:40,784 - INFO - Henter data fra 2018-12-01 til 2018-12-31
+2025-02-27 06:52:42,119 - INFO - Data cachet til data/processed/frost_data_2018-12-01_to_2018-12-31.csv
+2025-02-27 06:52:42,120 - INFO - Hentet data for periode 2018-12-01 til 2018-12-31
+2025-02-27 06:52:42,120 - INFO - Henter data fra 2018-12-31 til 2019-01-30
+2025-02-27 06:52:43,313 - INFO - Data cachet til data/processed/frost_data_2018-12-31_to_2019-01-30.csv
+2025-02-27 06:52:43,314 - INFO - Hentet data for periode 2018-12-31 til 2019-01-30
+2025-02-27 06:52:43,314 - INFO - Henter data fra 2019-01-30 til 2019-03-01
+2025-02-27 06:52:44,551 - INFO - Data cachet til data/processed/frost_data_2019-01-30_to_2019-03-01.csv
+2025-02-27 06:52:44,552 - INFO - Hentet data for periode 2019-01-30 til 2019-03-01
+2025-02-27 06:52:44,552 - INFO - Henter data fra 2019-03-01 til 2019-03-31
+2025-02-27 06:52:45,829 - INFO - Data cachet til data/processed/frost_data_2019-03-01_to_2019-03-31.csv
+2025-02-27 06:52:45,831 - INFO - Hentet data for periode 2019-03-01 til 2019-03-31
+2025-02-27 06:52:45,831 - INFO - Henter data fra 2019-03-31 til 2019-04-30
+2025-02-27 06:52:47,213 - INFO - Data cachet til data/processed/frost_data_2019-03-31_to_2019-04-30.csv
+2025-02-27 06:52:47,215 - INFO - Hentet data for periode 2019-03-31 til 2019-04-30
+2025-02-27 06:52:47,215 - INFO - Henter data fra 2019-04-30 til 2019-05-01
+2025-02-27 06:52:47,768 - INFO - Data cachet til data/processed/frost_data_2019-04-30_to_2019-05-01.csv
+2025-02-27 06:52:47,769 - INFO - Hentet data for periode 2019-04-30 til 2019-05-01
+2025-02-27 06:52:47,771 - INFO - Fullført analyse av Vinter 2018-2019
+2025-02-27 06:52:47,771 - INFO - Prosesserer vinterperiode 2019-11-01 til 2020-05-01
+2025-02-27 06:52:47,772 - INFO - Henter data fra 2019-11-01 til 2019-12-01
+2025-02-27 06:52:49,198 - INFO - Data cachet til data/processed/frost_data_2019-11-01_to_2019-12-01.csv
+2025-02-27 06:52:49,199 - INFO - Hentet data for periode 2019-11-01 til 2019-12-01
+2025-02-27 06:52:49,199 - INFO - Henter data fra 2019-12-01 til 2019-12-31
+2025-02-27 06:52:50,437 - INFO - Data cachet til data/processed/frost_data_2019-12-01_to_2019-12-31.csv
+2025-02-27 06:52:50,439 - INFO - Hentet data for periode 2019-12-01 til 2019-12-31
+2025-02-27 06:52:50,439 - INFO - Henter data fra 2019-12-31 til 2020-01-30
+2025-02-27 06:52:51,782 - INFO - Data cachet til data/processed/frost_data_2019-12-31_to_2020-01-30.csv
+2025-02-27 06:52:51,783 - INFO - Hentet data for periode 2019-12-31 til 2020-01-30
+2025-02-27 06:52:51,783 - INFO - Henter data fra 2020-01-30 til 2020-02-29
+2025-02-27 06:52:53,165 - INFO - Data cachet til data/processed/frost_data_2020-01-30_to_2020-02-29.csv
+2025-02-27 06:52:53,167 - INFO - Hentet data for periode 2020-01-30 til 2020-02-29
+2025-02-27 06:52:53,167 - INFO - Henter data fra 2020-02-29 til 2020-03-30
+2025-02-27 06:52:54,412 - INFO - Data cachet til data/processed/frost_data_2020-02-29_to_2020-03-30.csv
+2025-02-27 06:52:54,413 - INFO - Hentet data for periode 2020-02-29 til 2020-03-30
+2025-02-27 06:52:54,413 - INFO - Henter data fra 2020-03-30 til 2020-04-29
+2025-02-27 06:52:55,764 - INFO - Data cachet til data/processed/frost_data_2020-03-30_to_2020-04-29.csv
+2025-02-27 06:52:55,765 - INFO - Hentet data for periode 2020-03-30 til 2020-04-29
+2025-02-27 06:52:55,765 - INFO - Henter data fra 2020-04-29 til 2020-05-01
+2025-02-27 06:52:56,361 - INFO - Data cachet til data/processed/frost_data_2020-04-29_to_2020-05-01.csv
+2025-02-27 06:52:56,361 - INFO - Hentet data for periode 2020-04-29 til 2020-05-01
+2025-02-27 06:52:56,365 - INFO - Fullført analyse av Vinter 2019-2020
+2025-02-27 06:52:56,365 - INFO - Prosesserer vinterperiode 2020-11-01 til 2021-05-01
+2025-02-27 06:52:56,365 - INFO - Henter data fra 2020-11-01 til 2020-12-01
+2025-02-27 06:52:57,563 - INFO - Data cachet til data/processed/frost_data_2020-11-01_to_2020-12-01.csv
+2025-02-27 06:52:57,564 - INFO - Hentet data for periode 2020-11-01 til 2020-12-01
+2025-02-27 06:52:57,564 - INFO - Henter data fra 2020-12-01 til 2020-12-31
+2025-02-27 06:52:58,802 - INFO - Data cachet til data/processed/frost_data_2020-12-01_to_2020-12-31.csv
+2025-02-27 06:52:58,804 - INFO - Hentet data for periode 2020-12-01 til 2020-12-31
+2025-02-27 06:52:58,804 - INFO - Henter data fra 2020-12-31 til 2021-01-30
+2025-02-27 06:53:00,142 - INFO - Data cachet til data/processed/frost_data_2020-12-31_to_2021-01-30.csv
+2025-02-27 06:53:00,143 - INFO - Hentet data for periode 2020-12-31 til 2021-01-30
+2025-02-27 06:53:00,143 - INFO - Henter data fra 2021-01-30 til 2021-03-01
+2025-02-27 06:53:01,277 - INFO - Data cachet til data/processed/frost_data_2021-01-30_to_2021-03-01.csv
+2025-02-27 06:53:01,278 - INFO - Hentet data for periode 2021-01-30 til 2021-03-01
+2025-02-27 06:53:01,278 - INFO - Henter data fra 2021-03-01 til 2021-03-31
+2025-02-27 06:53:02,543 - INFO - Data cachet til data/processed/frost_data_2021-03-01_to_2021-03-31.csv
+2025-02-27 06:53:02,544 - INFO - Hentet data for periode 2021-03-01 til 2021-03-31
+2025-02-27 06:53:02,544 - INFO - Henter data fra 2021-03-31 til 2021-04-30
+2025-02-27 06:53:03,957 - INFO - Data cachet til data/processed/frost_data_2021-03-31_to_2021-04-30.csv
+2025-02-27 06:53:03,959 - INFO - Hentet data for periode 2021-03-31 til 2021-04-30
+2025-02-27 06:53:03,959 - INFO - Henter data fra 2021-04-30 til 2021-05-01
+2025-02-27 06:53:04,371 - INFO - Data cachet til data/processed/frost_data_2021-04-30_to_2021-05-01.csv
+2025-02-27 06:53:04,373 - INFO - Hentet data for periode 2021-04-30 til 2021-05-01
+2025-02-27 06:53:04,377 - INFO - Fullført analyse av Vinter 2020-2021
+2025-02-27 06:53:04,377 - INFO - Prosesserer vinterperiode 2021-11-01 til 2022-05-01
+2025-02-27 06:53:04,377 - INFO - Henter data fra 2021-11-01 til 2021-12-01
+2025-02-27 06:53:05,678 - INFO - Data cachet til data/processed/frost_data_2021-11-01_to_2021-12-01.csv
+2025-02-27 06:53:05,679 - INFO - Hentet data for periode 2021-11-01 til 2021-12-01
+2025-02-27 06:53:05,679 - INFO - Henter data fra 2021-12-01 til 2021-12-31
+2025-02-27 06:53:07,143 - INFO - Data cachet til data/processed/frost_data_2021-12-01_to_2021-12-31.csv
+2025-02-27 06:53:07,145 - INFO - Hentet data for periode 2021-12-01 til 2021-12-31
+2025-02-27 06:53:07,145 - INFO - Henter data fra 2021-12-31 til 2022-01-30
+2025-02-27 06:53:08,494 - INFO - Data cachet til data/processed/frost_data_2021-12-31_to_2022-01-30.csv
+2025-02-27 06:53:08,496 - INFO - Hentet data for periode 2021-12-31 til 2022-01-30
+2025-02-27 06:53:08,496 - INFO - Henter data fra 2022-01-30 til 2022-03-01
+2025-02-27 06:53:09,851 - INFO - Data cachet til data/processed/frost_data_2022-01-30_to_2022-03-01.csv
+2025-02-27 06:53:09,852 - INFO - Hentet data for periode 2022-01-30 til 2022-03-01
+2025-02-27 06:53:09,852 - INFO - Henter data fra 2022-03-01 til 2022-03-31
+2025-02-27 06:53:11,482 - INFO - Data cachet til data/processed/frost_data_2022-03-01_to_2022-03-31.csv
+2025-02-27 06:53:11,483 - INFO - Hentet data for periode 2022-03-01 til 2022-03-31
+2025-02-27 06:53:11,483 - INFO - Henter data fra 2022-03-31 til 2022-04-30
+2025-02-27 06:53:13,130 - INFO - Data cachet til data/processed/frost_data_2022-03-31_to_2022-04-30.csv
+2025-02-27 06:53:13,131 - INFO - Hentet data for periode 2022-03-31 til 2022-04-30
+2025-02-27 06:53:13,131 - INFO - Henter data fra 2022-04-30 til 2022-05-01
+2025-02-27 06:53:13,645 - INFO - Data cachet til data/processed/frost_data_2022-04-30_to_2022-05-01.csv
+2025-02-27 06:53:13,646 - INFO - Hentet data for periode 2022-04-30 til 2022-05-01
+2025-02-27 06:53:13,649 - INFO - Fullført analyse av Vinter 2021-2022
+2025-02-27 06:53:13,649 - INFO - Prosesserer vinterperiode 2022-11-01 til 2023-05-01
+2025-02-27 06:53:13,650 - INFO - Henter data fra 2022-11-01 til 2022-12-01
+2025-02-27 06:53:15,125 - INFO - Data cachet til data/processed/frost_data_2022-11-01_to_2022-12-01.csv
+2025-02-27 06:53:15,127 - INFO - Hentet data for periode 2022-11-01 til 2022-12-01
+2025-02-27 06:53:15,127 - INFO - Henter data fra 2022-12-01 til 2022-12-31
+2025-02-27 06:53:17,309 - INFO - Data cachet til data/processed/frost_data_2022-12-01_to_2022-12-31.csv
+2025-02-27 06:53:17,311 - INFO - Hentet data for periode 2022-12-01 til 2022-12-31
+2025-02-27 06:53:17,311 - INFO - Henter data fra 2022-12-31 til 2023-01-30
+2025-02-27 06:53:18,734 - INFO - Data cachet til data/processed/frost_data_2022-12-31_to_2023-01-30.csv
+2025-02-27 06:53:18,735 - INFO - Hentet data for periode 2022-12-31 til 2023-01-30
+2025-02-27 06:53:18,735 - INFO - Henter data fra 2023-01-30 til 2023-03-01
+2025-02-27 06:53:19,849 - INFO - Data cachet til data/processed/frost_data_2023-01-30_to_2023-03-01.csv
+2025-02-27 06:53:19,851 - INFO - Hentet data for periode 2023-01-30 til 2023-03-01
+2025-02-27 06:53:19,851 - INFO - Henter data fra 2023-03-01 til 2023-03-31
+2025-02-27 06:53:21,432 - INFO - Data cachet til data/processed/frost_data_2023-03-01_to_2023-03-31.csv
+2025-02-27 06:53:21,433 - INFO - Hentet data for periode 2023-03-01 til 2023-03-31
+2025-02-27 06:53:21,433 - INFO - Henter data fra 2023-03-31 til 2023-04-30
+2025-02-27 06:53:22,823 - INFO - Data cachet til data/processed/frost_data_2023-03-31_to_2023-04-30.csv
+2025-02-27 06:53:22,824 - INFO - Hentet data for periode 2023-03-31 til 2023-04-30
+2025-02-27 06:53:22,824 - INFO - Henter data fra 2023-04-30 til 2023-05-01
+2025-02-27 06:53:23,444 - INFO - Data cachet til data/processed/frost_data_2023-04-30_to_2023-05-01.csv
+2025-02-27 06:53:23,445 - INFO - Hentet data for periode 2023-04-30 til 2023-05-01
+2025-02-27 06:53:23,447 - INFO - Fullført analyse av Vinter 2022-2023
+2025-02-27 06:53:23,447 - INFO - Prosesserer vinterperiode 2023-11-01 til 2024-05-01
+2025-02-27 06:53:23,447 - INFO - Henter data fra 2023-11-01 til 2023-12-01
+2025-02-27 06:53:24,864 - INFO - Data cachet til data/processed/frost_data_2023-11-01_to_2023-12-01.csv
+2025-02-27 06:53:24,865 - INFO - Hentet data for periode 2023-11-01 til 2023-12-01
+2025-02-27 06:53:24,865 - INFO - Henter data fra 2023-12-01 til 2023-12-31
+2025-02-27 06:53:26,354 - INFO - Data cachet til data/processed/frost_data_2023-12-01_to_2023-12-31.csv
+2025-02-27 06:53:26,355 - INFO - Hentet data for periode 2023-12-01 til 2023-12-31
+2025-02-27 06:53:26,355 - INFO - Henter data fra 2023-12-31 til 2024-01-30
+2025-02-27 06:53:27,884 - INFO - Data cachet til data/processed/frost_data_2023-12-31_to_2024-01-30.csv
+2025-02-27 06:53:27,888 - INFO - Hentet data for periode 2023-12-31 til 2024-01-30
+2025-02-27 06:53:27,888 - INFO - Henter data fra 2024-01-30 til 2024-02-29
+2025-02-27 06:53:29,175 - INFO - Data cachet til data/processed/frost_data_2024-01-30_to_2024-02-29.csv
+2025-02-27 06:53:29,176 - INFO - Hentet data for periode 2024-01-30 til 2024-02-29
+2025-02-27 06:53:29,176 - INFO - Henter data fra 2024-02-29 til 2024-03-30
+2025-02-27 06:53:30,612 - INFO - Data cachet til data/processed/frost_data_2024-02-29_to_2024-03-30.csv
+2025-02-27 06:53:30,613 - INFO - Hentet data for periode 2024-02-29 til 2024-03-30
+2025-02-27 06:53:30,613 - INFO - Henter data fra 2024-03-30 til 2024-04-29
+2025-02-27 06:53:32,023 - INFO - Data cachet til data/processed/frost_data_2024-03-30_to_2024-04-29.csv
+2025-02-27 06:53:32,024 - INFO - Hentet data for periode 2024-03-30 til 2024-04-29
+2025-02-27 06:53:32,024 - INFO - Henter data fra 2024-04-29 til 2024-05-01
+2025-02-27 06:53:32,538 - INFO - Data cachet til data/processed/frost_data_2024-04-29_to_2024-05-01.csv
+2025-02-27 06:53:32,538 - INFO - Hentet data for periode 2024-04-29 til 2024-05-01
+2025-02-27 06:53:32,539 - INFO - Fullført analyse av Vinter 2023-2024
+2025-02-27 06:53:32,539 - INFO - Prosesserer vinterperiode 2024-11-01 til 2025-05-01
+2025-02-27 06:53:32,540 - INFO - Henter data fra 2024-11-01 til 2024-12-01
+2025-02-27 06:53:33,824 - INFO - Data cachet til data/processed/frost_data_2024-11-01_to_2024-12-01.csv
+2025-02-27 06:53:33,826 - INFO - Hentet data for periode 2024-11-01 til 2024-12-01
+2025-02-27 06:53:33,826 - INFO - Henter data fra 2024-12-01 til 2024-12-31
+2025-02-27 06:53:35,359 - INFO - Data cachet til data/processed/frost_data_2024-12-01_to_2024-12-31.csv
+2025-02-27 06:53:35,360 - INFO - Hentet data for periode 2024-12-01 til 2024-12-31
+2025-02-27 06:53:35,360 - INFO - Henter data fra 2024-12-31 til 2025-01-30
+2025-02-27 06:53:36,870 - INFO - Data cachet til data/processed/frost_data_2024-12-31_to_2025-01-30.csv
+2025-02-27 06:53:36,871 - INFO - Hentet data for periode 2024-12-31 til 2025-01-30
+2025-02-27 06:53:36,871 - INFO - Henter data fra 2025-01-30 til 2025-03-01
+2025-02-27 06:53:38,298 - INFO - Data cachet til data/processed/frost_data_2025-01-30_to_2025-03-01.csv
+2025-02-27 06:53:38,300 - INFO - Hentet data for periode 2025-01-30 til 2025-03-01
+2025-02-27 06:53:38,300 - INFO - Henter data fra 2025-03-01 til 2025-03-31
+2025-02-27 06:53:38,597 - ERROR - API-feil 404: {
+  "@context" : "https://frost.met.no/schema",
+  "@type" : "ErrorResponse",
+  "apiVersion" : "v0",
+  "license" : "https://creativecommons.org/licenses/by/3.0/no/",
+  "createdAt" : "2025-02-27T05:53:38Z",
+  "queryTime" : 0.221,
+  "currentLink" : "https://frost.met.no/observations/v0.jsonld?sources=SN46220&referencetime=2025-03-01%2F2025-03-31&elements=air_temperature%2Csurface_snow_thickness%2Cwind_speed%2Cwind_from_direction%2Crelative_humidity%2Cmax%28wind_speed_of_gust+PT1H%29%2Cmax%28wind_speed+PT1H%29%2Cmin%28air_temperature+PT1H%29%2Cmax%28air_temperature+PT1H%29%2Csum%28duration_of_precipitation+PT1H%29%2Csum%28precipitation_amount+PT1H%29%2Cdew_point_temperature&timeresolutions=PT1H",
+  "error" : {
+    "code" : 404,
+    "message" : "Not found",
+    "reason" : "No data found. Possible reasons: you asked too soon for new data (data is not immediately available at the observation time), there is an outage / issue with the sensor, the data is sent seasonally."
+  }
+}
+2025-02-27 06:53:38,599 - WARNING - Kunne ikke hente data for 2025-03-01 til 2025-03-31
+2025-02-27 06:53:38,599 - INFO - Henter data fra 2025-03-31 til 2025-04-30
+2025-02-27 06:53:39,116 - ERROR - API-feil 404: {
+  "@context" : "https://frost.met.no/schema",
+  "@type" : "ErrorResponse",
+  "apiVersion" : "v0",
+  "license" : "https://creativecommons.org/licenses/by/3.0/no/",
+  "createdAt" : "2025-02-27T05:53:38Z",
+  "queryTime" : 0.435,
+  "currentLink" : "https://frost.met.no/observations/v0.jsonld?sources=SN46220&referencetime=2025-03-31%2F2025-04-30&elements=air_temperature%2Csurface_snow_thickness%2Cwind_speed%2Cwind_from_direction%2Crelative_humidity%2Cmax%28wind_speed_of_gust+PT1H%29%2Cmax%28wind_speed+PT1H%29%2Cmin%28air_temperature+PT1H%29%2Cmax%28air_temperature+PT1H%29%2Csum%28duration_of_precipitation+PT1H%29%2Csum%28precipitation_amount+PT1H%29%2Cdew_point_temperature&timeresolutions=PT1H",
+  "error" : {
+    "code" : 404,
+    "message" : "Not found",
+    "reason" : "No data found. Possible reasons: you asked too soon for new data (data is not immediately available at the observation time), there is an outage / issue with the sensor, the data is sent seasonally."
+  }
+}
+2025-02-27 06:53:39,116 - WARNING - Kunne ikke hente data for 2025-03-31 til 2025-04-30
+2025-02-27 06:53:39,116 - INFO - Henter data fra 2025-04-30 til 2025-05-01
+2025-02-27 06:53:39,571 - ERROR - API-feil 404: {
+  "@context" : "https://frost.met.no/schema",
+  "@type" : "ErrorResponse",
+  "apiVersion" : "v0",
+  "license" : "https://creativecommons.org/licenses/by/3.0/no/",
+  "createdAt" : "2025-02-27T05:53:39Z",
+  "queryTime" : 0.34,
+  "currentLink" : "https://frost.met.no/observations/v0.jsonld?sources=SN46220&referencetime=2025-04-30%2F2025-05-01&elements=air_temperature%2Csurface_snow_thickness%2Cwind_speed%2Cwind_from_direction%2Crelative_humidity%2Cmax%28wind_speed_of_gust+PT1H%29%2Cmax%28wind_speed+PT1H%29%2Cmin%28air_temperature+PT1H%29%2Cmax%28air_temperature+PT1H%29%2Csum%28duration_of_precipitation+PT1H%29%2Csum%28precipitation_amount+PT1H%29%2Cdew_point_temperature&timeresolutions=PT1H",
+  "error" : {
+    "code" : 404,
+    "message" : "Not found",
+    "reason" : "No data found. Possible reasons: you asked too soon for new data (data is not immediately available at the observation time), there is an outage / issue with the sensor, the data is sent seasonally."
+  }
+}
+2025-02-27 06:53:39,572 - WARNING - Kunne ikke hente data for 2025-04-30 til 2025-05-01
+2025-02-27 06:53:39,576 - INFO - Fullført analyse av Vinter 2024-2025
+2025-02-27 06:53:39,729 - INFO - Rådata lagret til data/raw/historical_data.csv
+2025-02-27 06:53:39,729 - ERROR - En feil oppstod: Object of type int64 is not JSON serializable
+Traceback (most recent call last):
+  File "/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/scripts/analyze_historical_data.py", line 415, in main
+    # Lagre rådata
+  File "/opt/homebrew/Cellar/python@3.13/3.13.1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/__init__.py", line 179, in dump
+    for chunk in iterable:
+                 ^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 430, in _iterencode
+    yield from _iterencode_list(o, _current_indent_level)
+  File "/opt/homebrew/Cellar/python@3.13/3.13.1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 326, in _iterencode_list
+    yield from chunks
+  File "/opt/homebrew/Cellar/python@3.13/3.13.1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/opt/homebrew/Cellar/python@3.13/3.13.1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/opt/homebrew/Cellar/python@3.13/3.13.1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 439, in _iterencode
+    o = _default(o)
+  File "/opt/homebrew/Cellar/python@3.13/3.13.1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type int64 is not JSON serializable
+2025-02-27 06:54:55,064 - INFO - Opprettet nødvendige mapper
+2025-02-27 06:54:55,064 - INFO - Starter analyse av vinterperioder fra 2020 til 2025
+2025-02-27 06:54:55,064 - INFO - Prosesserer vinterperiode 2019-11-01 til 2020-05-01
+2025-02-27 06:54:55,064 - INFO - Bruker cachet data for 2019-11-01 til 2019-12-01
+2025-02-27 06:54:55,074 - INFO - Hentet data for periode 2019-11-01 til 2019-12-01
+2025-02-27 06:54:55,074 - INFO - Bruker cachet data for 2019-12-01 til 2019-12-31
+2025-02-27 06:54:55,076 - INFO - Hentet data for periode 2019-12-01 til 2019-12-31
+2025-02-27 06:54:55,076 - INFO - Bruker cachet data for 2019-12-31 til 2020-01-30
+2025-02-27 06:54:55,078 - INFO - Hentet data for periode 2019-12-31 til 2020-01-30
+2025-02-27 06:54:55,078 - INFO - Bruker cachet data for 2020-01-30 til 2020-02-29
+2025-02-27 06:54:55,080 - INFO - Hentet data for periode 2020-01-30 til 2020-02-29
+2025-02-27 06:54:55,080 - INFO - Bruker cachet data for 2020-02-29 til 2020-03-30
+2025-02-27 06:54:55,081 - INFO - Hentet data for periode 2020-02-29 til 2020-03-30
+2025-02-27 06:54:55,081 - INFO - Bruker cachet data for 2020-03-30 til 2020-04-29
+2025-02-27 06:54:55,083 - INFO - Hentet data for periode 2020-03-30 til 2020-04-29
+2025-02-27 06:54:55,083 - INFO - Bruker cachet data for 2020-04-29 til 2020-05-01
+2025-02-27 06:54:55,084 - INFO - Hentet data for periode 2020-04-29 til 2020-05-01
+2025-02-27 06:54:55,088 - INFO - Fullført analyse av Vinter 2019-2020
+2025-02-27 06:54:55,088 - INFO - Prosesserer vinterperiode 2020-11-01 til 2021-05-01
+2025-02-27 06:54:55,088 - INFO - Bruker cachet data for 2020-11-01 til 2020-12-01
+2025-02-27 06:54:55,089 - INFO - Hentet data for periode 2020-11-01 til 2020-12-01
+2025-02-27 06:54:55,089 - INFO - Bruker cachet data for 2020-12-01 til 2020-12-31
+2025-02-27 06:54:55,091 - INFO - Hentet data for periode 2020-12-01 til 2020-12-31
+2025-02-27 06:54:55,091 - INFO - Bruker cachet data for 2020-12-31 til 2021-01-30
+2025-02-27 06:54:55,092 - INFO - Hentet data for periode 2020-12-31 til 2021-01-30
+2025-02-27 06:54:55,092 - INFO - Bruker cachet data for 2021-01-30 til 2021-03-01
+2025-02-27 06:54:55,094 - INFO - Hentet data for periode 2021-01-30 til 2021-03-01
+2025-02-27 06:54:55,094 - INFO - Bruker cachet data for 2021-03-01 til 2021-03-31
+2025-02-27 06:54:55,095 - INFO - Hentet data for periode 2021-03-01 til 2021-03-31
+2025-02-27 06:54:55,095 - INFO - Bruker cachet data for 2021-03-31 til 2021-04-30
+2025-02-27 06:54:55,098 - INFO - Hentet data for periode 2021-03-31 til 2021-04-30
+2025-02-27 06:54:55,098 - INFO - Bruker cachet data for 2021-04-30 til 2021-05-01
+2025-02-27 06:54:55,099 - INFO - Hentet data for periode 2021-04-30 til 2021-05-01
+2025-02-27 06:54:55,100 - INFO - Fullført analyse av Vinter 2020-2021
+2025-02-27 06:54:55,100 - INFO - Prosesserer vinterperiode 2021-11-01 til 2022-05-01
+2025-02-27 06:54:55,100 - INFO - Bruker cachet data for 2021-11-01 til 2021-12-01
+2025-02-27 06:54:55,102 - INFO - Hentet data for periode 2021-11-01 til 2021-12-01
+2025-02-27 06:54:55,102 - INFO - Bruker cachet data for 2021-12-01 til 2021-12-31
+2025-02-27 06:54:55,103 - INFO - Hentet data for periode 2021-12-01 til 2021-12-31
+2025-02-27 06:54:55,103 - INFO - Bruker cachet data for 2021-12-31 til 2022-01-30
+2025-02-27 06:54:55,105 - INFO - Hentet data for periode 2021-12-31 til 2022-01-30
+2025-02-27 06:54:55,105 - INFO - Bruker cachet data for 2022-01-30 til 2022-03-01
+2025-02-27 06:54:55,106 - INFO - Hentet data for periode 2022-01-30 til 2022-03-01
+2025-02-27 06:54:55,106 - INFO - Bruker cachet data for 2022-03-01 til 2022-03-31
+2025-02-27 06:54:55,107 - INFO - Hentet data for periode 2022-03-01 til 2022-03-31
+2025-02-27 06:54:55,107 - INFO - Bruker cachet data for 2022-03-31 til 2022-04-30
+2025-02-27 06:54:55,109 - INFO - Hentet data for periode 2022-03-31 til 2022-04-30
+2025-02-27 06:54:55,109 - INFO - Bruker cachet data for 2022-04-30 til 2022-05-01
+2025-02-27 06:54:55,110 - INFO - Hentet data for periode 2022-04-30 til 2022-05-01
+2025-02-27 06:54:55,111 - INFO - Fullført analyse av Vinter 2021-2022
+2025-02-27 06:54:55,111 - INFO - Prosesserer vinterperiode 2022-11-01 til 2023-05-01
+2025-02-27 06:54:55,111 - INFO - Bruker cachet data for 2022-11-01 til 2022-12-01
+2025-02-27 06:54:55,113 - INFO - Hentet data for periode 2022-11-01 til 2022-12-01
+2025-02-27 06:54:55,113 - INFO - Bruker cachet data for 2022-12-01 til 2022-12-31
+2025-02-27 06:54:55,114 - INFO - Hentet data for periode 2022-12-01 til 2022-12-31
+2025-02-27 06:54:55,115 - INFO - Bruker cachet data for 2022-12-31 til 2023-01-30
+2025-02-27 06:54:55,116 - INFO - Hentet data for periode 2022-12-31 til 2023-01-30
+2025-02-27 06:54:55,116 - INFO - Bruker cachet data for 2023-01-30 til 2023-03-01
+2025-02-27 06:54:55,117 - INFO - Hentet data for periode 2023-01-30 til 2023-03-01
+2025-02-27 06:54:55,118 - INFO - Bruker cachet data for 2023-03-01 til 2023-03-31
+2025-02-27 06:54:55,119 - INFO - Hentet data for periode 2023-03-01 til 2023-03-31
+2025-02-27 06:54:55,119 - INFO - Bruker cachet data for 2023-03-31 til 2023-04-30
+2025-02-27 06:54:55,120 - INFO - Hentet data for periode 2023-03-31 til 2023-04-30
+2025-02-27 06:54:55,120 - INFO - Bruker cachet data for 2023-04-30 til 2023-05-01
+2025-02-27 06:54:55,121 - INFO - Hentet data for periode 2023-04-30 til 2023-05-01
+2025-02-27 06:54:55,122 - INFO - Fullført analyse av Vinter 2022-2023
+2025-02-27 06:54:55,122 - INFO - Prosesserer vinterperiode 2023-11-01 til 2024-05-01
+2025-02-27 06:54:55,122 - INFO - Bruker cachet data for 2023-11-01 til 2023-12-01
+2025-02-27 06:54:55,123 - INFO - Hentet data for periode 2023-11-01 til 2023-12-01
+2025-02-27 06:54:55,123 - INFO - Bruker cachet data for 2023-12-01 til 2023-12-31
+2025-02-27 06:54:55,125 - INFO - Hentet data for periode 2023-12-01 til 2023-12-31
+2025-02-27 06:54:55,125 - INFO - Bruker cachet data for 2023-12-31 til 2024-01-30
+2025-02-27 06:54:55,126 - INFO - Hentet data for periode 2023-12-31 til 2024-01-30
+2025-02-27 06:54:55,126 - INFO - Bruker cachet data for 2024-01-30 til 2024-02-29
+2025-02-27 06:54:55,127 - INFO - Hentet data for periode 2024-01-30 til 2024-02-29
+2025-02-27 06:54:55,127 - INFO - Bruker cachet data for 2024-02-29 til 2024-03-30
+2025-02-27 06:54:55,129 - INFO - Hentet data for periode 2024-02-29 til 2024-03-30
+2025-02-27 06:54:55,129 - INFO - Bruker cachet data for 2024-03-30 til 2024-04-29
+2025-02-27 06:54:55,130 - INFO - Hentet data for periode 2024-03-30 til 2024-04-29
+2025-02-27 06:54:55,130 - INFO - Bruker cachet data for 2024-04-29 til 2024-05-01
+2025-02-27 06:54:55,131 - INFO - Hentet data for periode 2024-04-29 til 2024-05-01
+2025-02-27 06:54:55,132 - INFO - Fullført analyse av Vinter 2023-2024
+2025-02-27 06:54:55,132 - INFO - Prosesserer vinterperiode 2024-11-01 til 2025-05-01
+2025-02-27 06:54:55,132 - INFO - Bruker cachet data for 2024-11-01 til 2024-12-01
+2025-02-27 06:54:55,133 - INFO - Hentet data for periode 2024-11-01 til 2024-12-01
+2025-02-27 06:54:55,133 - INFO - Bruker cachet data for 2024-12-01 til 2024-12-31
+2025-02-27 06:54:55,134 - INFO - Hentet data for periode 2024-12-01 til 2024-12-31
+2025-02-27 06:54:55,134 - INFO - Bruker cachet data for 2024-12-31 til 2025-01-30
+2025-02-27 06:54:55,136 - INFO - Hentet data for periode 2024-12-31 til 2025-01-30
+2025-02-27 06:54:55,136 - INFO - Bruker cachet data for 2025-01-30 til 2025-03-01
+2025-02-27 06:54:55,137 - INFO - Hentet data for periode 2025-01-30 til 2025-03-01
+2025-02-27 06:54:55,137 - INFO - Henter data fra 2025-03-01 til 2025-03-31
+2025-02-27 06:54:55,467 - ERROR - API-feil 404: {
+  "@context" : "https://frost.met.no/schema",
+  "@type" : "ErrorResponse",
+  "apiVersion" : "v0",
+  "license" : "https://creativecommons.org/licenses/by/3.0/no/",
+  "createdAt" : "2025-02-27T05:54:55Z",
+  "queryTime" : 0.246,
+  "currentLink" : "https://frost.met.no/observations/v0.jsonld?sources=SN46220&referencetime=2025-03-01%2F2025-03-31&elements=air_temperature%2Csurface_snow_thickness%2Cwind_speed%2Cwind_from_direction%2Crelative_humidity%2Cmax%28wind_speed_of_gust+PT1H%29%2Cmax%28wind_speed+PT1H%29%2Cmin%28air_temperature+PT1H%29%2Cmax%28air_temperature+PT1H%29%2Csum%28duration_of_precipitation+PT1H%29%2Csum%28precipitation_amount+PT1H%29%2Cdew_point_temperature&timeresolutions=PT1H",
+  "error" : {
+    "code" : 404,
+    "message" : "Not found",
+    "reason" : "No data found. Possible reasons: you asked too soon for new data (data is not immediately available at the observation time), there is an outage / issue with the sensor, the data is sent seasonally."
+  }
+}
+2025-02-27 06:54:55,470 - WARNING - Kunne ikke hente data for 2025-03-01 til 2025-03-31
+2025-02-27 06:54:55,471 - INFO - Henter data fra 2025-03-31 til 2025-04-30
+2025-02-27 06:54:55,842 - ERROR - API-feil 404: {
+  "@context" : "https://frost.met.no/schema",
+  "@type" : "ErrorResponse",
+  "apiVersion" : "v0",
+  "license" : "https://creativecommons.org/licenses/by/3.0/no/",
+  "createdAt" : "2025-02-27T05:54:55Z",
+  "queryTime" : 0.29,
+  "currentLink" : "https://frost.met.no/observations/v0.jsonld?sources=SN46220&referencetime=2025-03-31%2F2025-04-30&elements=air_temperature%2Csurface_snow_thickness%2Cwind_speed%2Cwind_from_direction%2Crelative_humidity%2Cmax%28wind_speed_of_gust+PT1H%29%2Cmax%28wind_speed+PT1H%29%2Cmin%28air_temperature+PT1H%29%2Cmax%28air_temperature+PT1H%29%2Csum%28duration_of_precipitation+PT1H%29%2Csum%28precipitation_amount+PT1H%29%2Cdew_point_temperature&timeresolutions=PT1H",
+  "error" : {
+    "code" : 404,
+    "message" : "Not found",
+    "reason" : "No data found. Possible reasons: you asked too soon for new data (data is not immediately available at the observation time), there is an outage / issue with the sensor, the data is sent seasonally."
+  }
+}
+2025-02-27 06:54:55,842 - WARNING - Kunne ikke hente data for 2025-03-31 til 2025-04-30
+2025-02-27 06:54:55,842 - INFO - Henter data fra 2025-04-30 til 2025-05-01
+2025-02-27 06:54:56,236 - ERROR - API-feil 404: {
+  "@context" : "https://frost.met.no/schema",
+  "@type" : "ErrorResponse",
+  "apiVersion" : "v0",
+  "license" : "https://creativecommons.org/licenses/by/3.0/no/",
+  "createdAt" : "2025-02-27T05:54:55Z",
+  "queryTime" : 0.307,
+  "currentLink" : "https://frost.met.no/observations/v0.jsonld?sources=SN46220&referencetime=2025-04-30%2F2025-05-01&elements=air_temperature%2Csurface_snow_thickness%2Cwind_speed%2Cwind_from_direction%2Crelative_humidity%2Cmax%28wind_speed_of_gust+PT1H%29%2Cmax%28wind_speed+PT1H%29%2Cmin%28air_temperature+PT1H%29%2Cmax%28air_temperature+PT1H%29%2Csum%28duration_of_precipitation+PT1H%29%2Csum%28precipitation_amount+PT1H%29%2Cdew_point_temperature&timeresolutions=PT1H",
+  "error" : {
+    "code" : 404,
+    "message" : "Not found",
+    "reason" : "No data found. Possible reasons: you asked too soon for new data (data is not immediately available at the observation time), there is an outage / issue with the sensor, the data is sent seasonally."
+  }
+}
+2025-02-27 06:54:56,237 - WARNING - Kunne ikke hente data for 2025-04-30 til 2025-05-01
+2025-02-27 06:54:56,243 - INFO - Fullført analyse av Vinter 2024-2025
+2025-02-27 06:54:56,370 - INFO - Rådata lagret til data/raw/historical_data.csv
+2025-02-27 06:54:56,370 - ERROR - En feil oppstod: Object of type int64 is not JSON serializable
+Traceback (most recent call last):
+  File "/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/scripts/analyze_historical_data.py", line 422, in main
+    json.dump(analysis_results, f, indent=2, ensure_ascii=False)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/__init__.py", line 179, in dump
+    for chunk in iterable:
+                 ^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 430, in _iterencode
+    yield from _iterencode_list(o, _current_indent_level)
+  File "/opt/homebrew/Cellar/python@3.13/3.13.1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 326, in _iterencode_list
+    yield from chunks
+  File "/opt/homebrew/Cellar/python@3.13/3.13.1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/opt/homebrew/Cellar/python@3.13/3.13.1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/opt/homebrew/Cellar/python@3.13/3.13.1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 439, in _iterencode
+    o = _default(o)
+  File "/opt/homebrew/Cellar/python@3.13/3.13.1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type int64 is not JSON serializable
+2025-02-27 06:55:43,765 - INFO - Opprettet nødvendige mapper
+2025-02-27 06:55:43,765 - INFO - Starter analyse av vinterperioder fra 2020 til 2025
+2025-02-27 06:55:43,765 - INFO - Prosesserer vinterperiode 2019-11-01 til 2020-05-01
+2025-02-27 06:55:43,765 - INFO - Bruker cachet data for 2019-11-01 til 2019-12-01
+2025-02-27 06:55:43,776 - INFO - Hentet data for periode 2019-11-01 til 2019-12-01
+2025-02-27 06:55:43,776 - INFO - Bruker cachet data for 2019-12-01 til 2019-12-31
+2025-02-27 06:55:43,777 - INFO - Hentet data for periode 2019-12-01 til 2019-12-31
+2025-02-27 06:55:43,777 - INFO - Bruker cachet data for 2019-12-31 til 2020-01-30
+2025-02-27 06:55:43,818 - INFO - Hentet data for periode 2019-12-31 til 2020-01-30
+2025-02-27 06:55:43,818 - INFO - Bruker cachet data for 2020-01-30 til 2020-02-29
+2025-02-27 06:55:43,821 - INFO - Hentet data for periode 2020-01-30 til 2020-02-29
+2025-02-27 06:55:43,822 - INFO - Bruker cachet data for 2020-02-29 til 2020-03-30
+2025-02-27 06:55:43,824 - INFO - Hentet data for periode 2020-02-29 til 2020-03-30
+2025-02-27 06:55:43,824 - INFO - Bruker cachet data for 2020-03-30 til 2020-04-29
+2025-02-27 06:55:43,835 - INFO - Hentet data for periode 2020-03-30 til 2020-04-29
+2025-02-27 06:55:43,835 - INFO - Bruker cachet data for 2020-04-29 til 2020-05-01
+2025-02-27 06:55:43,836 - INFO - Hentet data for periode 2020-04-29 til 2020-05-01
+2025-02-27 06:55:43,839 - ERROR - En feil oppstod: cannot convert the series to <class 'int'>
+Traceback (most recent call last):
+  File "/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/scripts/analyze_historical_data.py", line 430, in main
+    period_results = analyze_data(period_df)
+  File "/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/scripts/analyze_historical_data.py", line 313, in analyze_data
+    'dager_med_snø': int(snow_data > 0).sum()
+                     ~~~^^^^^^^^^^^^^^^
+  File "/Users/tor.inge.jossang@aftenbladet.no/dev/alarm-system/venv/lib/python3.13/site-packages/pandas/core/series.py", line 248, in wrapper
+    raise TypeError(f"cannot convert the series to {converter}")
+TypeError: cannot convert the series to <class 'int'>
+2025-02-27 06:56:22,716 - INFO - Opprettet nødvendige mapper
+2025-02-27 06:56:22,717 - INFO - Starter analyse av vinterperioder fra 2020 til 2025
+2025-02-27 06:56:22,717 - INFO - Prosesserer vinterperiode 2019-11-01 til 2020-05-01
+2025-02-27 06:56:22,717 - INFO - Bruker cachet data for 2019-11-01 til 2019-12-01
+2025-02-27 06:56:22,727 - INFO - Hentet data for periode 2019-11-01 til 2019-12-01
+2025-02-27 06:56:22,727 - INFO - Bruker cachet data for 2019-12-01 til 2019-12-31
+2025-02-27 06:56:22,729 - INFO - Hentet data for periode 2019-12-01 til 2019-12-31
+2025-02-27 06:56:22,729 - INFO - Bruker cachet data for 2019-12-31 til 2020-01-30
+2025-02-27 06:56:22,732 - INFO - Hentet data for periode 2019-12-31 til 2020-01-30
+2025-02-27 06:56:22,732 - INFO - Bruker cachet data for 2020-01-30 til 2020-02-29
+2025-02-27 06:56:22,734 - INFO - Hentet data for periode 2020-01-30 til 2020-02-29
+2025-02-27 06:56:22,734 - INFO - Bruker cachet data for 2020-02-29 til 2020-03-30
+2025-02-27 06:56:22,735 - INFO - Hentet data for periode 2020-02-29 til 2020-03-30
+2025-02-27 06:56:22,735 - INFO - Bruker cachet data for 2020-03-30 til 2020-04-29
+2025-02-27 06:56:22,737 - INFO - Hentet data for periode 2020-03-30 til 2020-04-29
+2025-02-27 06:56:22,737 - INFO - Bruker cachet data for 2020-04-29 til 2020-05-01
+2025-02-27 06:56:22,738 - INFO - Hentet data for periode 2020-04-29 til 2020-05-01
+2025-02-27 06:56:22,741 - INFO - Fullført analyse av Vinter 2019-2020
+2025-02-27 06:56:22,741 - INFO - Prosesserer vinterperiode 2020-11-01 til 2021-05-01
+2025-02-27 06:56:22,741 - INFO - Bruker cachet data for 2020-11-01 til 2020-12-01
+2025-02-27 06:56:22,743 - INFO - Hentet data for periode 2020-11-01 til 2020-12-01
+2025-02-27 06:56:22,743 - INFO - Bruker cachet data for 2020-12-01 til 2020-12-31
+2025-02-27 06:56:22,745 - INFO - Hentet data for periode 2020-12-01 til 2020-12-31
+2025-02-27 06:56:22,745 - INFO - Bruker cachet data for 2020-12-31 til 2021-01-30
+2025-02-27 06:56:22,747 - INFO - Hentet data for periode 2020-12-31 til 2021-01-30
+2025-02-27 06:56:22,747 - INFO - Bruker cachet data for 2021-01-30 til 2021-03-01
+2025-02-27 06:56:22,749 - INFO - Hentet data for periode 2021-01-30 til 2021-03-01
+2025-02-27 06:56:22,749 - INFO - Bruker cachet data for 2021-03-01 til 2021-03-31
+2025-02-27 06:56:22,751 - INFO - Hentet data for periode 2021-03-01 til 2021-03-31
+2025-02-27 06:56:22,751 - INFO - Bruker cachet data for 2021-03-31 til 2021-04-30
+2025-02-27 06:56:22,754 - INFO - Hentet data for periode 2021-03-31 til 2021-04-30
+2025-02-27 06:56:22,754 - INFO - Bruker cachet data for 2021-04-30 til 2021-05-01
+2025-02-27 06:56:22,755 - INFO - Hentet data for periode 2021-04-30 til 2021-05-01
+2025-02-27 06:56:22,757 - INFO - Fullført analyse av Vinter 2020-2021
+2025-02-27 06:56:22,757 - INFO - Prosesserer vinterperiode 2021-11-01 til 2022-05-01
+2025-02-27 06:56:22,757 - INFO - Bruker cachet data for 2021-11-01 til 2021-12-01
+2025-02-27 06:56:22,759 - INFO - Hentet data for periode 2021-11-01 til 2021-12-01
+2025-02-27 06:56:22,759 - INFO - Bruker cachet data for 2021-12-01 til 2021-12-31
+2025-02-27 06:56:22,761 - INFO - Hentet data for periode 2021-12-01 til 2021-12-31
+2025-02-27 06:56:22,761 - INFO - Bruker cachet data for 2021-12-31 til 2022-01-30
+2025-02-27 06:56:22,763 - INFO - Hentet data for periode 2021-12-31 til 2022-01-30
+2025-02-27 06:56:22,763 - INFO - Bruker cachet data for 2022-01-30 til 2022-03-01
+2025-02-27 06:56:22,765 - INFO - Hentet data for periode 2022-01-30 til 2022-03-01
+2025-02-27 06:56:22,765 - INFO - Bruker cachet data for 2022-03-01 til 2022-03-31
+2025-02-27 06:56:22,796 - INFO - Hentet data for periode 2022-03-01 til 2022-03-31
+2025-02-27 06:56:22,797 - INFO - Bruker cachet data for 2022-03-31 til 2022-04-30
+2025-02-27 06:56:22,808 - INFO - Hentet data for periode 2022-03-31 til 2022-04-30
+2025-02-27 06:56:22,809 - INFO - Bruker cachet data for 2022-04-30 til 2022-05-01
+2025-02-27 06:56:22,810 - INFO - Hentet data for periode 2022-04-30 til 2022-05-01
+2025-02-27 06:56:22,811 - INFO - Fullført analyse av Vinter 2021-2022
+2025-02-27 06:56:22,811 - INFO - Prosesserer vinterperiode 2022-11-01 til 2023-05-01
+2025-02-27 06:56:22,811 - INFO - Bruker cachet data for 2022-11-01 til 2022-12-01
+2025-02-27 06:56:22,813 - INFO - Hentet data for periode 2022-11-01 til 2022-12-01
+2025-02-27 06:56:22,813 - INFO - Bruker cachet data for 2022-12-01 til 2022-12-31
+2025-02-27 06:56:22,815 - INFO - Hentet data for periode 2022-12-01 til 2022-12-31
+2025-02-27 06:56:22,815 - INFO - Bruker cachet data for 2022-12-31 til 2023-01-30
+2025-02-27 06:56:22,817 - INFO - Hentet data for periode 2022-12-31 til 2023-01-30
+2025-02-27 06:56:22,817 - INFO - Bruker cachet data for 2023-01-30 til 2023-03-01
+2025-02-27 06:56:22,822 - INFO - Hentet data for periode 2023-01-30 til 2023-03-01
+2025-02-27 06:56:22,822 - INFO - Bruker cachet data for 2023-03-01 til 2023-03-31
+2025-02-27 06:56:22,824 - INFO - Hentet data for periode 2023-03-01 til 2023-03-31
+2025-02-27 06:56:22,824 - INFO - Bruker cachet data for 2023-03-31 til 2023-04-30
+2025-02-27 06:56:22,826 - INFO - Hentet data for periode 2023-03-31 til 2023-04-30
+2025-02-27 06:56:22,826 - INFO - Bruker cachet data for 2023-04-30 til 2023-05-01
+2025-02-27 06:56:22,827 - INFO - Hentet data for periode 2023-04-30 til 2023-05-01
+2025-02-27 06:56:22,827 - INFO - Fullført analyse av Vinter 2022-2023
+2025-02-27 06:56:22,827 - INFO - Prosesserer vinterperiode 2023-11-01 til 2024-05-01
+2025-02-27 06:56:22,828 - INFO - Bruker cachet data for 2023-11-01 til 2023-12-01
+2025-02-27 06:56:22,829 - INFO - Hentet data for periode 2023-11-01 til 2023-12-01
+2025-02-27 06:56:22,829 - INFO - Bruker cachet data for 2023-12-01 til 2023-12-31
+2025-02-27 06:56:22,831 - INFO - Hentet data for periode 2023-12-01 til 2023-12-31
+2025-02-27 06:56:22,831 - INFO - Bruker cachet data for 2023-12-31 til 2024-01-30
+2025-02-27 06:56:22,832 - INFO - Hentet data for periode 2023-12-31 til 2024-01-30
+2025-02-27 06:56:22,832 - INFO - Bruker cachet data for 2024-01-30 til 2024-02-29
+2025-02-27 06:56:22,834 - INFO - Hentet data for periode 2024-01-30 til 2024-02-29
+2025-02-27 06:56:22,834 - INFO - Bruker cachet data for 2024-02-29 til 2024-03-30
+2025-02-27 06:56:22,835 - INFO - Hentet data for periode 2024-02-29 til 2024-03-30
+2025-02-27 06:56:22,835 - INFO - Bruker cachet data for 2024-03-30 til 2024-04-29
+2025-02-27 06:56:22,836 - INFO - Hentet data for periode 2024-03-30 til 2024-04-29
+2025-02-27 06:56:22,836 - INFO - Bruker cachet data for 2024-04-29 til 2024-05-01
+2025-02-27 06:56:22,837 - INFO - Hentet data for periode 2024-04-29 til 2024-05-01
+2025-02-27 06:56:22,838 - INFO - Fullført analyse av Vinter 2023-2024
+2025-02-27 06:56:22,838 - INFO - Prosesserer vinterperiode 2024-11-01 til 2025-05-01
+2025-02-27 06:56:22,838 - INFO - Bruker cachet data for 2024-11-01 til 2024-12-01
+2025-02-27 06:56:22,840 - INFO - Hentet data for periode 2024-11-01 til 2024-12-01
+2025-02-27 06:56:22,840 - INFO - Bruker cachet data for 2024-12-01 til 2024-12-31
+2025-02-27 06:56:22,842 - INFO - Hentet data for periode 2024-12-01 til 2024-12-31
+2025-02-27 06:56:22,842 - INFO - Bruker cachet data for 2024-12-31 til 2025-01-30
+2025-02-27 06:56:22,843 - INFO - Hentet data for periode 2024-12-31 til 2025-01-30
+2025-02-27 06:56:22,843 - INFO - Bruker cachet data for 2025-01-30 til 2025-03-01
+2025-02-27 06:56:22,845 - INFO - Hentet data for periode 2025-01-30 til 2025-03-01
+2025-02-27 06:56:22,845 - INFO - Henter data fra 2025-03-01 til 2025-03-31
+2025-02-27 06:56:23,200 - ERROR - API-feil 404: {
+  "@context" : "https://frost.met.no/schema",
+  "@type" : "ErrorResponse",
+  "apiVersion" : "v0",
+  "license" : "https://creativecommons.org/licenses/by/3.0/no/",
+  "createdAt" : "2025-02-27T05:56:22Z",
+  "queryTime" : 0.263,
+  "currentLink" : "https://frost.met.no/observations/v0.jsonld?sources=SN46220&referencetime=2025-03-01%2F2025-03-31&elements=air_temperature%2Csurface_snow_thickness%2Cwind_speed%2Cwind_from_direction%2Crelative_humidity%2Cmax%28wind_speed_of_gust+PT1H%29%2Cmax%28wind_speed+PT1H%29%2Cmin%28air_temperature+PT1H%29%2Cmax%28air_temperature+PT1H%29%2Csum%28duration_of_precipitation+PT1H%29%2Csum%28precipitation_amount+PT1H%29%2Cdew_point_temperature&timeresolutions=PT1H",
+  "error" : {
+    "code" : 404,
+    "message" : "Not found",
+    "reason" : "No data found. Possible reasons: you asked too soon for new data (data is not immediately available at the observation time), there is an outage / issue with the sensor, the data is sent seasonally."
+  }
+}
+2025-02-27 06:56:23,201 - WARNING - Kunne ikke hente data for 2025-03-01 til 2025-03-31
+2025-02-27 06:56:23,201 - INFO - Henter data fra 2025-03-31 til 2025-04-30
+2025-02-27 06:56:23,681 - ERROR - API-feil 404: {
+  "@context" : "https://frost.met.no/schema",
+  "@type" : "ErrorResponse",
+  "apiVersion" : "v0",
+  "license" : "https://creativecommons.org/licenses/by/3.0/no/",
+  "createdAt" : "2025-02-27T05:56:23Z",
+  "queryTime" : 0.401,
+  "currentLink" : "https://frost.met.no/observations/v0.jsonld?sources=SN46220&referencetime=2025-03-31%2F2025-04-30&elements=air_temperature%2Csurface_snow_thickness%2Cwind_speed%2Cwind_from_direction%2Crelative_humidity%2Cmax%28wind_speed_of_gust+PT1H%29%2Cmax%28wind_speed+PT1H%29%2Cmin%28air_temperature+PT1H%29%2Cmax%28air_temperature+PT1H%29%2Csum%28duration_of_precipitation+PT1H%29%2Csum%28precipitation_amount+PT1H%29%2Cdew_point_temperature&timeresolutions=PT1H",
+  "error" : {
+    "code" : 404,
+    "message" : "Not found",
+    "reason" : "No data found. Possible reasons: you asked too soon for new data (data is not immediately available at the observation time), there is an outage / issue with the sensor, the data is sent seasonally."
+  }
+}
+2025-02-27 06:56:23,682 - WARNING - Kunne ikke hente data for 2025-03-31 til 2025-04-30
+2025-02-27 06:56:23,682 - INFO - Henter data fra 2025-04-30 til 2025-05-01
+2025-02-27 06:56:24,115 - ERROR - API-feil 404: {
+  "@context" : "https://frost.met.no/schema",
+  "@type" : "ErrorResponse",
+  "apiVersion" : "v0",
+  "license" : "https://creativecommons.org/licenses/by/3.0/no/",
+  "createdAt" : "2025-02-27T05:56:23Z",
+  "queryTime" : 0.323,
+  "currentLink" : "https://frost.met.no/observations/v0.jsonld?sources=SN46220&referencetime=2025-04-30%2F2025-05-01&elements=air_temperature%2Csurface_snow_thickness%2Cwind_speed%2Cwind_from_direction%2Crelative_humidity%2Cmax%28wind_speed_of_gust+PT1H%29%2Cmax%28wind_speed+PT1H%29%2Cmin%28air_temperature+PT1H%29%2Cmax%28air_temperature+PT1H%29%2Csum%28duration_of_precipitation+PT1H%29%2Csum%28precipitation_amount+PT1H%29%2Cdew_point_temperature&timeresolutions=PT1H",
+  "error" : {
+    "code" : 404,
+    "message" : "Not found",
+    "reason" : "No data found. Possible reasons: you asked too soon for new data (data is not immediately available at the observation time), there is an outage / issue with the sensor, the data is sent seasonally."
+  }
+}
+2025-02-27 06:56:24,116 - WARNING - Kunne ikke hente data for 2025-04-30 til 2025-05-01
+2025-02-27 06:56:24,120 - INFO - Fullført analyse av Vinter 2024-2025
+2025-02-27 06:56:24,250 - INFO - Rådata lagret til data/raw/historical_data.csv
+2025-02-27 06:56:24,251 - INFO - Analyseresultater lagret til ../data/analyzed/min_analyse.json

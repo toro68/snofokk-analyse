@@ -1,0 +1,60 @@
+
+🏔️ SNØFOKK ANALYSE RAPPORT - Gullingen Skisenter
+==================================================
+
+📅 ANALYSEPERIODE
+    Fra: 2024-01-01
+    Til: 2024-01-31
+    Stasjon: Gullingen Skisenter (SN46220)
+
+📊 SAMMENDRAG
+    Totalt antall hendelser: 577
+    Usynlig snøfokk: 64 hendelser
+    Gjennomsnittlig risikoscore: 0.72
+
+🏷️ HENDELSESTYPER
+    Invisible Drift: 449 (77.8%)
+    Accumulating Drift: 45 (7.8%)
+    Eroding Drift: 43 (7.5%)
+    Unknown: 40 (6.9%)
+
+⚠️ FAREGRAD FORDELING
+    HIGH: 492 (85.3%)
+    MEDIUM: 85 (14.7%)
+
+🌬️ VINDFORHOLD
+    Gjennomsnittlig vindstyrke: 3.4 m/s
+    Maks vindstyrke: 16.2 m/s
+    Gjennomsnittlig vindkast: 4.2 m/s
+    Maks vindkast: 17.5 m/s
+
+🌡️ TEMPERATURFORHOLD
+    Gjennomsnittlig temperatur: -5.3°C
+    Laveste temperatur: -13.2°C
+    Høyeste temperatur: 5.8°C
+
+🎯 RISIKOKATEGORIER
+    Høy risiko (≥0.8): 88 hendelser
+    Medium risiko (0.5-0.8): 489 hendelser
+    Lav risiko (<0.5): 0 hendelser
+
+⏰ TIDSANALYSE
+    Mest aktive timer: [(20, 30), (21, 30), (17, 28)]
+    Mest aktive dager: [(3, 27), (4, 27), (18, 27)]
+
+🔧 METODIKK
+    Justerte terskler:
+        - Vindstyrke: ≥6.0 m/s
+        - Temperatur: ≤-1.0°C
+        - Snødybde: ≥3.0 cm
+        - Risikoterksel: ≥0.5
+
+🚨 KRITISKE OBSERVASJONER
+    • 64 tilfeller av 'usynlig snøfokk' - farlig for veier!
+    • 492 hendelser klassifisert som høy faregrad
+    • 88 hendelser med høy risikoscore (≥0.8)
+
+📈 ANBEFALT OPPFØLGING
+    1. Fokuser på time 20 - mest aktiv periode
+    2. Økt overvåking ved 492 høyrisiko hendelser
+    3. Spesiell oppmerksomhet på usynlig snøfokk som kan blokkere veier

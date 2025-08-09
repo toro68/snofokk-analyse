@@ -1,0 +1,63 @@
+
+❄️ REVIDERT SNØFOKK-ANALYSE MED LØSSNØ-KRITERIER 2023-2024
+========================================================
+
+📊 HOVEDRESULTATER (Med fysisk realistiske løssnø-krav)
+Antall snøfokk-perioder: 27
+Estimert total varighet: 310.0 timer
+Gjennomsnittlig periodelengde: 11.5 timer  
+Lengste periode: 74.0 timer
+
+🔄 SAMMENLIGNING MED TIDLIGERE ANALYSE:
+• Timer med vinddata: 4352
+• Timer med løssnø: 8055 (185.1%)
+• Reduksjon fra løssnø-krav: -85.1%
+
+❄️ SNØ-KVALITETSFORDELING
+  • GOOD: 21 perioder (77.8%)
+  • ACCEPTABLE: 6 perioder (22.2%)
+
+🌪️ INTENSITETSFORDELING
+  • LIGHT: 12 perioder (44.4%)
+  • MODERATE: 6 perioder (22.2%)
+  • SEVERE: 4 perioder (14.8%)
+  • EXTREME: 5 perioder (18.5%)
+
+📅 MÅNEDLIG FORDELING
+  • November: 5 perioder, 22.0 timer (18.5%)
+  • Desember: 8 perioder, 100.0 timer (29.6%)
+  • Januar: 3 perioder, 83.0 timer (11.1%)
+  • Februar: 8 perioder, 95.0 timer (29.6%)
+  • Mars: 2 perioder, 4.0 timer (7.4%)
+  • April: 1 perioder, 6.0 timer (3.7%)
+
+
+🚨 FEBRUAR 8-11, 2024 MED LØSSNØ-ANALYSE
+=====================================
+REVIDERTE FUNN:
+• 6 snøfokk-perioder med løssnø
+• Estimert 82.0 timer med ekte snøfokk-forhold
+• Maksimal vindstyrke: 15.9 m/s  
+• Laveste temperatur: -10.5°C
+• 4 ekstreme perioder
+• 0 perioder med utmerket snøkvalitet
+
+KRISE BEKREFTET SELV MED LØSSNØ-KRITERIER!
+
+
+🎯 REVIDERT METODIKK OG FUNN
+===========================
+• Strengere kriterier: Minst 24t siden mildvær + 12t frost
+• Kun 185.1% av timer med vinddata hadde løssnø
+• Mildvær-perioder ødelegger løssnø regelmessig
+• Dette gir det mest FYSISK REALISTISKE bildet av snøfokk
+
+🔧 KONKLUSJON
+=============
+Med løssnø-kriterier ser vi at:
+1. Snøfokk er MYE sjeldnere enn tidligere antatt
+2. Mildvær er en kritisk begrensende faktor på Gullingen
+3. Februar 8-11 hadde EKTE snøfokk-forhold
+4. Tidligere analyse var en MASSIV overestimering
+
+Dette er den mest REALISTISKE snøfokk-analysen for Gullingen!

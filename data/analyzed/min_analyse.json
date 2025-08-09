@@ -1,0 +1,128 @@
+[
+  {
+    "periode_start": "2019-11-01",
+    "periode_slutt": "2020-04-30",
+    "antall_dager": 181,
+    "antall_målinger": 4368,
+    "temperatur": {
+      "min": -10.1,
+      "max": 12.8,
+      "gjennomsnitt": 0.5963369963369963
+    },
+    "vind": {
+      "max_vindkast": 32.8,
+      "gjennomsnitt": 3.0438515081206496
+    },
+    "snø": {
+      "max_dybde": 104.0,
+      "gjennomsnitt": 46.451793849658316,
+      "dager_med_snø": 3512
+    },
+    "periode_navn": "Vinter 2019-2020"
+  },
+  {
+    "periode_start": "2020-11-01",
+    "periode_slutt": "2021-04-30",
+    "antall_dager": 180,
+    "antall_målinger": 4344,
+    "temperatur": {
+      "min": -13.2,
+      "max": 12.0,
+      "gjennomsnitt": -0.3985036832412523
+    },
+    "vind": {
+      "max_vindkast": 23.4,
+      "gjennomsnitt": 2.725232774674116
+    },
+    "snø": {
+      "max_dybde": 54.1,
+      "gjennomsnitt": 18.049798251513113,
+      "dager_med_snø": 2974
+    },
+    "periode_navn": "Vinter 2020-2021"
+  },
+  {
+    "periode_start": "2021-11-01",
+    "periode_slutt": "2022-04-30",
+    "antall_dager": 180,
+    "antall_målinger": 4344,
+    "temperatur": {
+      "min": -11.5,
+      "max": 13.3,
+      "gjennomsnitt": 0.13929558011049728
+    },
+    "vind": {
+      "max_vindkast": 25.9,
+      "gjennomsnitt": 3.0699452250535844
+    },
+    "snø": {
+      "max_dybde": 128.7,
+      "gjennomsnitt": 66.11888178913738,
+      "dager_med_snø": 3130
+    },
+    "periode_navn": "Vinter 2021-2022"
+  },
+  {
+    "periode_start": "2022-11-01",
+    "periode_slutt": "2023-04-30",
+    "antall_dager": 180,
+    "antall_målinger": 4344,
+    "temperatur": {
+      "min": -14.5,
+      "max": 12.7,
+      "gjennomsnitt": -0.06351289134438313
+    },
+    "vind": {
+      "max_vindkast": 26.2,
+      "gjennomsnitt": 3.098749131341209
+    },
+    "snø": {
+      "max_dybde": 70.6,
+      "gjennomsnitt": 35.79228114213994,
+      "dager_med_snø": 3187
+    },
+    "periode_navn": "Vinter 2022-2023"
+  },
+  {
+    "periode_start": "2023-11-01",
+    "periode_slutt": "2024-04-30",
+    "antall_dager": 181,
+    "antall_målinger": 4368,
+    "temperatur": {
+      "min": -13.2,
+      "max": 9.3,
+      "gjennomsnitt": -0.721474358974359
+    },
+    "vind": {
+      "max_vindkast": 29.1,
+      "gjennomsnitt": 3.8113740808823535
+    },
+    "snø": {
+      "max_dybde": 90.8,
+      "gjennomsnitt": 38.679827586206905,
+      "dager_med_snø": 3480
+    },
+    "periode_navn": "Vinter 2023-2024"
+  },
+  {
+    "periode_start": "2024-11-01",
+    "periode_slutt": "2025-02-27",
+    "antall_dager": 118,
+    "antall_målinger": 2838,
+    "temperatur": {
+      "min": -12.2,
+      "max": 12.0,
+      "gjennomsnitt": -0.10894996476391827
+    },
+    "vind": {
+      "max_vindkast": 31.3,
+      "gjennomsnitt": 2.5282935779816516
+    },
+    "snø": {
+      "max_dybde": 41.0,
+      "gjennomsnitt": 15.611328976034859,
+      "dager_med_snø": 1836
+    },
+    "periode_navn": "Vinter 2024-2025"
+  }
+]

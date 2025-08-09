@@ -1,0 +1,45 @@
+Statistikk per vintersesong
+================================================================================
+
+Vinter 2017-2018:
+Antall timer med snøfokk: 85.0
+Gjennomsnittlig vindstyrke: 10.6 m/s (maks: 16.6 m/s)
+Gjennomsnittstemperatur: -7.8°C (min: -16.6°C)
+Gjennomsnittlig snødybde: 61.7 cm
+Gjennomsnittlig risikoscore: 0.8
+
+Vinter 2018-2019:
+Antall timer med snøfokk: 14.0
+Gjennomsnittlig vindstyrke: 10.4 m/s (maks: 14.8 m/s)
+Gjennomsnittstemperatur: -5.3°C (min: -5.7°C)
+Gjennomsnittlig snødybde: 23.1 cm
+Gjennomsnittlig risikoscore: 0.7
+
+Vinter 2019-2020:
+Antall timer med snøfokk: 6.0
+Gjennomsnittlig vindstyrke: 8.0 m/s (maks: 9.5 m/s)
+Gjennomsnittstemperatur: -3.2°C (min: -3.5°C)
+Gjennomsnittlig snødybde: 74.4 cm
+Gjennomsnittlig risikoscore: 0.8
+
+Vinter 2020-2021:
+Antall timer med snøfokk: 22.0
+Gjennomsnittlig vindstyrke: 10.6 m/s (maks: 12.0 m/s)
+Gjennomsnittstemperatur: -3.3°C (min: -5.3°C)
+Gjennomsnittlig snødybde: 16.7 cm
+Gjennomsnittlig risikoscore: 0.8
+
+Vinter 2021-2022:
+Antall timer med snøfokk: 17.0
+Gjennomsnittlig vindstyrke: 14.6 m/s (maks: 15.6 m/s)
+Gjennomsnittstemperatur: -1.7°C (min: -2.9°C)
+Gjennomsnittlig snødybde: 108.0 cm
+Gjennomsnittlig risikoscore: 0.7
+
+Vinter 2023-2024:
+Antall timer med snøfokk: 104.0
+Gjennomsnittlig vindstyrke: 10.8 m/s (maks: 16.2 m/s)
+Gjennomsnittstemperatur: -7.0°C (min: -10.9°C)
+Gjennomsnittlig snødybde: 41.8 cm
+Gjennomsnittlig risikoscore: 0.8
+
