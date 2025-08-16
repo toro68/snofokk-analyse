@@ -2,7 +2,7 @@
 
 **Generert:** 9. august 2025  
 **Stasjon:** SN46220 (Gullingen Skisenter)  
-**Høyde:** ~400 moh  
+**Høyde:** 639 moh  
 **Datakilde:** Meteorologisk institutt (Frost API)
 
 ## Oversikt

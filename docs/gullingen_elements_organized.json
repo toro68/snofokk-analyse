@@ -2,8 +2,30 @@
   "metadata": {
     "station": "SN46220",
     "name": "Gullingen Skisenter",
+    "altitude": "639m",
     "total_elements": 116,
-    "generated": "2025-08-09T11:39:19Z"
+    "generated": "2025-08-09T11:39:19Z",
+    "validation_date": "2025-08-16",
+    "validation_summary": {
+      "total_tested": 105,
+      "available": 43,
+      "unavailable": 62,
+      "success_rate": "41%",
+      "extended_analysis": "19 critical elements",
+      "final_recommendation": "15 core elements"
+    },
+    "critical_findings": {
+      "surface_temperature": "REVOLUTIONARY - Direct road surface measurement (168 obs/day)",
+      "precipitation_pt10m": "PRECISION BOOST - 6x better resolution (144 vs 24 obs/day)",
+      "dew_point_temperature": "FROST SPECIALIST - Professional frost prediction",
+      "temperature_extremes": "TEMPERATURE PRECISION - Hourly max/min capture short-term changes"
+    },
+    "validated_elements": {
+      "critical": 7,
+      "high_priority": 5,
+      "medium_priority": 3,
+      "description": "Based on empirical analysis against actual maintenance events"
+    }
   },
   "basic_elements": {
     "air_temperature": [

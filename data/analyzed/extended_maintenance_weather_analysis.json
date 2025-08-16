@@ -1,0 +1,4405 @@
+{
+  "analysis_date": "2025-08-16T13:07:54.369685",
+  "analysis_type": "extended_weather_elements",
+  "station_id": "SN46220",
+  "elements_tested": [
+    "max(wind_speed_of_gust PT1H)",
+    "max(wind_speed PT1H)",
+    "mean(wind_speed_of_gust P1D)",
+    "max(wind_speed_of_gust P1D)",
+    "max(air_temperature P1D)",
+    "min(air_temperature P1D)",
+    "mean(air_temperature P1D)",
+    "max(surface_temperature P1D)",
+    "min(surface_temperature P1D)",
+    "sum(precipitation_amount P1D)",
+    "max(precipitation_amount_hourly P1D)",
+    "sum(precipitation_amount PT6H)",
+    "max(surface_snow_thickness P1D)",
+    "mean(surface_snow_thickness P1D)",
+    "min(relative_humidity P1D)",
+    "max(relative_humidity P1D)",
+    "mean(relative_humidity P1D)"
+  ],
+  "correlations": {
+    "2022-12-22": {
+      "maintenance": {
+        "operation_type": [
+          "moderate_snow",
+          "moderate_snow"
+        ],
+        "duration_hours": 5.438611111111111,
+        "distance_km": 27.4,
+        "datetime": "2022-12-22 09:46:05"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 2.4,
+          "min_24h": 0.0,
+          "max_24h": 4.9,
+          "mean_24h": 2.7166666666666663,
+          "std_24h": 1.1449954116736116,
+          "range_24h": 4.9,
+          "trend_before": -0.42857142857142794,
+          "trend_after": -0.07142857142857115
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 1.6,
+          "min_24h": 0.0,
+          "max_24h": 2.9,
+          "mean_24h": 1.7374999999999998,
+          "std_24h": 0.697082429159908,
+          "range_24h": 2.9,
+          "trend_before": -0.2399999999999995,
+          "trend_after": -0.0714285714285713
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 2.9,
+          "min_24h": 2.9,
+          "max_24h": 2.9,
+          "mean_24h": 2.9,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 4.9,
+          "min_24h": 4.9,
+          "max_24h": 4.9,
+          "mean_24h": 4.9,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": 1.1,
+          "min_24h": 1.1,
+          "max_24h": 1.1,
+          "mean_24h": 1.1,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": -1.8,
+          "min_24h": -1.8,
+          "max_24h": -0.6,
+          "mean_24h": -1.2,
+          "std_24h": 0.8485281374238571,
+          "range_24h": 1.2000000000000002,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": 0.0,
+          "min_24h": 0.0,
+          "max_24h": 0.7,
+          "mean_24h": 0.35,
+          "std_24h": 0.49497474683058323,
+          "range_24h": 0.7,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 17.3,
+          "min_24h": 17.3,
+          "max_24h": 19.0,
+          "mean_24h": 18.15,
+          "std_24h": 1.2020815280171302,
+          "range_24h": 1.6999999999999993,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "95",
+          "min_24h": "95",
+          "max_24h": "95",
+          "mean_24h": 95.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "99",
+          "min_24h": "99",
+          "max_24h": "99",
+          "mean_24h": 99.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "97",
+          "min_24h": "97",
+          "max_24h": "97",
+          "mean_24h": 97.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2022-12-23": {
+      "maintenance": {
+        "operation_type": [
+          "major_storm"
+        ],
+        "duration_hours": 4.562222222222222,
+        "distance_km": 22.4,
+        "datetime": "2022-12-23 08:03:21"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 1.6,
+          "min_24h": 1.2,
+          "max_24h": 4.1,
+          "mean_24h": 2.3916666666666666,
+          "std_24h": 0.858166228281164,
+          "range_24h": 2.8999999999999995,
+          "trend_before": -0.31714285714285667,
+          "trend_after": -0.10857142857142839
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 0.9,
+          "min_24h": 0.6,
+          "max_24h": 3.1,
+          "mean_24h": 1.4958333333333333,
+          "std_24h": 0.6974981169783944,
+          "range_24h": 2.5,
+          "trend_before": -0.26285714285714257,
+          "trend_after": -0.08857142857142845
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 2.5,
+          "min_24h": 2.5,
+          "max_24h": 2.5,
+          "mean_24h": 2.5,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 4.1,
+          "min_24h": 4.1,
+          "max_24h": 4.1,
+          "mean_24h": 4.1,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": -1.6,
+          "min_24h": -1.6,
+          "max_24h": -0.4,
+          "mean_24h": -1.0,
+          "std_24h": 0.8485281374238571,
+          "range_24h": 1.2000000000000002,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": -8.6,
+          "min_24h": -8.6,
+          "max_24h": -8.2,
+          "mean_24h": -8.399999999999999,
+          "std_24h": 0.2828427124746193,
+          "range_24h": 0.40000000000000036,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": -6.3,
+          "min_24h": -6.3,
+          "max_24h": -1.4,
+          "mean_24h": -3.8499999999999996,
+          "std_24h": 3.4648232278140827,
+          "range_24h": 4.9,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 0.2,
+          "min_24h": 0.2,
+          "max_24h": 6.1,
+          "mean_24h": 3.15,
+          "std_24h": 4.17193000900063,
+          "range_24h": 5.8999999999999995,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "60",
+          "min_24h": "60",
+          "max_24h": "60",
+          "mean_24h": 60.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "95",
+          "min_24h": "95",
+          "max_24h": "95",
+          "mean_24h": 95.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "81",
+          "min_24h": "81",
+          "max_24h": "81",
+          "mean_24h": 81.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2022-12-26": {
+      "maintenance": {
+        "operation_type": [
+          "drift_clearing"
+        ],
+        "duration_hours": 1.7525,
+        "distance_km": 17.6,
+        "datetime": "2022-12-26 16:44:23"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 0.0,
+          "min_24h": 0.0,
+          "max_24h": 12.9,
+          "mean_24h": 3.5208333333333335,
+          "std_24h": 4.110112572949656,
+          "range_24h": 12.9,
+          "trend_before": -1.4342857142857128,
+          "trend_after": 0.05714285714285715
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 0.0,
+          "min_24h": 0.0,
+          "max_24h": 7.3,
+          "mean_24h": 1.7583333333333335,
+          "std_24h": 2.117200092547716,
+          "range_24h": 7.3,
+          "trend_before": -0.8228571428571423,
+          "trend_after": 0.0
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 6.1,
+          "min_24h": 6.1,
+          "max_24h": 6.1,
+          "mean_24h": 6.1,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 14.2,
+          "min_24h": 14.2,
+          "max_24h": 14.2,
+          "mean_24h": 14.2,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": -0.3,
+          "min_24h": -0.3,
+          "max_24h": -0.2,
+          "mean_24h": -0.25,
+          "std_24h": 0.07071067811865474,
+          "range_24h": 0.09999999999999998,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": -5.9,
+          "min_24h": -5.9,
+          "max_24h": -5.3,
+          "mean_24h": -5.6,
+          "std_24h": 0.4242640687119289,
+          "range_24h": 0.6000000000000005,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": -3.2,
+          "min_24h": -3.2,
+          "max_24h": -0.6,
+          "mean_24h": -1.9000000000000001,
+          "std_24h": 1.8384776310850237,
+          "range_24h": 2.6,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 15.6,
+          "min_24h": 15.6,
+          "max_24h": 21.1,
+          "mean_24h": 18.35,
+          "std_24h": 3.8890872965260126,
+          "range_24h": 5.500000000000002,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "72",
+          "min_24h": "72",
+          "max_24h": "72",
+          "mean_24h": 72.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "95",
+          "min_24h": "95",
+          "max_24h": "95",
+          "mean_24h": 95.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "90",
+          "min_24h": "90",
+          "max_24h": "90",
+          "mean_24h": 90.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2022-12-27": {
+      "maintenance": {
+        "operation_type": [
+          "major_storm",
+          "spot_treatment"
+        ],
+        "duration_hours": 5.602222222222222,
+        "distance_km": 34.9,
+        "datetime": "2022-12-27 07:42:43"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 12.2,
+          "min_24h": 0.0,
+          "max_24h": 14.2,
+          "mean_24h": 6.162499999999999,
+          "std_24h": 5.0333507294065445,
+          "range_24h": 14.2,
+          "trend_before": 2.962857142857142,
+          "trend_after": -0.9857142857142847
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 8.2,
+          "min_24h": 0.0,
+          "max_24h": 8.4,
+          "mean_24h": 3.3249999999999997,
+          "std_24h": 2.906103023398981,
+          "range_24h": 8.4,
+          "trend_before": 1.8971428571428568,
+          "trend_after": -0.7399999999999994
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 6.1,
+          "min_24h": 6.1,
+          "max_24h": 6.1,
+          "mean_24h": 6.1,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 14.2,
+          "min_24h": 14.2,
+          "max_24h": 14.2,
+          "mean_24h": 14.2,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": -0.3,
+          "min_24h": -0.3,
+          "max_24h": -0.2,
+          "mean_24h": -0.25,
+          "std_24h": 0.07071067811865474,
+          "range_24h": 0.09999999999999998,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": -5.9,
+          "min_24h": -5.9,
+          "max_24h": -5.3,
+          "mean_24h": -5.6,
+          "std_24h": 0.4242640687119289,
+          "range_24h": 0.6000000000000005,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": -3.2,
+          "min_24h": -3.2,
+          "max_24h": -0.6,
+          "mean_24h": -1.9000000000000001,
+          "std_24h": 1.8384776310850237,
+          "range_24h": 2.6,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 15.6,
+          "min_24h": 15.6,
+          "max_24h": 21.1,
+          "mean_24h": 18.35,
+          "std_24h": 3.8890872965260126,
+          "range_24h": 5.500000000000002,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "72",
+          "min_24h": "72",
+          "max_24h": "72",
+          "mean_24h": 72.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "95",
+          "min_24h": "95",
+          "max_24h": "95",
+          "mean_24h": 95.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "90",
+          "min_24h": "90",
+          "max_24h": "90",
+          "mean_24h": 90.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2022-12-28": {
+      "maintenance": {
+        "operation_type": [
+          "drift_clearing"
+        ],
+        "duration_hours": 1.5508333333333333,
+        "distance_km": 18.9,
+        "datetime": "2022-12-28 05:26:46"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 17.4,
+          "min_24h": 1.4,
+          "max_24h": 20.5,
+          "mean_24h": 12.829166666666667,
+          "std_24h": 5.99894767341788,
+          "range_24h": 19.1,
+          "trend_before": 1.9999999999999996,
+          "trend_after": -0.5399999999999975
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 11.0,
+          "min_24h": 0.7,
+          "max_24h": 11.0,
+          "mean_24h": 7.8875,
+          "std_24h": 3.5439246851355413,
+          "range_24h": 10.3,
+          "trend_before": 1.4342857142857146,
+          "trend_after": -0.13999999999999949
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 13.4,
+          "min_24h": 13.4,
+          "max_24h": 13.4,
+          "mean_24h": 13.4,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 20.5,
+          "min_24h": 20.5,
+          "max_24h": 20.5,
+          "mean_24h": 20.5,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": -0.8,
+          "min_24h": -0.8,
+          "max_24h": -0.8,
+          "mean_24h": -0.8,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 2.220446049250313e-16,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": -4.1,
+          "min_24h": -5.9,
+          "max_24h": -4.1,
+          "mean_24h": -5.0,
+          "std_24h": 1.272792206135786,
+          "range_24h": 1.8000000000000007,
+          "trend_before": -1.8,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": -2.3,
+          "min_24h": -3.6,
+          "max_24h": -2.3,
+          "mean_24h": -2.95,
+          "std_24h": 0.919238815542512,
+          "range_24h": 1.3000000000000003,
+          "trend_before": -1.2999999999999998,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 0.0,
+          "min_24h": 0.0,
+          "max_24h": 4.7,
+          "mean_24h": 2.35,
+          "std_24h": 3.3234018715767735,
+          "range_24h": 4.7,
+          "trend_before": 4.699999999999999,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "61",
+          "min_24h": "61",
+          "max_24h": "61",
+          "mean_24h": 61.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "83",
+          "min_24h": "83",
+          "max_24h": "83",
+          "mean_24h": 83.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "73",
+          "min_24h": "73",
+          "max_24h": "73",
+          "mean_24h": 73.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2022-12-30": {
+      "maintenance": {
+        "operation_type": [
+          "extreme_storm",
+          "moderate_snow"
+        ],
+        "duration_hours": 10.057777777777778,
+        "distance_km": 44.4,
+        "datetime": "2022-12-30 09:19:50"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 0.0,
+          "min_24h": 0.0,
+          "max_24h": 16.4,
+          "mean_24h": 6.479166666666667,
+          "std_24h": 6.3994550832331685,
+          "range_24h": 16.4,
+          "trend_before": 0.0,
+          "trend_after": 3.408571428571427
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 0.0,
+          "min_24h": 0.0,
+          "max_24h": 8.9,
+          "mean_24h": 3.5041666666666664,
+          "std_24h": 3.615724013932415,
+          "range_24h": 8.9,
+          "trend_before": 0.0,
+          "trend_after": 1.791428571428571
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 5.9,
+          "min_24h": 5.9,
+          "max_24h": 5.9,
+          "mean_24h": 5.9,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 14.6,
+          "min_24h": 14.6,
+          "max_24h": 14.6,
+          "mean_24h": 14.6,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": 3.4,
+          "min_24h": 3.0,
+          "max_24h": 3.4,
+          "mean_24h": 3.2,
+          "std_24h": 0.28284271247461895,
+          "range_24h": 0.3999999999999999,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": -1.3,
+          "min_24h": -1.3,
+          "max_24h": -1.3,
+          "mean_24h": -1.3,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": 0.5,
+          "min_24h": 0.5,
+          "max_24h": 0.9,
+          "mean_24h": 0.7,
+          "std_24h": 0.28284271247461906,
+          "range_24h": 0.4,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 14.5,
+          "min_24h": 14.5,
+          "max_24h": 27.0,
+          "mean_24h": 20.75,
+          "std_24h": 8.838834764831844,
+          "range_24h": 12.5,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "83",
+          "min_24h": "83",
+          "max_24h": "83",
+          "mean_24h": 83.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "98",
+          "min_24h": "98",
+          "max_24h": "98",
+          "mean_24h": 98.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "92",
+          "min_24h": "92",
+          "max_24h": "92",
+          "mean_24h": 92.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2023-01-04": {
+      "maintenance": {
+        "operation_type": [
+          "major_storm"
+        ],
+        "duration_hours": 4.231944444444444,
+        "distance_km": 22.6,
+        "datetime": "2023-01-04 07:15:06"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 25.5,
+          "min_24h": 8.5,
+          "max_24h": 25.8,
+          "mean_24h": 19.604166666666668,
+          "std_24h": 5.093344264537932,
+          "range_24h": 17.3,
+          "trend_before": 2.7571428571428576,
+          "trend_after": -0.32571428571428235
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 17.0,
+          "min_24h": 5.7,
+          "max_24h": 17.0,
+          "mean_24h": 12.583333333333334,
+          "std_24h": 3.6999020746931723,
+          "range_24h": 11.3,
+          "trend_before": 1.9399999999999995,
+          "trend_after": -0.12571428571428514
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 19.2,
+          "min_24h": 19.2,
+          "max_24h": 19.2,
+          "mean_24h": 19.2,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 25.8,
+          "min_24h": 25.8,
+          "max_24h": 25.8,
+          "mean_24h": 25.8,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": 0.7,
+          "min_24h": 0.7,
+          "max_24h": 0.7,
+          "mean_24h": 0.7,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": -3.8,
+          "min_24h": -3.8,
+          "max_24h": -2.9,
+          "mean_24h": -3.3499999999999996,
+          "std_24h": 0.6363961030678927,
+          "range_24h": 0.8999999999999999,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": -1.9,
+          "min_24h": -1.9,
+          "max_24h": -0.7,
+          "mean_24h": -1.2999999999999998,
+          "std_24h": 0.848528137423857,
+          "range_24h": 1.2,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 0.7,
+          "min_24h": 0.7,
+          "max_24h": 1.0,
+          "mean_24h": 0.85,
+          "std_24h": 0.21213203435596428,
+          "range_24h": 0.30000000000000004,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "64",
+          "min_24h": "64",
+          "max_24h": "64",
+          "mean_24h": 64.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "91",
+          "min_24h": "91",
+          "max_24h": "91",
+          "mean_24h": 91.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "76",
+          "min_24h": "76",
+          "max_24h": "76",
+          "mean_24h": 76.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2023-01-06": {
+      "maintenance": {
+        "operation_type": [
+          "extreme_storm",
+          "major_storm"
+        ],
+        "duration_hours": 12.54861111111111,
+        "distance_km": 46.3,
+        "datetime": "2023-01-06 05:22:56"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 21.1,
+          "min_24h": 9.5,
+          "max_24h": 21.8,
+          "mean_24h": 16.125,
+          "std_24h": 3.604978441713264,
+          "range_24h": 12.3,
+          "trend_before": 1.1857142857142862,
+          "trend_after": -0.8599999999999983
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 12.3,
+          "min_24h": 6.7,
+          "max_24h": 13.3,
+          "mean_24h": 10.341666666666667,
+          "std_24h": 2.278045819035076,
+          "range_24h": 6.6000000000000005,
+          "trend_before": 0.5600000000000008,
+          "trend_after": -0.254285714285712
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": "16",
+          "min_24h": "16",
+          "max_24h": "16",
+          "mean_24h": 16.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 21.8,
+          "min_24h": 21.8,
+          "max_24h": 21.8,
+          "mean_24h": 21.8,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": 0.5,
+          "min_24h": -0.8,
+          "max_24h": 0.5,
+          "mean_24h": -0.15000000000000002,
+          "std_24h": 0.9192388155425119,
+          "range_24h": 1.3,
+          "trend_before": -1.2999999999999998,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": -3.6,
+          "min_24h": -3.7,
+          "max_24h": -3.6,
+          "mean_24h": -3.6500000000000004,
+          "std_24h": 0.07071067811865482,
+          "range_24h": 0.10000000000000009,
+          "trend_before": -0.09999999999999964,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": -1.4,
+          "min_24h": -2.8,
+          "max_24h": -1.4,
+          "mean_24h": -2.0999999999999996,
+          "std_24h": 0.9899494936611665,
+          "range_24h": 1.4,
+          "trend_before": -1.3999999999999992,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 8.3,
+          "min_24h": 0.7,
+          "max_24h": 8.3,
+          "mean_24h": 4.5,
+          "std_24h": 5.374011537017761,
+          "range_24h": 7.6000000000000005,
+          "trend_before": -7.6000000000000005,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "71",
+          "min_24h": "71",
+          "max_24h": "71",
+          "mean_24h": 71.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "98",
+          "min_24h": "98",
+          "max_24h": "98",
+          "mean_24h": 98.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "85",
+          "min_24h": "85",
+          "max_24h": "85",
+          "mean_24h": 85.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2023-01-08": {
+      "maintenance": {
+        "operation_type": [
+          "drift_clearing"
+        ],
+        "duration_hours": 1.0661111111111112,
+        "distance_km": 16.2,
+        "datetime": "2023-01-08 07:40:55"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 6.4,
+          "min_24h": 6.2,
+          "max_24h": 12.6,
+          "mean_24h": 9.3125,
+          "std_24h": 2.3060058637128966,
+          "range_24h": 6.3999999999999995,
+          "trend_before": -0.0028571428571422014,
+          "trend_after": 0.17142857142857174
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 4.1,
+          "min_24h": 3.6,
+          "max_24h": 7.1,
+          "mean_24h": 5.425,
+          "std_24h": 1.1946438435966922,
+          "range_24h": 3.4999999999999996,
+          "trend_before": -0.04857142857142797,
+          "trend_after": 0.11714285714285756
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 9.4,
+          "min_24h": 9.4,
+          "max_24h": 9.4,
+          "mean_24h": 9.4,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 12.6,
+          "min_24h": 12.6,
+          "max_24h": 12.6,
+          "mean_24h": 12.6,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": 4.5,
+          "min_24h": 4.5,
+          "max_24h": 4.5,
+          "mean_24h": 4.5,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": 0.8,
+          "min_24h": 0.8,
+          "max_24h": 0.8,
+          "mean_24h": 0.8,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": "3",
+          "min_24h": "3",
+          "max_24h": "4",
+          "mean_24h": 3.5,
+          "std_24h": 0.7071067811865476,
+          "range_24h": "1",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 9.6,
+          "min_24h": 5.7,
+          "max_24h": 9.6,
+          "mean_24h": 7.65,
+          "std_24h": 2.757716446627535,
+          "range_24h": 3.8999999999999995,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "75",
+          "min_24h": "75",
+          "max_24h": "75",
+          "mean_24h": 75.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "96",
+          "min_24h": "96",
+          "max_24h": "96",
+          "mean_24h": 96.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "81",
+          "min_24h": "81",
+          "max_24h": "81",
+          "mean_24h": 81.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2023-01-13": {
+      "maintenance": {
+        "operation_type": [
+          "drift_clearing",
+          "extreme_storm"
+        ],
+        "duration_hours": 8.293611111111112,
+        "distance_km": 54.099999999999994,
+        "datetime": "2023-01-13 06:57:50"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 5.7,
+          "min_24h": 0.0,
+          "max_24h": 12.4,
+          "mean_24h": 5.770833333333335,
+          "std_24h": 4.16073563381438,
+          "range_24h": 12.4,
+          "trend_before": -0.8542857142857138,
+          "trend_after": 0.4971428571428578
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 3.5,
+          "min_24h": 0.0,
+          "max_24h": 8.5,
+          "mean_24h": 3.691666666666667,
+          "std_24h": 2.7745609392833854,
+          "range_24h": 8.5,
+          "trend_before": -0.254285714285714,
+          "trend_after": 0.41142857142857153
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 5.8,
+          "min_24h": 5.8,
+          "max_24h": 5.8,
+          "mean_24h": 5.8,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 12.4,
+          "min_24h": 12.4,
+          "max_24h": 12.4,
+          "mean_24h": 12.4,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": 1.5,
+          "min_24h": 1.5,
+          "max_24h": 1.5,
+          "mean_24h": 1.5,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": -4.440892098500626e-16,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": "-2",
+          "min_24h": "-2",
+          "max_24h": "-2",
+          "mean_24h": -2.0,
+          "std_24h": 0.0,
+          "range_24h": "0",
+          "trend_before": 2.220446049250313e-16,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": -0.3,
+          "min_24h": -0.3,
+          "max_24h": 0.5,
+          "mean_24h": 0.1,
+          "std_24h": 0.5656854249492381,
+          "range_24h": 0.8,
+          "trend_before": 0.7999999999999998,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 7.9,
+          "min_24h": 7.8,
+          "max_24h": 7.9,
+          "mean_24h": 7.85,
+          "std_24h": 0.07071067811865513,
+          "range_24h": 0.10000000000000053,
+          "trend_before": -0.10000000000000142,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "78",
+          "min_24h": "78",
+          "max_24h": "78",
+          "mean_24h": 78.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "97",
+          "min_24h": "97",
+          "max_24h": "97",
+          "mean_24h": 97.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "92",
+          "min_24h": "92",
+          "max_24h": "92",
+          "mean_24h": 92.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2023-01-15": {
+      "maintenance": {
+        "operation_type": [
+          "drift_clearing"
+        ],
+        "duration_hours": 1.9124999999999999,
+        "distance_km": 17.7,
+        "datetime": "2023-01-15 06:33:03"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 5.0,
+          "min_24h": 0.4,
+          "max_24h": 21.6,
+          "mean_24h": 8.475,
+          "std_24h": 6.563618434714327,
+          "range_24h": 21.200000000000003,
+          "trend_before": -0.7599999999999986,
+          "trend_after": -0.2057142857142852
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 3.0,
+          "min_24h": 0.0,
+          "max_24h": 13.4,
+          "mean_24h": 5.091666666666666,
+          "std_24h": 3.9628620165631356,
+          "range_24h": 13.4,
+          "trend_before": -0.5628571428571423,
+          "trend_after": -0.16571428571428523
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 8.5,
+          "min_24h": 8.5,
+          "max_24h": 8.5,
+          "mean_24h": 8.5,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 21.6,
+          "min_24h": 21.6,
+          "max_24h": 21.6,
+          "mean_24h": 21.6,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": 0.5,
+          "min_24h": 0.5,
+          "max_24h": 0.5,
+          "mean_24h": 0.5,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": -5.551115123125783e-17,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": -2.1,
+          "min_24h": -2.4,
+          "max_24h": -2.1,
+          "mean_24h": -2.25,
+          "std_24h": 0.21213203435596414,
+          "range_24h": 0.2999999999999998,
+          "trend_before": -0.2999999999999994,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": -1.1,
+          "min_24h": -1.7,
+          "max_24h": -1.1,
+          "mean_24h": -1.4,
+          "std_24h": 0.42426406871192845,
+          "range_24h": 0.5999999999999999,
+          "trend_before": -0.5999999999999995,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 2.5,
+          "min_24h": 1.2,
+          "max_24h": 2.5,
+          "mean_24h": 1.85,
+          "std_24h": 0.9192388155425117,
+          "range_24h": 1.3,
+          "trend_before": -1.2999999999999996,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "75",
+          "min_24h": "75",
+          "max_24h": "75",
+          "mean_24h": 75.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "97",
+          "min_24h": "97",
+          "max_24h": "97",
+          "mean_24h": 97.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "86",
+          "min_24h": "86",
+          "max_24h": "86",
+          "mean_24h": 86.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2023-01-17": {
+      "maintenance": {
+        "operation_type": [
+          "moderate_snow"
+        ],
+        "duration_hours": 3.0011111111111113,
+        "distance_km": 13.6,
+        "datetime": "2023-01-17 06:57:33"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 6.8,
+          "min_24h": 1.7,
+          "max_24h": 11.7,
+          "mean_24h": 6.854166666666667,
+          "std_24h": 2.461173132554026,
+          "range_24h": 10.0,
+          "trend_before": 0.28571428571428603,
+          "trend_after": -0.2628571428571427
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 4.6,
+          "min_24h": 1.3,
+          "max_24h": 6.7,
+          "mean_24h": 4.141666666666667,
+          "std_24h": 1.487898040764267,
+          "range_24h": 5.4,
+          "trend_before": -0.09142857142857123,
+          "trend_after": -0.30857142857142816
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 6.9,
+          "min_24h": 6.9,
+          "max_24h": 6.9,
+          "mean_24h": 6.9,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 11.7,
+          "min_24h": 11.7,
+          "max_24h": 11.7,
+          "mean_24h": 11.7,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": 0.1,
+          "min_24h": 0.1,
+          "max_24h": 0.1,
+          "mean_24h": 0.1,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": -2.7755575615628914e-17,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": -3.6,
+          "min_24h": -3.6,
+          "max_24h": -3.6,
+          "mean_24h": -3.6,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 4.440892098500626e-16,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": -1.0,
+          "min_24h": -2.6,
+          "max_24h": -1.0,
+          "mean_24h": -1.8,
+          "std_24h": 1.1313708498984762,
+          "range_24h": 1.6,
+          "trend_before": -1.5999999999999994,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 5.5,
+          "min_24h": 5.5,
+          "max_24h": 5.9,
+          "mean_24h": 5.7,
+          "std_24h": 0.2828427124746193,
+          "range_24h": 0.40000000000000036,
+          "trend_before": 0.40000000000000036,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "66",
+          "min_24h": "66",
+          "max_24h": "66",
+          "mean_24h": 66.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "97",
+          "min_24h": "97",
+          "max_24h": "97",
+          "mean_24h": 97.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "77",
+          "min_24h": "77",
+          "max_24h": "77",
+          "mean_24h": 77.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2023-01-25": {
+      "maintenance": {
+        "operation_type": [
+          "moderate_storm_with_drift"
+        ],
+        "duration_hours": 2.0191666666666666,
+        "distance_km": 29.2,
+        "datetime": "2023-01-25 08:14:31"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 2.1,
+          "min_24h": 2.1,
+          "max_24h": 8.3,
+          "mean_24h": 4.583333333333333,
+          "std_24h": 1.7452212184847156,
+          "range_24h": 6.200000000000001,
+          "trend_before": -0.3999999999999995,
+          "trend_after": -0.25142857142857133
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 1.5,
+          "min_24h": 1.4,
+          "max_24h": 4.3,
+          "mean_24h": 2.525,
+          "std_24h": 0.8481437531969191,
+          "range_24h": 2.9,
+          "trend_before": -0.26285714285714273,
+          "trend_after": -0.23999999999999955
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 4.4,
+          "min_24h": 4.4,
+          "max_24h": 4.4,
+          "mean_24h": 4.4,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 8.3,
+          "min_24h": 8.3,
+          "max_24h": 8.3,
+          "mean_24h": 8.3,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": 3.8,
+          "min_24h": 3.8,
+          "max_24h": 3.8,
+          "mean_24h": 3.8,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": 0.3,
+          "min_24h": 0.3,
+          "max_24h": 1.6,
+          "mean_24h": 0.9500000000000001,
+          "std_24h": 0.9192388155425119,
+          "range_24h": 1.3,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": 2.4,
+          "min_24h": 2.4,
+          "max_24h": 2.9,
+          "mean_24h": 2.65,
+          "std_24h": 0.3535533905932738,
+          "range_24h": 0.5,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 18.4,
+          "min_24h": 15.3,
+          "max_24h": 18.4,
+          "mean_24h": 16.85,
+          "std_24h": 2.1920310216782957,
+          "range_24h": 3.099999999999998,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "92",
+          "min_24h": "92",
+          "max_24h": "92",
+          "mean_24h": 92.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "98",
+          "min_24h": "98",
+          "max_24h": "98",
+          "mean_24h": 98.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "96",
+          "min_24h": "96",
+          "max_24h": "96",
+          "mean_24h": 96.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2023-01-28": {
+      "maintenance": {
+        "operation_type": [
+          "routine_plowing",
+          "drift_clearing"
+        ],
+        "duration_hours": 1.0055555555555555,
+        "distance_km": 33.9,
+        "datetime": "2023-01-28 06:40:47"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 8.5,
+          "min_24h": 1.9,
+          "max_24h": 9.9,
+          "mean_24h": 6.633333333333333,
+          "std_24h": 2.7291767617912637,
+          "range_24h": 8.0,
+          "trend_before": 0.9114285714285714,
+          "trend_after": 0.0028571428571431594
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 4.7,
+          "min_24h": 1.3,
+          "max_24h": 5.8,
+          "mean_24h": 3.8833333333333333,
+          "std_24h": 1.642550155853012,
+          "range_24h": 4.5,
+          "trend_before": 0.5428571428571426,
+          "trend_after": 0.1657142857142859
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 6.6,
+          "min_24h": 6.6,
+          "max_24h": 6.6,
+          "mean_24h": 6.6,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 9.9,
+          "min_24h": 9.9,
+          "max_24h": 9.9,
+          "mean_24h": 9.9,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": 1.3,
+          "min_24h": 1.3,
+          "max_24h": 1.3,
+          "mean_24h": 1.3,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": -2.220446049250313e-16,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": -1.1,
+          "min_24h": -2.7,
+          "max_24h": -1.1,
+          "mean_24h": -1.9000000000000001,
+          "std_24h": 1.1313708498984762,
+          "range_24h": 1.6,
+          "trend_before": -1.5999999999999996,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": 0.4,
+          "min_24h": -1.3,
+          "max_24h": 0.4,
+          "mean_24h": -0.45,
+          "std_24h": 1.2020815280171309,
+          "range_24h": 1.7000000000000002,
+          "trend_before": -1.6999999999999997,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 7.3,
+          "min_24h": 6.3,
+          "max_24h": 7.3,
+          "mean_24h": 6.8,
+          "std_24h": 0.7071067811865476,
+          "range_24h": 1.0,
+          "trend_before": -1.0000000000000018,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "82",
+          "min_24h": "82",
+          "max_24h": "82",
+          "mean_24h": 82.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "98",
+          "min_24h": "98",
+          "max_24h": "98",
+          "mean_24h": 98.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "95",
+          "min_24h": "95",
+          "max_24h": "95",
+          "mean_24h": 95.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2023-01-31": {
+      "maintenance": {
+        "operation_type": [
+          "major_storm"
+        ],
+        "duration_hours": 4.167777777777778,
+        "distance_km": 15.4,
+        "datetime": "2023-01-31 05:32:29"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 2.3,
+          "min_24h": 2.3,
+          "max_24h": 16.5,
+          "mean_24h": 7.891666666666667,
+          "std_24h": 4.2607323994484965,
+          "range_24h": 14.2,
+          "trend_before": -0.7228571428571424,
+          "trend_after": 0.5314285714285711
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 1.8,
+          "min_24h": 1.1,
+          "max_24h": 8.8,
+          "mean_24h": 4.425,
+          "std_24h": 2.3853265203522245,
+          "range_24h": 7.700000000000001,
+          "trend_before": -0.5714285714285708,
+          "trend_after": 0.04857142857142868
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 7.9,
+          "min_24h": 7.9,
+          "max_24h": 7.9,
+          "mean_24h": 7.9,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 16.5,
+          "min_24h": 16.5,
+          "max_24h": 16.5,
+          "mean_24h": 16.5,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": 0.2,
+          "min_24h": 0.1,
+          "max_24h": 0.2,
+          "mean_24h": 0.15000000000000002,
+          "std_24h": 0.07071067811865477,
+          "range_24h": 0.1,
+          "trend_before": -0.10000000000000002,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": -3.7,
+          "min_24h": -3.7,
+          "max_24h": -3.7,
+          "mean_24h": -3.7,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": -1.5,
+          "min_24h": -2.8,
+          "max_24h": -1.5,
+          "mean_24h": -2.15,
+          "std_24h": 0.9192388155425116,
+          "range_24h": 1.2999999999999998,
+          "trend_before": -1.2999999999999994,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 14.8,
+          "min_24h": 5.1,
+          "max_24h": 14.8,
+          "mean_24h": 9.95,
+          "std_24h": 6.8589357775095126,
+          "range_24h": 9.700000000000001,
+          "trend_before": -9.700000000000003,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "83",
+          "min_24h": "83",
+          "max_24h": "83",
+          "mean_24h": 83.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "97",
+          "min_24h": "97",
+          "max_24h": "97",
+          "mean_24h": 97.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "93",
+          "min_24h": "93",
+          "max_24h": "93",
+          "mean_24h": 93.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2023-02-01": {
+      "maintenance": {
+        "operation_type": [
+          "major_storm"
+        ],
+        "duration_hours": 5.540277777777778,
+        "distance_km": 19.8,
+        "datetime": "2023-02-01 09:09:15"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 3.2,
+          "min_24h": 2.4,
+          "max_24h": 13.3,
+          "mean_24h": 7.054166666666667,
+          "std_24h": 3.8633145452269764,
+          "range_24h": 10.9,
+          "trend_before": -1.2628571428571416,
+          "trend_after": 1.0457142857142858
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 1.8,
+          "min_24h": 1.1,
+          "max_24h": 7.4,
+          "mean_24h": 3.75,
+          "std_24h": 2.1715552431179463,
+          "range_24h": 6.300000000000001,
+          "trend_before": -0.6142857142857141,
+          "trend_after": 0.6342857142857143
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 8.1,
+          "min_24h": 8.1,
+          "max_24h": 8.1,
+          "mean_24h": 8.1,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 13.6,
+          "min_24h": 13.6,
+          "max_24h": 13.6,
+          "mean_24h": 13.6,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": 0.9,
+          "min_24h": 0.9,
+          "max_24h": 0.9,
+          "mean_24h": 0.9,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": -1.7,
+          "min_24h": -1.7,
+          "max_24h": -1.7,
+          "mean_24h": -1.7,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": -0.6,
+          "min_24h": -0.6,
+          "max_24h": -0.6,
+          "mean_24h": -0.6,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 15.0,
+          "min_24h": 15.0,
+          "max_24h": 22.6,
+          "mean_24h": 18.8,
+          "std_24h": 5.374011537017762,
+          "range_24h": 7.600000000000001,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "77",
+          "min_24h": "77",
+          "max_24h": "77",
+          "mean_24h": 77.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "97",
+          "min_24h": "97",
+          "max_24h": "97",
+          "mean_24h": 97.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "91",
+          "min_24h": "91",
+          "max_24h": "91",
+          "mean_24h": 91.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2023-02-02": {
+      "maintenance": {
+        "operation_type": [
+          "moderate_snow"
+        ],
+        "duration_hours": 3.9522222222222223,
+        "distance_km": 14.6,
+        "datetime": "2023-02-02 16:45:20"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 3.5,
+          "min_24h": 2.0,
+          "max_24h": 13.6,
+          "mean_24h": 6.270833333333333,
+          "std_24h": 4.036408128486284,
+          "range_24h": 11.6,
+          "trend_before": 0.0685714285714287,
+          "trend_after": 1.5857142857142856
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 2.5,
+          "min_24h": 0.9,
+          "max_24h": 8.3,
+          "mean_24h": 3.8541666666666665,
+          "std_24h": 2.4843823773931115,
+          "range_24h": 7.4,
+          "trend_before": 0.10285714285714288,
+          "trend_after": 1.0457142857142856
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 6.3,
+          "min_24h": 6.3,
+          "max_24h": 6.3,
+          "mean_24h": 6.3,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 13.6,
+          "min_24h": 13.6,
+          "max_24h": 13.6,
+          "mean_24h": 13.6,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": -0.1,
+          "min_24h": -0.1,
+          "max_24h": -0.1,
+          "mean_24h": -0.1,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": -5.9,
+          "min_24h": -5.9,
+          "max_24h": -5.3,
+          "mean_24h": -5.6,
+          "std_24h": 0.4242640687119289,
+          "range_24h": 0.6000000000000005,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": -2.5,
+          "min_24h": -2.5,
+          "max_24h": -2.5,
+          "mean_24h": -2.5,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 6.5,
+          "min_24h": 6.5,
+          "max_24h": 6.5,
+          "mean_24h": 6.5,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "78",
+          "min_24h": "78",
+          "max_24h": "78",
+          "mean_24h": 78.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "99",
+          "min_24h": "99",
+          "max_24h": "99",
+          "mean_24h": 99.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "93",
+          "min_24h": "93",
+          "max_24h": "93",
+          "mean_24h": 93.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2023-02-03": {
+      "maintenance": {
+        "operation_type": [
+          "moderate_storm_with_drift",
+          "major_storm"
+        ],
+        "duration_hours": 8.314166666666667,
+        "distance_km": 42.6,
+        "datetime": "2023-02-03 08:27:32"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 2.6,
+          "min_24h": 1.5,
+          "max_24h": 13.6,
+          "mean_24h": 6.041666666666667,
+          "std_24h": 3.9843079882116963,
+          "range_24h": 12.1,
+          "trend_before": -1.5628571428571414,
+          "trend_after": 0.054285714285714465
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 1.9,
+          "min_24h": 0.9,
+          "max_24h": 8.3,
+          "mean_24h": 3.758333333333333,
+          "std_24h": 2.42306250106306,
+          "range_24h": 7.4,
+          "trend_before": -0.9171428571428563,
+          "trend_after": 0.06000000000000016
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 6.3,
+          "min_24h": 6.3,
+          "max_24h": 6.3,
+          "mean_24h": 6.3,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 13.6,
+          "min_24h": 13.6,
+          "max_24h": 13.6,
+          "mean_24h": 13.6,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": -0.1,
+          "min_24h": -0.1,
+          "max_24h": -0.1,
+          "mean_24h": -0.1,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": -5.9,
+          "min_24h": -5.9,
+          "max_24h": -5.3,
+          "mean_24h": -5.6,
+          "std_24h": 0.4242640687119289,
+          "range_24h": 0.6000000000000005,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": -2.5,
+          "min_24h": -2.5,
+          "max_24h": -2.5,
+          "mean_24h": -2.5,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 6.5,
+          "min_24h": 6.5,
+          "max_24h": 6.5,
+          "mean_24h": 6.5,
+          "std_24h": 0.0,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "78",
+          "min_24h": "78",
+          "max_24h": "78",
+          "mean_24h": 78.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "99",
+          "min_24h": "99",
+          "max_24h": "99",
+          "mean_24h": 99.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "93",
+          "min_24h": "93",
+          "max_24h": "93",
+          "mean_24h": 93.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2023-02-05": {
+      "maintenance": {
+        "operation_type": [
+          "moderate_snow"
+        ],
+        "duration_hours": 3.901944444444444,
+        "distance_km": 16.6,
+        "datetime": "2023-02-05 07:42:35"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 12.6,
+          "min_24h": 2.8,
+          "max_24h": 12.6,
+          "mean_24h": 6.579166666666667,
+          "std_24h": 2.483857302956286,
+          "range_24h": 9.8,
+          "trend_before": 1.131428571428572,
+          "trend_after": -1.3685714285714274
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 8.5,
+          "min_24h": 1.6,
+          "max_24h": 8.5,
+          "mean_24h": 4.266666666666667,
+          "std_24h": 1.7344756548021794,
+          "range_24h": 6.9,
+          "trend_before": 0.8000000000000002,
+          "trend_after": -1.1028571428571423
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": 6.7,
+          "min_24h": 6.7,
+          "max_24h": 6.7,
+          "mean_24h": 6.7,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 12.6,
+          "min_24h": 12.6,
+          "max_24h": 12.6,
+          "mean_24h": 12.6,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": 1.4,
+          "min_24h": 1.0,
+          "max_24h": 1.4,
+          "mean_24h": 1.2,
+          "std_24h": 0.28284271247461895,
+          "range_24h": 0.3999999999999999,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": -1.7,
+          "min_24h": -2.1,
+          "max_24h": -1.7,
+          "mean_24h": -1.9,
+          "std_24h": 0.28284271247461906,
+          "range_24h": 0.40000000000000013,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": -0.1,
+          "min_24h": -1.8,
+          "max_24h": -0.1,
+          "mean_24h": -0.9500000000000001,
+          "std_24h": 1.2020815280171309,
+          "range_24h": 1.7,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 11.0,
+          "min_24h": 10.7,
+          "max_24h": 11.0,
+          "mean_24h": 10.85,
+          "std_24h": 0.21213203435596475,
+          "range_24h": 0.3000000000000007,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "75",
+          "min_24h": "75",
+          "max_24h": "75",
+          "mean_24h": 75.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "98",
+          "min_24h": "98",
+          "max_24h": "98",
+          "mean_24h": 98.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "92",
+          "min_24h": "92",
+          "max_24h": "92",
+          "mean_24h": 92.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    },
+    "2023-02-09": {
+      "maintenance": {
+        "operation_type": [
+          "moderate_storm_with_drift",
+          "major_storm"
+        ],
+        "duration_hours": 8.971111111111112,
+        "distance_km": 34.5,
+        "datetime": "2023-02-09 08:26:08"
+      },
+      "weather": {
+        "max(wind_speed_of_gust PT1H)": {
+          "value_at_event": 8.6,
+          "min_24h": 8.6,
+          "max_24h": 20.1,
+          "mean_24h": 13.270833333333334,
+          "std_24h": 4.100634008950606,
+          "range_24h": 11.500000000000002,
+          "trend_before": -0.4771428571428564,
+          "trend_after": 1.1171428571428583
+        },
+        "max(wind_speed PT1H)": {
+          "value_at_event": 3.1,
+          "min_24h": 3.1,
+          "max_24h": 11.5,
+          "mean_24h": 5.9416666666666655,
+          "std_24h": 2.5668313517654013,
+          "range_24h": 8.4,
+          "trend_before": -0.1857142857142854,
+          "trend_after": 0.13428571428571534
+        },
+        "mean(wind_speed_of_gust P1D)": {
+          "value_at_event": "13",
+          "min_24h": "13",
+          "max_24h": "13",
+          "mean_24h": 13.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(wind_speed_of_gust P1D)": {
+          "value_at_event": 20.1,
+          "min_24h": 20.1,
+          "max_24h": 20.1,
+          "mean_24h": 20.1,
+          "std_24h": NaN,
+          "range_24h": 0.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(air_temperature P1D)": {
+          "value_at_event": 1.7,
+          "min_24h": 1.7,
+          "max_24h": 2.0,
+          "mean_24h": 1.85,
+          "std_24h": 0.21213203435596428,
+          "range_24h": 0.30000000000000004,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(air_temperature P1D)": {
+          "value_at_event": -4.3,
+          "min_24h": -4.3,
+          "max_24h": -3.3,
+          "mean_24h": -3.8,
+          "std_24h": 0.7071067811865476,
+          "range_24h": 1.0,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(air_temperature P1D)": {
+          "value_at_event": -1.0,
+          "min_24h": -1.0,
+          "max_24h": 1.2,
+          "mean_24h": 0.09999999999999998,
+          "std_24h": 1.5556349186104046,
+          "range_24h": 2.2,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "sum(precipitation_amount P1D)": {
+          "value_at_event": 22.0,
+          "min_24h": 19.1,
+          "max_24h": 22.0,
+          "mean_24h": 20.55,
+          "std_24h": 2.050609665440987,
+          "range_24h": 2.8999999999999986,
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "min(relative_humidity P1D)": {
+          "value_at_event": "75",
+          "min_24h": "75",
+          "max_24h": "75",
+          "mean_24h": 75.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "max(relative_humidity P1D)": {
+          "value_at_event": "97",
+          "min_24h": "97",
+          "max_24h": "97",
+          "mean_24h": 97.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        },
+        "mean(relative_humidity P1D)": {
+          "value_at_event": "88",
+          "min_24h": "88",
+          "max_24h": "88",
+          "mean_24h": 88.0,
+          "std_24h": NaN,
+          "range_24h": "0",
+          "trend_before": 0.0,
+          "trend_after": 0.0
+        }
+      }
+    }
+  },
+  "indicators": {
+    "snøfokk_og_drift": [
+      {
+        "date": "2022-12-26",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 0.0,
+            "trend_before": -1.4342857142857128,
+            "variability": 4.110112572949656,
+            "range": 12.9,
+            "extremeness": 3.5208333333333335
+          },
+          "max(wind_speed PT1H)": {
+            "value": 0.0,
+            "trend_before": -0.8228571428571423,
+            "variability": 2.117200092547716,
+            "range": 7.3,
+            "extremeness": 1.7583333333333335
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 6.1,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 14.2,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": -0.3,
+            "trend_before": 0.0,
+            "variability": 0.07071067811865474,
+            "range": 0.09999999999999998,
+            "extremeness": 0.04999999999999999
+          },
+          "min(air_temperature P1D)": {
+            "value": -5.9,
+            "trend_before": 0.0,
+            "variability": 0.4242640687119289,
+            "range": 0.6000000000000005,
+            "extremeness": 0.3000000000000007
+          },
+          "mean(air_temperature P1D)": {
+            "value": -3.2,
+            "trend_before": 0.0,
+            "variability": 1.8384776310850237,
+            "range": 2.6,
+            "extremeness": 1.3
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 15.6,
+            "trend_before": 0.0,
+            "variability": 3.8890872965260126,
+            "range": 5.500000000000002,
+            "extremeness": 2.7500000000000018
+          },
+          "min(relative_humidity P1D)": {
+            "value": "72",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "95",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "90",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 1.7525,
+        "distance_km": 17.6
+      },
+      {
+        "date": "2022-12-28",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 17.4,
+            "trend_before": 1.9999999999999996,
+            "variability": 5.99894767341788,
+            "range": 19.1,
+            "extremeness": 4.570833333333331
+          },
+          "max(wind_speed PT1H)": {
+            "value": 11.0,
+            "trend_before": 1.4342857142857146,
+            "variability": 3.5439246851355413,
+            "range": 10.3,
+            "extremeness": 3.1125
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 13.4,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 20.5,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": -0.8,
+            "trend_before": 2.220446049250313e-16,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "min(air_temperature P1D)": {
+            "value": -4.1,
+            "trend_before": -1.8,
+            "variability": 1.272792206135786,
+            "range": 1.8000000000000007,
+            "extremeness": 0.9000000000000004
+          },
+          "mean(air_temperature P1D)": {
+            "value": -2.3,
+            "trend_before": -1.2999999999999998,
+            "variability": 0.919238815542512,
+            "range": 1.3000000000000003,
+            "extremeness": 0.6500000000000004
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 0.0,
+            "trend_before": 4.699999999999999,
+            "variability": 3.3234018715767735,
+            "range": 4.7,
+            "extremeness": 2.35
+          },
+          "min(relative_humidity P1D)": {
+            "value": "61",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "83",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "73",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 1.5508333333333333,
+        "distance_km": 18.9
+      },
+      {
+        "date": "2022-12-30",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 0.0,
+            "trend_before": 0.0,
+            "variability": 6.3994550832331685,
+            "range": 16.4,
+            "extremeness": 6.479166666666667
+          },
+          "max(wind_speed PT1H)": {
+            "value": 0.0,
+            "trend_before": 0.0,
+            "variability": 3.615724013932415,
+            "range": 8.9,
+            "extremeness": 3.5041666666666664
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 5.9,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 14.6,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": 3.4,
+            "trend_before": 0.0,
+            "variability": 0.28284271247461895,
+            "range": 0.3999999999999999,
+            "extremeness": 0.19999999999999973
+          },
+          "min(air_temperature P1D)": {
+            "value": -1.3,
+            "trend_before": 0.0,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "mean(air_temperature P1D)": {
+            "value": 0.5,
+            "trend_before": 0.0,
+            "variability": 0.28284271247461906,
+            "range": 0.4,
+            "extremeness": 0.19999999999999996
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 14.5,
+            "trend_before": 0.0,
+            "variability": 8.838834764831844,
+            "range": 12.5,
+            "extremeness": 6.25
+          },
+          "min(relative_humidity P1D)": {
+            "value": "83",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "98",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "92",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 10.057777777777778,
+        "distance_km": 44.4
+      },
+      {
+        "date": "2023-01-06",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 21.1,
+            "trend_before": 1.1857142857142862,
+            "variability": 3.604978441713264,
+            "range": 12.3,
+            "extremeness": 4.975000000000001
+          },
+          "max(wind_speed PT1H)": {
+            "value": 12.3,
+            "trend_before": 0.5600000000000008,
+            "variability": 2.278045819035076,
+            "range": 6.6000000000000005,
+            "extremeness": 1.958333333333334
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": "16",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 21.8,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": 0.5,
+            "trend_before": -1.2999999999999998,
+            "variability": 0.9192388155425119,
+            "range": 1.3,
+            "extremeness": 0.65
+          },
+          "min(air_temperature P1D)": {
+            "value": -3.6,
+            "trend_before": -0.09999999999999964,
+            "variability": 0.07071067811865482,
+            "range": 0.10000000000000009,
+            "extremeness": 0.050000000000000266
+          },
+          "mean(air_temperature P1D)": {
+            "value": -1.4,
+            "trend_before": -1.3999999999999992,
+            "variability": 0.9899494936611665,
+            "range": 1.4,
+            "extremeness": 0.6999999999999997
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 8.3,
+            "trend_before": -7.6000000000000005,
+            "variability": 5.374011537017761,
+            "range": 7.6000000000000005,
+            "extremeness": 3.8000000000000007
+          },
+          "min(relative_humidity P1D)": {
+            "value": "71",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "98",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "85",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 12.54861111111111,
+        "distance_km": 46.3
+      },
+      {
+        "date": "2023-01-08",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 6.4,
+            "trend_before": -0.0028571428571422014,
+            "variability": 2.3060058637128966,
+            "range": 6.3999999999999995,
+            "extremeness": 2.9124999999999996
+          },
+          "max(wind_speed PT1H)": {
+            "value": 4.1,
+            "trend_before": -0.04857142857142797,
+            "variability": 1.1946438435966922,
+            "range": 3.4999999999999996,
+            "extremeness": 1.3250000000000002
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 9.4,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 12.6,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": 4.5,
+            "trend_before": 0.0,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "min(air_temperature P1D)": {
+            "value": 0.8,
+            "trend_before": 0.0,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "mean(air_temperature P1D)": {
+            "value": "3",
+            "trend_before": 0.0,
+            "variability": 0.7071067811865476,
+            "range": "1",
+            "extremeness": 0.5
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 9.6,
+            "trend_before": 0.0,
+            "variability": 2.757716446627535,
+            "range": 3.8999999999999995,
+            "extremeness": 1.9499999999999993
+          },
+          "min(relative_humidity P1D)": {
+            "value": "75",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "96",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "81",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 1.0661111111111112,
+        "distance_km": 16.2
+      },
+      {
+        "date": "2023-01-13",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 5.7,
+            "trend_before": -0.8542857142857138,
+            "variability": 4.16073563381438,
+            "range": 12.4,
+            "extremeness": 0.07083333333333464
+          },
+          "max(wind_speed PT1H)": {
+            "value": 3.5,
+            "trend_before": -0.254285714285714,
+            "variability": 2.7745609392833854,
+            "range": 8.5,
+            "extremeness": 0.19166666666666687
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 5.8,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 12.4,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": 1.5,
+            "trend_before": -4.440892098500626e-16,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "min(air_temperature P1D)": {
+            "value": "-2",
+            "trend_before": 2.220446049250313e-16,
+            "variability": 0.0,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(air_temperature P1D)": {
+            "value": -0.3,
+            "trend_before": 0.7999999999999998,
+            "variability": 0.5656854249492381,
+            "range": 0.8,
+            "extremeness": 0.4
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 7.9,
+            "trend_before": -0.10000000000000142,
+            "variability": 0.07071067811865513,
+            "range": 0.10000000000000053,
+            "extremeness": 0.05000000000000071
+          },
+          "min(relative_humidity P1D)": {
+            "value": "78",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "97",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "92",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 8.293611111111112,
+        "distance_km": 54.099999999999994
+      },
+      {
+        "date": "2023-01-15",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 5.0,
+            "trend_before": -0.7599999999999986,
+            "variability": 6.563618434714327,
+            "range": 21.200000000000003,
+            "extremeness": 3.4749999999999996
+          },
+          "max(wind_speed PT1H)": {
+            "value": 3.0,
+            "trend_before": -0.5628571428571423,
+            "variability": 3.9628620165631356,
+            "range": 13.4,
+            "extremeness": 2.091666666666666
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 8.5,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 21.6,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": 0.5,
+            "trend_before": -5.551115123125783e-17,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "min(air_temperature P1D)": {
+            "value": -2.1,
+            "trend_before": -0.2999999999999994,
+            "variability": 0.21213203435596414,
+            "range": 0.2999999999999998,
+            "extremeness": 0.1499999999999999
+          },
+          "mean(air_temperature P1D)": {
+            "value": -1.1,
+            "trend_before": -0.5999999999999995,
+            "variability": 0.42426406871192845,
+            "range": 0.5999999999999999,
+            "extremeness": 0.2999999999999998
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 2.5,
+            "trend_before": -1.2999999999999996,
+            "variability": 0.9192388155425117,
+            "range": 1.3,
+            "extremeness": 0.6499999999999999
+          },
+          "min(relative_humidity P1D)": {
+            "value": "75",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "97",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "86",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 1.9124999999999999,
+        "distance_km": 17.7
+      },
+      {
+        "date": "2023-01-25",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 2.1,
+            "trend_before": -0.3999999999999995,
+            "variability": 1.7452212184847156,
+            "range": 6.200000000000001,
+            "extremeness": 2.483333333333333
+          },
+          "max(wind_speed PT1H)": {
+            "value": 1.5,
+            "trend_before": -0.26285714285714273,
+            "variability": 0.8481437531969191,
+            "range": 2.9,
+            "extremeness": 1.025
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 4.4,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 8.3,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": 3.8,
+            "trend_before": 0.0,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "min(air_temperature P1D)": {
+            "value": 0.3,
+            "trend_before": 0.0,
+            "variability": 0.9192388155425119,
+            "range": 1.3,
+            "extremeness": 0.6500000000000001
+          },
+          "mean(air_temperature P1D)": {
+            "value": 2.4,
+            "trend_before": 0.0,
+            "variability": 0.3535533905932738,
+            "range": 0.5,
+            "extremeness": 0.25
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 18.4,
+            "trend_before": 0.0,
+            "variability": 2.1920310216782957,
+            "range": 3.099999999999998,
+            "extremeness": 1.5499999999999972
+          },
+          "min(relative_humidity P1D)": {
+            "value": "92",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "98",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "96",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 2.0191666666666666,
+        "distance_km": 29.2
+      },
+      {
+        "date": "2023-01-28",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 8.5,
+            "trend_before": 0.9114285714285714,
+            "variability": 2.7291767617912637,
+            "range": 8.0,
+            "extremeness": 1.8666666666666671
+          },
+          "max(wind_speed PT1H)": {
+            "value": 4.7,
+            "trend_before": 0.5428571428571426,
+            "variability": 1.642550155853012,
+            "range": 4.5,
+            "extremeness": 0.8166666666666669
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 6.6,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 9.9,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": 1.3,
+            "trend_before": -2.220446049250313e-16,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "min(air_temperature P1D)": {
+            "value": -1.1,
+            "trend_before": -1.5999999999999996,
+            "variability": 1.1313708498984762,
+            "range": 1.6,
+            "extremeness": 0.8
+          },
+          "mean(air_temperature P1D)": {
+            "value": 0.4,
+            "trend_before": -1.6999999999999997,
+            "variability": 1.2020815280171309,
+            "range": 1.7000000000000002,
+            "extremeness": 0.8500000000000001
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 7.3,
+            "trend_before": -1.0000000000000018,
+            "variability": 0.7071067811865476,
+            "range": 1.0,
+            "extremeness": 0.5
+          },
+          "min(relative_humidity P1D)": {
+            "value": "82",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "98",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "95",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 1.0055555555555555,
+        "distance_km": 33.9
+      },
+      {
+        "date": "2023-02-03",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 2.6,
+            "trend_before": -1.5628571428571414,
+            "variability": 3.9843079882116963,
+            "range": 12.1,
+            "extremeness": 3.441666666666667
+          },
+          "max(wind_speed PT1H)": {
+            "value": 1.9,
+            "trend_before": -0.9171428571428563,
+            "variability": 2.42306250106306,
+            "range": 7.4,
+            "extremeness": 1.858333333333333
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 6.3,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 13.6,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": -0.1,
+            "trend_before": 0.0,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "min(air_temperature P1D)": {
+            "value": -5.9,
+            "trend_before": 0.0,
+            "variability": 0.4242640687119289,
+            "range": 0.6000000000000005,
+            "extremeness": 0.3000000000000007
+          },
+          "mean(air_temperature P1D)": {
+            "value": -2.5,
+            "trend_before": 0.0,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 6.5,
+            "trend_before": 0.0,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "min(relative_humidity P1D)": {
+            "value": "78",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "99",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "93",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 8.314166666666667,
+        "distance_km": 42.6
+      },
+      {
+        "date": "2023-02-09",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 8.6,
+            "trend_before": -0.4771428571428564,
+            "variability": 4.100634008950606,
+            "range": 11.500000000000002,
+            "extremeness": 4.670833333333334
+          },
+          "max(wind_speed PT1H)": {
+            "value": 3.1,
+            "trend_before": -0.1857142857142854,
+            "variability": 2.5668313517654013,
+            "range": 8.4,
+            "extremeness": 2.8416666666666655
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": "13",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 20.1,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": 1.7,
+            "trend_before": 0.0,
+            "variability": 0.21213203435596428,
+            "range": 0.30000000000000004,
+            "extremeness": 0.15000000000000013
+          },
+          "min(air_temperature P1D)": {
+            "value": -4.3,
+            "trend_before": 0.0,
+            "variability": 0.7071067811865476,
+            "range": 1.0,
+            "extremeness": 0.5
+          },
+          "mean(air_temperature P1D)": {
+            "value": -1.0,
+            "trend_before": 0.0,
+            "variability": 1.5556349186104046,
+            "range": 2.2,
+            "extremeness": 1.1
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 22.0,
+            "trend_before": 0.0,
+            "variability": 2.050609665440987,
+            "range": 2.8999999999999986,
+            "extremeness": 1.4499999999999993
+          },
+          "min(relative_humidity P1D)": {
+            "value": "75",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "97",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "88",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 8.971111111111112,
+        "distance_km": 34.5
+      }
+    ],
+    "ekstreme_forhold": [
+      {
+        "date": "2022-12-23",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 1.6,
+            "trend_before": -0.31714285714285667,
+            "variability": 0.858166228281164,
+            "range": 2.8999999999999995,
+            "extremeness": 0.7916666666666665
+          },
+          "max(wind_speed PT1H)": {
+            "value": 0.9,
+            "trend_before": -0.26285714285714257,
+            "variability": 0.6974981169783944,
+            "range": 2.5,
+            "extremeness": 0.5958333333333333
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 2.5,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 4.1,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": -1.6,
+            "trend_before": 0.0,
+            "variability": 0.8485281374238571,
+            "range": 1.2000000000000002,
+            "extremeness": 0.6000000000000001
+          },
+          "min(air_temperature P1D)": {
+            "value": -8.6,
+            "trend_before": 0.0,
+            "variability": 0.2828427124746193,
+            "range": 0.40000000000000036,
+            "extremeness": 0.20000000000000107
+          },
+          "mean(air_temperature P1D)": {
+            "value": -6.3,
+            "trend_before": 0.0,
+            "variability": 3.4648232278140827,
+            "range": 4.9,
+            "extremeness": 2.45
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 0.2,
+            "trend_before": 0.0,
+            "variability": 4.17193000900063,
+            "range": 5.8999999999999995,
+            "extremeness": 2.9499999999999997
+          },
+          "min(relative_humidity P1D)": {
+            "value": "60",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "95",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "81",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 4.562222222222222,
+        "distance_km": 22.4
+      },
+      {
+        "date": "2022-12-27",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 12.2,
+            "trend_before": 2.962857142857142,
+            "variability": 5.0333507294065445,
+            "range": 14.2,
+            "extremeness": 6.0375000000000005
+          },
+          "max(wind_speed PT1H)": {
+            "value": 8.2,
+            "trend_before": 1.8971428571428568,
+            "variability": 2.906103023398981,
+            "range": 8.4,
+            "extremeness": 4.875
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 6.1,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 14.2,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": -0.3,
+            "trend_before": 0.0,
+            "variability": 0.07071067811865474,
+            "range": 0.09999999999999998,
+            "extremeness": 0.04999999999999999
+          },
+          "min(air_temperature P1D)": {
+            "value": -5.9,
+            "trend_before": 0.0,
+            "variability": 0.4242640687119289,
+            "range": 0.6000000000000005,
+            "extremeness": 0.3000000000000007
+          },
+          "mean(air_temperature P1D)": {
+            "value": -3.2,
+            "trend_before": 0.0,
+            "variability": 1.8384776310850237,
+            "range": 2.6,
+            "extremeness": 1.3
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 15.6,
+            "trend_before": 0.0,
+            "variability": 3.8890872965260126,
+            "range": 5.500000000000002,
+            "extremeness": 2.7500000000000018
+          },
+          "min(relative_humidity P1D)": {
+            "value": "72",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "95",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "90",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 5.602222222222222,
+        "distance_km": 34.9
+      },
+      {
+        "date": "2023-01-04",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 25.5,
+            "trend_before": 2.7571428571428576,
+            "variability": 5.093344264537932,
+            "range": 17.3,
+            "extremeness": 5.895833333333332
+          },
+          "max(wind_speed PT1H)": {
+            "value": 17.0,
+            "trend_before": 1.9399999999999995,
+            "variability": 3.6999020746931723,
+            "range": 11.3,
+            "extremeness": 4.416666666666666
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 19.2,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 25.8,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": 0.7,
+            "trend_before": 0.0,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "min(air_temperature P1D)": {
+            "value": -3.8,
+            "trend_before": 0.0,
+            "variability": 0.6363961030678927,
+            "range": 0.8999999999999999,
+            "extremeness": 0.4500000000000002
+          },
+          "mean(air_temperature P1D)": {
+            "value": -1.9,
+            "trend_before": 0.0,
+            "variability": 0.848528137423857,
+            "range": 1.2,
+            "extremeness": 0.6000000000000001
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 0.7,
+            "trend_before": 0.0,
+            "variability": 0.21213203435596428,
+            "range": 0.30000000000000004,
+            "extremeness": 0.15000000000000002
+          },
+          "min(relative_humidity P1D)": {
+            "value": "64",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "91",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "76",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 4.231944444444444,
+        "distance_km": 22.6
+      },
+      {
+        "date": "2023-01-31",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 2.3,
+            "trend_before": -0.7228571428571424,
+            "variability": 4.2607323994484965,
+            "range": 14.2,
+            "extremeness": 5.591666666666667
+          },
+          "max(wind_speed PT1H)": {
+            "value": 1.8,
+            "trend_before": -0.5714285714285708,
+            "variability": 2.3853265203522245,
+            "range": 7.700000000000001,
+            "extremeness": 2.625
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 7.9,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 16.5,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": 0.2,
+            "trend_before": -0.10000000000000002,
+            "variability": 0.07071067811865477,
+            "range": 0.1,
+            "extremeness": 0.04999999999999999
+          },
+          "min(air_temperature P1D)": {
+            "value": -3.7,
+            "trend_before": 0.0,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "mean(air_temperature P1D)": {
+            "value": -1.5,
+            "trend_before": -1.2999999999999994,
+            "variability": 0.9192388155425116,
+            "range": 1.2999999999999998,
+            "extremeness": 0.6499999999999999
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 14.8,
+            "trend_before": -9.700000000000003,
+            "variability": 6.8589357775095126,
+            "range": 9.700000000000001,
+            "extremeness": 4.850000000000001
+          },
+          "min(relative_humidity P1D)": {
+            "value": "83",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "97",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "93",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 4.167777777777778,
+        "distance_km": 15.4
+      },
+      {
+        "date": "2023-02-01",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 3.2,
+            "trend_before": -1.2628571428571416,
+            "variability": 3.8633145452269764,
+            "range": 10.9,
+            "extremeness": 3.854166666666667
+          },
+          "max(wind_speed PT1H)": {
+            "value": 1.8,
+            "trend_before": -0.6142857142857141,
+            "variability": 2.1715552431179463,
+            "range": 6.300000000000001,
+            "extremeness": 1.95
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 8.1,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 13.6,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": 0.9,
+            "trend_before": 0.0,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "min(air_temperature P1D)": {
+            "value": -1.7,
+            "trend_before": 0.0,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "mean(air_temperature P1D)": {
+            "value": -0.6,
+            "trend_before": 0.0,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 15.0,
+            "trend_before": 0.0,
+            "variability": 5.374011537017762,
+            "range": 7.600000000000001,
+            "extremeness": 3.8000000000000007
+          },
+          "min(relative_humidity P1D)": {
+            "value": "77",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "97",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "91",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 5.540277777777778,
+        "distance_km": 19.8
+      }
+    ],
+    "moderat_snøfall": [
+      {
+        "date": "2022-12-22",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 2.4,
+            "trend_before": -0.42857142857142794,
+            "variability": 1.1449954116736116,
+            "range": 4.9,
+            "extremeness": 0.31666666666666643
+          },
+          "max(wind_speed PT1H)": {
+            "value": 1.6,
+            "trend_before": -0.2399999999999995,
+            "variability": 0.697082429159908,
+            "range": 2.9,
+            "extremeness": 0.13749999999999973
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 2.9,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 4.9,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": 1.1,
+            "trend_before": 0.0,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "min(air_temperature P1D)": {
+            "value": -1.8,
+            "trend_before": 0.0,
+            "variability": 0.8485281374238571,
+            "range": 1.2000000000000002,
+            "extremeness": 0.6000000000000001
+          },
+          "mean(air_temperature P1D)": {
+            "value": 0.0,
+            "trend_before": 0.0,
+            "variability": 0.49497474683058323,
+            "range": 0.7,
+            "extremeness": 0.35
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 17.3,
+            "trend_before": 0.0,
+            "variability": 1.2020815280171302,
+            "range": 1.6999999999999993,
+            "extremeness": 0.8499999999999979
+          },
+          "min(relative_humidity P1D)": {
+            "value": "95",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "99",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "97",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 5.438611111111111,
+        "distance_km": 27.4
+      },
+      {
+        "date": "2023-01-17",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 6.8,
+            "trend_before": 0.28571428571428603,
+            "variability": 2.461173132554026,
+            "range": 10.0,
+            "extremeness": 0.05416666666666714
+          },
+          "max(wind_speed PT1H)": {
+            "value": 4.6,
+            "trend_before": -0.09142857142857123,
+            "variability": 1.487898040764267,
+            "range": 5.4,
+            "extremeness": 0.45833333333333304
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 6.9,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 11.7,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": 0.1,
+            "trend_before": -2.7755575615628914e-17,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "min(air_temperature P1D)": {
+            "value": -3.6,
+            "trend_before": 4.440892098500626e-16,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "mean(air_temperature P1D)": {
+            "value": -1.0,
+            "trend_before": -1.5999999999999994,
+            "variability": 1.1313708498984762,
+            "range": 1.6,
+            "extremeness": 0.8
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 5.5,
+            "trend_before": 0.40000000000000036,
+            "variability": 0.2828427124746193,
+            "range": 0.40000000000000036,
+            "extremeness": 0.20000000000000018
+          },
+          "min(relative_humidity P1D)": {
+            "value": "66",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "97",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "77",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 3.0011111111111113,
+        "distance_km": 13.6
+      },
+      {
+        "date": "2023-02-02",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 3.5,
+            "trend_before": 0.0685714285714287,
+            "variability": 4.036408128486284,
+            "range": 11.6,
+            "extremeness": 2.770833333333333
+          },
+          "max(wind_speed PT1H)": {
+            "value": 2.5,
+            "trend_before": 0.10285714285714288,
+            "variability": 2.4843823773931115,
+            "range": 7.4,
+            "extremeness": 1.3541666666666665
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 6.3,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 13.6,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": -0.1,
+            "trend_before": 0.0,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "min(air_temperature P1D)": {
+            "value": -5.9,
+            "trend_before": 0.0,
+            "variability": 0.4242640687119289,
+            "range": 0.6000000000000005,
+            "extremeness": 0.3000000000000007
+          },
+          "mean(air_temperature P1D)": {
+            "value": -2.5,
+            "trend_before": 0.0,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 6.5,
+            "trend_before": 0.0,
+            "variability": 0.0,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "min(relative_humidity P1D)": {
+            "value": "78",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "99",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "93",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 3.9522222222222223,
+        "distance_km": 14.6
+      },
+      {
+        "date": "2023-02-05",
+        "weather": {
+          "max(wind_speed_of_gust PT1H)": {
+            "value": 12.6,
+            "trend_before": 1.131428571428572,
+            "variability": 2.483857302956286,
+            "range": 9.8,
+            "extremeness": 6.020833333333333
+          },
+          "max(wind_speed PT1H)": {
+            "value": 8.5,
+            "trend_before": 0.8000000000000002,
+            "variability": 1.7344756548021794,
+            "range": 6.9,
+            "extremeness": 4.233333333333333
+          },
+          "mean(wind_speed_of_gust P1D)": {
+            "value": 6.7,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(wind_speed_of_gust P1D)": {
+            "value": 12.6,
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": 0.0,
+            "extremeness": 0.0
+          },
+          "max(air_temperature P1D)": {
+            "value": 1.4,
+            "trend_before": 0.0,
+            "variability": 0.28284271247461895,
+            "range": 0.3999999999999999,
+            "extremeness": 0.19999999999999996
+          },
+          "min(air_temperature P1D)": {
+            "value": -1.7,
+            "trend_before": 0.0,
+            "variability": 0.28284271247461906,
+            "range": 0.40000000000000013,
+            "extremeness": 0.19999999999999996
+          },
+          "mean(air_temperature P1D)": {
+            "value": -0.1,
+            "trend_before": 0.0,
+            "variability": 1.2020815280171309,
+            "range": 1.7,
+            "extremeness": 0.8500000000000001
+          },
+          "sum(precipitation_amount P1D)": {
+            "value": 11.0,
+            "trend_before": 0.0,
+            "variability": 0.21213203435596475,
+            "range": 0.3000000000000007,
+            "extremeness": 0.15000000000000036
+          },
+          "min(relative_humidity P1D)": {
+            "value": "75",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "max(relative_humidity P1D)": {
+            "value": "98",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          },
+          "mean(relative_humidity P1D)": {
+            "value": "92",
+            "trend_before": 0.0,
+            "variability": NaN,
+            "range": "0",
+            "extremeness": 0.0
+          }
+        },
+        "maintenance_hours": 3.901944444444444,
+        "distance_km": 16.6
+      }
+    ],
+    "rutinevedlikehold": []
+  },
+  "recommendations": {
+    "snøfokk_og_drift": {
+      "primary_indicators": [
+        [
+          "max(wind_speed_of_gust PT1H)",
+          49.36011731809881
+        ],
+        [
+          "max(wind_speed PT1H)",
+          28.462394422464005
+        ],
+        [
+          "mean(wind_speed_of_gust P1D)",
+          NaN
+        ],
+        [
+          "max(wind_speed_of_gust P1D)",
+          NaN
+        ],
+        [
+          "sum(precipitation_amount P1D)",
+          44.89655047919023
+        ]
+      ],
+      "all_scores": [
+        [
+          "max(wind_speed_of_gust PT1H)",
+          49.36011731809881
+        ],
+        [
+          "max(wind_speed PT1H)",
+          28.462394422464005
+        ],
+        [
+          "mean(wind_speed_of_gust P1D)",
+          NaN
+        ],
+        [
+          "max(wind_speed_of_gust P1D)",
+          NaN
+        ],
+        [
+          "sum(precipitation_amount P1D)",
+          44.89655047919023
+        ],
+        [
+          "min(air_temperature P1D)",
+          9.595370452962074
+        ],
+        [
+          "max(air_temperature P1D)",
+          5.379733815616882
+        ],
+        [
+          "min(relative_humidity P1D)",
+          NaN
+        ],
+        [
+          "max(relative_humidity P1D)",
+          NaN
+        ],
+        [
+          "mean(relative_humidity P1D)",
+          NaN
+        ],
+        [
+          "mean(air_temperature P1D)",
+          7.496884856561777
+        ]
+      ],
+      "event_count": 11
+    },
+    "ekstreme_forhold": {
+      "primary_indicators": [
+        [
+          "max(wind_speed_of_gust PT1H)",
+          44.92779685840442
+        ],
+        [
+          "sum(precipitation_amount P1D)",
+          37.91049227136864
+        ],
+        [
+          "min(relative_humidity P1D)",
+          NaN
+        ],
+        [
+          "max(relative_humidity P1D)",
+          NaN
+        ],
+        [
+          "mean(relative_humidity P1D)",
+          NaN
+        ]
+      ],
+      "all_scores": [
+        [
+          "max(wind_speed_of_gust PT1H)",
+          44.92779685840442
+        ],
+        [
+          "sum(precipitation_amount P1D)",
+          37.91049227136864
+        ],
+        [
+          "min(relative_humidity P1D)",
+          NaN
+        ],
+        [
+          "max(relative_humidity P1D)",
+          NaN
+        ],
+        [
+          "mean(relative_humidity P1D)",
+          NaN
+        ],
+        [
+          "mean(air_temperature P1D)",
+          11.428002903387629
+        ],
+        [
+          "min(air_temperature P1D)",
+          11.270321829610634
+        ],
+        [
+          "max(wind_speed PT1H)",
+          28.819863622423373
+        ],
+        [
+          "mean(wind_speed_of_gust P1D)",
+          NaN
+        ],
+        [
+          "max(wind_speed_of_gust P1D)",
+          NaN
+        ],
+        [
+          "max(air_temperature P1D)",
+          2.293410243993304
+        ]
+      ],
+      "event_count": 5
+    },
+    "moderat_snøfall": {
+      "primary_indicators": [
+        [
+          "max(wind_speed_of_gust PT1H)",
+          23.192463869050943
+        ],
+        [
+          "max(wind_speed PT1H)",
+          15.16761629856726
+        ],
+        [
+          "mean(wind_speed_of_gust P1D)",
+          NaN
+        ],
+        [
+          "max(wind_speed_of_gust P1D)",
+          NaN
+        ],
+        [
+          "sum(precipitation_amount P1D)",
+          21.311290093599574
+        ]
+      ],
+      "all_scores": [
+        [
+          "max(wind_speed_of_gust PT1H)",
+          23.192463869050943
+        ],
+        [
+          "max(wind_speed PT1H)",
+          15.16761629856726
+        ],
+        [
+          "mean(wind_speed_of_gust P1D)",
+          NaN
+        ],
+        [
+          "max(wind_speed_of_gust P1D)",
+          NaN
+        ],
+        [
+          "sum(precipitation_amount P1D)",
+          21.311290093599574
+        ],
+        [
+          "min(air_temperature P1D)",
+          6.785988676344905
+        ],
+        [
+          "max(air_temperature P1D)",
+          1.5358411059983235
+        ],
+        [
+          "min(relative_humidity P1D)",
+          NaN
+        ],
+        [
+          "max(relative_humidity P1D)",
+          NaN
+        ],
+        [
+          "mean(relative_humidity P1D)",
+          NaN
+        ],
+        [
+          "mean(air_temperature P1D)",
+          3.762279753469805
+        ]
+      ],
+      "event_count": 4
+    }
+  },
+  "summary": {
+    "total_events_analyzed": 20,
+    "elements_tested_count": 17,
+    "recommendations_by_category": {
+      "snøfokk_og_drift": [
+        "max(wind_speed_of_gust PT1H)",
+        "max(wind_speed PT1H)",
+        "mean(wind_speed_of_gust P1D)",
+        "max(wind_speed_of_gust P1D)",
+        "sum(precipitation_amount P1D)"
+      ],
+      "ekstreme_forhold": [
+        "max(wind_speed_of_gust PT1H)",
+        "sum(precipitation_amount P1D)",
+        "min(relative_humidity P1D)",
+        "max(relative_humidity P1D)",
+        "mean(relative_humidity P1D)"
+      ],
+      "moderat_snøfall": [
+        "max(wind_speed_of_gust PT1H)",
+        "max(wind_speed PT1H)",
+        "mean(wind_speed_of_gust P1D)",
+        "max(wind_speed_of_gust P1D)",
+        "sum(precipitation_amount P1D)"
+      ]
+    }
+  }
+}

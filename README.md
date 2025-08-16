@@ -1,8 +1,75 @@
 # Snøfokk & Glatt Vei Analyse - Empirisk Validert System
 
+## 🎯 **APP-FORMÅL: OPERASJONELL BESLUTNINGSSTØTTE FOR BRØYTEOPERATØRER**
+
+**Appen gir brøyteoperatøren kunnskapsgrunnlag for vintervedlikehold-beslutninger:**
+
+### 📊 **RASK OVERSIKT:**
+- **Mengde nysnø**: Hvor mye snø har falt?
+- **Risiko for snøfokk**: Vind + løssnø = driftproblemer?
+- **Risiko for glatte veier**: Regn på snø/rimfrost?
+
+### 📈 **GRUNDIG BELYSNING:**
+- **Detaljerte grafer** for dypere væranalyse
+- **Historiske sammenhenger** og trender
+
+### ⚖️ **OPERASJONELLE TERSKLER:**
+
+#### ❄️ **Nysnø-brøyting:**
+- **6 cm våt snø** ELLER **12 cm lett tørr snø** → Brøyting iverksettes
+
+#### 🌪️ **Snøfokk-brøyting:**
+- **Vindblåst løssnø** → Veier blåser igjen
+- **KRITISK**: Vinden kan blåse snøen vekk fra punktet under snøradaren
+- **Løsning**: Kombinere snødybde + vinddata + værradar
+
+#### 🧂 **Glattføre-strøing:**
+- **Regn på snøkappe** → Glatte veier
+- **Rimfrost** → Strøing nødvendig
+
+#### 🚚 **Tunbrøyting:**
+- **Akkumulert snø siste uke** → Tunbrøyting fredag (40-50 hytter)
+
+---
+
 Et norsk væranalysesystem for realistisk snøfokk- og glatt vei-risikovurdering basert på **empirisk validerte kriterier** og operasjonell relevans.
 
-**SISTE OPPDATERING**: 12. august 2025 - Nedbørtype-klassifisering fullført og validert
+**SISTE OPPDATERING**: 16. august 2025 - **FULLSTENDIG VALIDERING AV 19 VÆRELEMENTER**
+
+## 🎯 **VALIDERTE VÆRELEMENTER: 15 KJERNEELEMENTER**
+
+**Basert på UTVIDET analyse av 19 kritiske elementer testet mot faktiske brøytehendelser på Gullingen (SN46220):**
+
+### ⭐ **KRITISKE ELEMENTER** (7 - må ha):
+1. `accumulated(precipitation_amount)` - Akkumulert nedbør (viktighet: 7468.9-7721.4)
+2. `wind_from_direction` - Vindretning (viktighet: 1582.1-2160.3)
+3. `max_wind_speed(wind_from_direction PT1H)` - Maks vind per retning (viktighet: 1555.9-1980.5)
+4. `surface_snow_thickness` - Snødybde (viktighet: 1381.0-1442.2)
+5. **`surface_temperature`** ✨ - Veioverflate-temperatur (viktighet: 1225.1-1226.8) - **REVOLUSJONERENDE**
+6. `air_temperature` - Lufttemperatur (viktighet: 1197.3-1209.6)
+7. **`sum(precipitation_amount PT10M)`** ✨ - 10-min nedbør (viktighet: 1037.7-1073.5) - **6x BEDRE OPPLØSNING**
+
+### 🔥 **HØY PRIORITET** (5 - forbedrer presisjon betydelig):
+8. **`dew_point_temperature`** ✨ - Rimfrost-varsling (24 obs/dag) - **FROST-SPESIALIST**
+9. `relative_humidity` - Fuktighet (24 obs/dag)
+10. `sum(duration_of_precipitation PT1H)` - Nedbørsvarighet
+11. `wind_speed` - Vindhastighet (24 obs/dag)
+12. `sum(precipitation_amount PT1H)` - Timenedbør
+
+### 📊 **MEDIUM PRIORITET** (3 - spesialiserte målinger):
+13. `max(wind_speed_of_gust PT1H)` - Vindkast (24 obs/dag)
+14. **`max(air_temperature PT1H)`** ✨ - Time-maksimum (24 obs/dag) - **TEMPERATUR-EKSTREMER**
+15. **`min(air_temperature PT1H)`** ✨ - Time-minimum (24 obs/dag) - **TEMPERATUR-EKSTREMER**
+
+### 🚀 **KRITISKE GEVINSTER MED UTVIDEDE ELEMENTER**:
+- **`surface_temperature`**: 168 obs/dag (høyest frekvens!) = direkte måling av veioverflate for eksakt glattføre-risiko
+- **`sum(precipitation_amount PT10M)`**: 144 obs/dag = 6x bedre oppløsning for presis snøfall-timing
+- **`dew_point_temperature`**: Duggpunkt vs lufttemperatur = profesjonell rimfrost-prediksjon
+- **`max/min(air_temperature PT1H)`**: Fanger korte tineperioder og frostepisoder innen hver time
+
+**KRITISK**: Vinden kan blåse snøen vekk fra punktet under snøradaren - derfor er kombinasjonen av snødybde + vinddata + værradar essensiell.
+
+---
 
 ## 🌐 **LIVE VÆRAPP - PRODUKSJONSKLART**
 
@@ -62,7 +129,44 @@ Basert på analyse av 149 episoder med nedbør og vinddata:
 #### 💧 **VÅT SNØ**: 
 - Temp rundt 0°C + snømengde ØKENDE + moderat vind
 
-## 🚨 **KRITISKE GLATTFØRE-KRITERIER**
+## � **VINTERVEDLIKEHOLD: REAKTIVT SYSTEM**
+
+### 🔄 **FUNDAMENTAL FORSTÅELSE: VÆR → VEDLIKEHOLD**
+
+**Vintervedlikehold er alltid en reaksjon på værhendelser:**
+
+#### ❄️ **Brøyting:** Reagerer på snøfall
+- **Snø må falle først** → deretter brøytes veiene
+- **Langvarig snøfall** → brøyting kan pågå UNDER værhendelsen
+- **Snøfokk** → veier blåser igjen og må gjenåpnes
+
+##### 🏠 **Tunbrøyting (Spesialisert):**
+- **Fredager**: Tunbrøyting av ca 40-50 hytter som respons på snøfall siste uke
+- **Ellers i sesongen**: Enkeltbestillinger ved behov (ofte under 10 hytter)
+- **Reaktivt system**: Basert på akkumulert snøfall siden forrige fredag
+
+#### 🧂 **Strøing:** Reagerer på glattføre-forhold  
+- **Regn på snøkappe** → skaper glatte veier → strøing
+- **Rimfrost** → strøing nødvendig
+- **Naturlig løsning**: Nysnø dekker glatte veier
+
+##### 🧊 **Glattføre-typer:**
+- **Rimfrost**: Sjeldent problem på snødekte fjellveier - luftfuktighet kondenserer til is på veioverflate ved klar himmel og frost
+- **Freezing rain**: Regn som fryser ved kontakt med kald veioverflate  
+- **Regn på snøkappe**: Regn smelter snø og refryser til is - HOVEDPROBLEMET
+- **Freezing_hours**: Timer med stabil frost under 0°C - gir GODE kjøreforhold på snø (jo kaldere, desto bedre)
+
+#### 🌨️ **Snøfokk-håndtering:** Reagerer på vindblåst snø
+- **Løssnø + vindkjøling** må oppstå først
+- **Veier blåser igjen** → må gjenåpnes
+- **Forutsetninger**: Sammenhengende frost + tilgjengelig løssnø
+
+#### ⏰ **Tidsmessig sammenheng:**
+- **Kortvarige hendelser**: Vedlikehold ETTER værhendelse
+- **Langvarige hendelser**: Vedlikehold kan pågå UNDER værhendelse
+- **Forebyggende tiltak**: Minimal - hovedsakelig reaktivt system
+
+## �🚨 **KRITISKE GLATTFØRE-KRITERIER**
 
 ### ⚠️ **VIKTIG: KUN REGN SKAPER GLATTFØRE**
 
@@ -243,11 +347,12 @@ See documentation for creating `.plist` files for more robust scheduling.
 
 ### 💡 **Glatt Vei-Analyse:**
 1. ✅ **Regn-på-snø** er hovedproblemet - ikke rimfrost
-2. ✅ **Stabilt kaldt vær** = beste kjøreforhold på snø
+2. ✅ **Stabilt kaldt vær** = beste kjøreforhold på snø  
 3. ✅ **Temperaturoverganger** skaper farlige forhold
 4. ✅ **Snøfall fungerer som naturlig strøing**
 5. ✅ **Mars er verst** pga vårløsning og ustabile temperaturer
-6. ✅ **99 realistiske perioder** vs 420 urealistiske (rimfrost-fokus)
+6. ✅ **Rimfrost sjeldent problem** på snødekte fjellveier
+7. ✅ **99 realistiske perioder** vs 420 urealistiske (rimfrost-fokus)
 
 ### ❄️ **Snøfokk-Analyse:**
 1. ✅ **Snøfokk er MYE sjeldnere** enn tidligere antatt
