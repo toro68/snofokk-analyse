@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     """Modern settings using Pydantic with environment variable support"""
 
     # API Configuration
-    frost_client_id: str
+    frost_client_id: str = "default-frost-client-id"
     weather_station: str = "SN46220"
 
     # Email Configuration
@@ -53,7 +53,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        case_sensitive=False
+        case_sensitive=False,
+        env_prefix="SNOFOKK_"
     )
 
     @property
