@@ -125,19 +125,29 @@ class AnalysisService:
                 'start_time', 'end_time', 'duration', 'max_risk_score', 'avg_risk_score'
             ])
 
-        # Find period boundaries
+        # Find period boundaries using a more robust approach
         risk_changes = df['is_high_risk'].astype(int).diff()
-        period_starts = df.index[risk_changes == 1]
-        period_ends = df.index[risk_changes == -1]
+        
+        # Find start indices (where risk becomes True)
+        period_starts = df.index[risk_changes == 1].tolist()
+        # Find end indices (where risk becomes False) 
+        period_ends = df.index[risk_changes == -1].tolist()
 
-        # Handle edge cases
+        # Handle edge cases more robustly
         if df['is_high_risk'].iloc[0]:
-            period_starts = pd.Index([df.index[0]]).union(period_starts)
+            period_starts = [df.index[0]] + period_starts
         if df['is_high_risk'].iloc[-1]:
-            period_ends = period_ends.union(pd.Index([df.index[-1]]))
+            period_ends = period_ends + [df.index[-1]]
+
+        # Ensure we have matching start/end pairs
+        if len(period_starts) != len(period_ends):
+            logger.warning(f"Mismatched period boundaries: {len(period_starts)} starts, {len(period_ends)} ends")
+            min_len = min(len(period_starts), len(period_ends))
+            period_starts = period_starts[:min_len]
+            period_ends = period_ends[:min_len]
 
         periods = []
-        for start_idx, end_idx in zip(period_starts, period_ends, strict=False):
+        for start_idx, end_idx in zip(period_starts, period_ends):
             period_df = df.loc[start_idx:end_idx]
             duration = len(period_df)
 

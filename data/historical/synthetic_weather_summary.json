@@ -1,0 +1,62 @@
+{
+  "summary": {
+    "created": "2025-08-16T13:55:57.218323",
+    "type": "synthetic_test_data",
+    "station": "SN46220",
+    "station_name": "Gullingen (Syntetisk)",
+    "purpose": "Local testing without API dependency",
+    "description": "Realistic synthetic weather data based on Norwegian winter patterns",
+    "total_scenarios": 70128,
+    "file_count": 8
+  },
+  "files": [
+    {
+      "filename": "synthetic_weather_2018.json",
+      "year": 2018,
+      "scenario_count": 8760,
+      "file_size_kb": 4945.6
+    },
+    {
+      "filename": "synthetic_weather_2019.json",
+      "year": 2019,
+      "scenario_count": 8760,
+      "file_size_kb": 4945.6
+    },
+    {
+      "filename": "synthetic_weather_2020.json",
+      "year": 2020,
+      "scenario_count": 8784,
+      "file_size_kb": 4959.2
+    },
+    {
+      "filename": "synthetic_weather_2021.json",
+      "year": 2021,
+      "scenario_count": 8760,
+      "file_size_kb": 4945.5
+    },
+    {
+      "filename": "synthetic_weather_2022.json",
+      "year": 2022,
+      "scenario_count": 8760,
+      "file_size_kb": 4945.8
+    },
+    {
+      "filename": "synthetic_weather_2023.json",
+      "year": 2023,
+      "scenario_count": 8760,
+      "file_size_kb": 4945.4
+    },
+    {
+      "filename": "synthetic_weather_2024.json",
+      "year": 2024,
+      "scenario_count": 8784,
+      "file_size_kb": 4959.0
+    },
+    {
+      "filename": "synthetic_weather_2025.json",
+      "year": 2025,
+      "scenario_count": 8760,
+      "file_size_kb": 4945.4
+    }
+  ]
+}

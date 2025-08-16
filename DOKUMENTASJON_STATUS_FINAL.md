@@ -8,10 +8,20 @@ Fullstendig arkivering og konsolidering gjennomført 12. august 2025.
 
 | Fil | Type | Status | Beskrivelse |
 |-----|------|--------|-------------|
-| `README.md` | Hoveddok | ✅ Oppdatert | Systemoversikt og validerte kriterier |
+| `README.md` | Hoveddok | ✅ Oppdatert | Systemoversikt og validerte kriterier + **VÆR→VEDLIKEHOLD logikk** |
 | `CHANGES.md` | Endringslogg | ✅ Konsolidert | Komplett historie inkl. rettelser |
 | `validert_glattfore_logikk.py` | Kodelogikk | ✅ Validert | Empirisk validerte kriterier |
 | `.aigenrc` | Konfig | ✅ Oppdatert | AI-konfig med validerte regler |
+
+### 🔄 **KRITISK INNSIKT DOKUMENTERT: VÆR → VEDLIKEHOLD**
+
+**Fundamental forståelse implementert** i README.md:
+- ✅ **Vintervedlikehold er reaktivt** - skjer ETTER værhendelser
+- ✅ **Snø må falle før brøyting** - temporal sammenheng
+- ✅ **Regn på snø → glattføre → strøing** - årsak-virkning
+- ✅ **Løssnø + vind → snøfokk → gjenåpning** - fysiske forutsetninger
+- ✅ **Langvarige hendelser** kan ha vedlikehold UNDER værhendelse
+- ✅ **Naturlige løsninger** dokumentert (nysnø dekker glatte veier)
 
 ### 📊 Teknisk dokumentasjon
 

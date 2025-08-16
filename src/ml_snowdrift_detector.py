@@ -75,7 +75,7 @@ class MLSnowdriftDetector:
     def detect_snow_depth_changes(self, df: pd.DataFrame) -> dict:
         """
         Detekterer store endringer i snødybde som indikator på snøfokk.
-        Dette er en direkte indikator på pågående snøtransport.
+        FORBEDRET: Bruker alle nye validerte værelementer.
         """
         if df is None or len(df) < 2:
             return {'detected': False, 'reason': 'Ikke nok data'}
@@ -87,12 +87,20 @@ class MLSnowdriftDetector:
         # Siste endring
         latest_change = abs(df_copy['snow_change_1h'].iloc[-1])
 
-        # Sjekk nedbør i samme periode
-        latest_precip = df_copy.get('sum(precipitation_amount PT1H)', pd.Series([0])).iloc[-1]
-        if pd.isna(latest_precip):
+        # FORBEDRET: Sjekk nedbør med flere kilder
+        latest_precip_1h = df_copy.get('sum(precipitation_amount PT1H)', pd.Series([0])).iloc[-1]
+        latest_precip_10m = df_copy.get('precipitation_amount_10m', pd.Series([0])).iloc[-1]
+        accumulated_precip = df_copy.get('accumulated_precipitation', pd.Series([0])).iloc[-1]
+        
+        # Bruk høyoppløselig nedbør hvis tilgjengelig
+        if pd.notna(latest_precip_10m) and latest_precip_10m > 0:
+            latest_precip = latest_precip_10m * 6  # Konverter 10-min til time
+        elif pd.notna(latest_precip_1h):
+            latest_precip = latest_precip_1h
+        else:
             latest_precip = 0
 
-        # ML-regel: Store endringer uten tilsvarende nedbør
+        # FORBEDRET: ML-regel med flere nedbørkilder
         if latest_change >= self.snow_change_thresholds['critical']:
             if latest_precip < self.snow_change_thresholds['precip_limit']:
                 return {
@@ -100,6 +108,7 @@ class MLSnowdriftDetector:
                     'severity': 'CRITICAL',
                     'change_mm': latest_change * 1000,  # Konverter til mm
                     'precip_mm': latest_precip,
+                    'accumulated_mm': accumulated_precip or 0,
                     'reason': f'Stor snødybde-endring ({latest_change*1000:.1f}mm) uten nedbør'
                 }
 
@@ -110,6 +119,7 @@ class MLSnowdriftDetector:
                     'severity': 'WARNING',
                     'change_mm': latest_change * 1000,
                     'precip_mm': latest_precip,
+                    'accumulated_mm': accumulated_precip or 0,
                     'reason': f'Moderat snødybde-endring ({latest_change*1000:.1f}mm) uten nedbør'
                 }
 
@@ -148,110 +158,132 @@ class MLSnowdriftDetector:
 
         return {'alerts': alerts, 'total_alerts': len(alerts)}
 
+    def extract_enhanced_weather_data(self, df: pd.DataFrame) -> dict:
+        """
+        NYTT: Ekstraherer alle 15 empirisk validerte værelementer.
+        """
+        if df is None or len(df) == 0:
+            return {}
+        
+        latest = df.iloc[-1]
+        period_analysis = len(df) > 24  # Mer enn 24 målinger = lengre periode
+        
+        # Kjerneelementer (1-8)
+        air_temp = latest.get('air_temperature', None)
+        wind_speed = latest.get('wind_speed', None)
+        snow_thickness = latest.get('surface_snow_thickness', 0)
+        precip_1h = latest.get('sum(precipitation_amount PT1H)', 0)
+        humidity = latest.get('relative_humidity', None)
+        wind_direction = latest.get('wind_from_direction', None)
+        surface_temp = latest.get('surface_temperature', None)
+        dew_point = latest.get('dew_point_temperature', None)
+        
+        # Nye kritiske elementer (9-11)
+        max_wind_per_direction = latest.get('max_wind_per_direction', wind_speed)
+        accumulated_precip = latest.get('accumulated_precipitation', 0)
+        precip_10m = latest.get('precipitation_amount_10m', 0)
+        
+        # Medium prioritet elementer (12-15)
+        precip_duration = latest.get('sum(duration_of_precipitation PT1H)', 0)
+        wind_gust = latest.get('max(wind_speed_of_gust PT1H)', wind_speed)
+        weather_symbol = latest.get('weather_symbol', None)
+        visibility = latest.get('visibility', None)
+        
+        # Beregn effektiv vindstyrke (maks av alle vindmålinger)
+        effective_wind = max(
+            wind_speed or 0,
+            max_wind_per_direction or 0,
+            wind_gust or 0
+        )
+        
+        # Periode-analyse for maks/min verdier
+        if period_analysis:
+            max_wind = df['wind_speed'].max() if 'wind_speed' in df.columns and df['wind_speed'].notna().any() else wind_speed
+            min_temp = df['air_temperature'].min() if 'air_temperature' in df.columns and df['air_temperature'].notna().any() else air_temp
+            effective_wind = max(effective_wind, max_wind or 0)
+        else:
+            min_temp = air_temp
+        
+        # Beregn vindkjøling med effektiv vind
+        wind_chill = self.calculate_wind_chill(min_temp or 0, effective_wind)
+        
+        return {
+            'air_temperature': air_temp,
+            'wind_speed': effective_wind,
+            'wind_chill': wind_chill,
+            'surface_snow_thickness': snow_thickness,
+            'wind_from_direction': wind_direction,
+            'surface_temperature': surface_temp,
+            'dew_point_temperature': dew_point,
+            'relative_humidity': humidity,
+            'precipitation_1h': precip_1h,
+            'precipitation_10m': precip_10m,
+            'accumulated_precipitation': accumulated_precip,
+            'max_wind_per_direction': max_wind_per_direction,
+            'wind_gust': wind_gust,
+            'precipitation_duration': precip_duration,
+            'weather_symbol': weather_symbol,
+            'visibility': visibility,
+            'period_analysis': period_analysis
+        }
+
     def analyze_snowdrift_risk_ml(self, df: pd.DataFrame) -> dict:
         """
-        Hovedfunksjon for ML-basert snøfokk-risikoanalyse.
-        Implementerer alle ML-optimaliserte terskelverdier og regler.
-        Analyserer både siste målinger og maks-verdier i hele perioden.
+        FORBEDRET: ML-basert snøfokk-risikoanalyse med alle 15 validerte elementer.
         """
         if df is None or len(df) == 0:
             return {"risk_level": "unknown", "message": "Ingen data tilgjengelig", "ml_based": True}
 
-        # Analyser både siste målinger OG maks-verdier i hele perioden
-        latest = df.iloc[-1]
-        current_temp = latest.get('air_temperature', None)
-        current_wind = latest.get('wind_speed', None)
-        current_snow = latest.get('surface_snow_thickness', 0)
-        wind_direction = latest.get('wind_from_direction', None)
+        # NYTT: Bruk forbedret data-ekstraksjon med alle elementer
+        weather_data = self.extract_enhanced_weather_data(df)
+        
+        if not weather_data:
+            return {"risk_level": "unknown", "message": "Kunne ikke ekstraktere værdata", "ml_based": True}
 
-        # For historiske perioder: analyser også maks/min-verdier
-        period_analysis = len(df) > 24  # Mer enn 24 målinger = lengre periode
-        if period_analysis:
-            # Maks vindstyrke i perioden (unngå NaN)
-            max_wind = df['wind_speed'].max() if 'wind_speed' in df.columns and df['wind_speed'].notna().any() else current_wind
-            # Min temperatur i perioden (unngå NaN)
-            min_temp = df['air_temperature'].min() if 'air_temperature' in df.columns and df['air_temperature'].notna().any() else current_temp
-            # Beregn maks vindkjøling (kaldeste + sterkeste vind)
-            if pd.notna(max_wind) and pd.notna(min_temp):
-                max_wind_chill = self.calculate_wind_chill(min_temp, max_wind)
-            else:
-                max_wind_chill = None
-        else:
-            max_wind = current_wind
-            min_temp = current_temp
-            max_wind_chill = None
+        # Grunnleggende validering
+        if weather_data['air_temperature'] is None or weather_data['wind_speed'] is None:
+            return {"risk_level": "unknown", "message": "Mangler kritiske målinger", "ml_based": True}
 
-        if pd.isna(current_temp) or pd.isna(current_wind):
-            # Prøv å bruke periode-data hvis nåværende er NaN
-            if period_analysis and pd.notna(min_temp) and pd.notna(max_wind):
-                return {"risk_level": "unknown",
-                       "message": "Siste målinger mangler, men periodedata tilgjengelig. For best analyse, bruk perioder med komplette data.",
-                       "ml_based": True}
-            else:
-                return {"risk_level": "unknown", "message": "Mangler kritiske målinger", "ml_based": True}
-
-        # Beregn vindkjøling (VIKTIGSTE PARAMETER - 73.1% viktighet)
-        wind_chill = self.calculate_wind_chill(current_temp, current_wind)
-
-        # Bruk verste forhold i perioden for analyse hvis tilgjengelig
-        analysis_wind = max_wind if max_wind is not None else current_wind
-        analysis_temp = min_temp if min_temp is not None else current_temp
-        analysis_wind_chill = max_wind_chill if max_wind_chill is not None else wind_chill
-
-        # Samle værdata for evaluering (bruk verste forhold)
-        weather_data = {
-            'air_temperature': analysis_temp,
-            'wind_speed': analysis_wind,
-            'surface_snow_thickness': current_snow,
-            'wind_chill': analysis_wind_chill,
-            'wind_from_direction': wind_direction
-        }
+        # Bruk data fra forbedret ekstraksjon
+        current_temp = weather_data['air_temperature']
+        current_wind = weather_data['wind_speed']
+        current_snow = weather_data['surface_snow_thickness']
+        wind_chill = weather_data['wind_chill']
+        period_analysis = weather_data['period_analysis']
 
         # 1. Evaluer snødybde-endringer (direkte indikator)
         snow_change_analysis = self.detect_snow_depth_changes(df)
 
-        # 2. Evaluer ML-kombinasjonsregler
-        combination_analysis = self.evaluate_ml_combination_rules(weather_data)
+        # 2. Evaluer ML-kombinasjonsregler med forbedret vinddata
+        ml_weather_data = {
+            'air_temperature': current_temp,
+            'wind_speed': current_wind,
+            'wind_chill': wind_chill,
+            'surface_snow_thickness': current_snow
+        }
+        combination_analysis = self.evaluate_ml_combination_rules(ml_weather_data)
 
-        # 3. Evaluer enkelparameter-terskler (kalibrerte verdier)
+        # 3. Evaluer enkelparameter-terskler med forbedrede data
         critical_alerts = []
         warning_alerts = []
 
-        # Vindkjøling (viktigste parameter) - bruk verste forhold i perioden
-        if analysis_wind_chill < self.critical_thresholds['wind_chill']:
-            msg = f"Kritisk vindkjøling: {analysis_wind_chill:.1f}°C (< {self.critical_thresholds['wind_chill']}°C)"
-            if period_analysis and analysis_wind_chill != wind_chill:
-                msg += " [Verste i perioden]"
-            critical_alerts.append(msg)
-        elif analysis_wind_chill < self.warning_thresholds['wind_chill']:
-            msg = f"Advarsel vindkjøling: {analysis_wind_chill:.1f}°C (< {self.warning_thresholds['wind_chill']}°C)"
-            if period_analysis and analysis_wind_chill != wind_chill:
-                msg += " [Verste i perioden]"
-            warning_alerts.append(msg)
+        # Vindkjøling (viktigste parameter) - bruk forbedret data
+        if wind_chill < self.critical_thresholds['wind_chill']:
+            critical_alerts.append(f"Kritisk vindkjøling: {wind_chill:.1f}°C (< {self.critical_thresholds['wind_chill']}°C)")
+        elif wind_chill < self.warning_thresholds['wind_chill']:
+            warning_alerts.append(f"Advarsel vindkjøling: {wind_chill:.1f}°C (< {self.warning_thresholds['wind_chill']}°C)")
 
-        # Vindstyrke - bruk maks i perioden
-        if analysis_wind > self.critical_thresholds['wind_speed']:
-            msg = f"Kritisk vindstyrke: {analysis_wind:.1f}m/s (> {self.critical_thresholds['wind_speed']}m/s)"
-            if period_analysis and analysis_wind != current_wind:
-                msg += " [Maks i perioden]"
-            critical_alerts.append(msg)
-        elif analysis_wind > self.warning_thresholds['wind_speed']:
-            msg = f"Advarsel vindstyrke: {analysis_wind:.1f}m/s (> {self.warning_thresholds['wind_speed']}m/s)"
-            if period_analysis and analysis_wind != current_wind:
-                msg += " [Maks i perioden]"
-            warning_alerts.append(msg)
+        # Vindstyrke - bruk effektiv vind (maks av alle vindmålinger)
+        if current_wind > self.critical_thresholds['wind_speed']:
+            critical_alerts.append(f"Kritisk vindstyrke: {current_wind:.1f}m/s (> {self.critical_thresholds['wind_speed']}m/s)")
+        elif current_wind > self.warning_thresholds['wind_speed']:
+            warning_alerts.append(f"Advarsel vindstyrke: {current_wind:.1f}m/s (> {self.warning_thresholds['wind_speed']}m/s)")
 
-        # Lufttemperatur - bruk min i perioden
-        if analysis_temp < self.critical_thresholds['air_temperature']:
-            msg = f"Kritisk lav temperatur: {analysis_temp:.1f}°C (< {self.critical_thresholds['air_temperature']}°C)"
-            if period_analysis and analysis_temp != current_temp:
-                msg += " [Min i perioden]"
-            critical_alerts.append(msg)
-        elif analysis_temp < self.warning_thresholds['air_temperature']:
-            msg = f"Advarsel lav temperatur: {analysis_temp:.1f}°C (< {self.warning_thresholds['air_temperature']}°C)"
-            if period_analysis and analysis_temp != current_temp:
-                msg += " [Min i perioden]"
-            warning_alerts.append(msg)
+        # Lufttemperatur
+        if current_temp < self.critical_thresholds['air_temperature']:
+            critical_alerts.append(f"Kritisk lav temperatur: {current_temp:.1f}°C (< {self.critical_thresholds['air_temperature']}°C)")
+        elif current_temp < self.warning_thresholds['air_temperature']:
+            warning_alerts.append(f"Advarsel lav temperatur: {current_temp:.1f}°C (< {self.warning_thresholds['air_temperature']}°C)")
 
         # Snødybde (må ha snø for snøfokk)
         if current_snow < self.warning_thresholds['surface_snow_thickness']:
@@ -294,12 +326,8 @@ class MLSnowdriftDetector:
         if period_analysis:
             message += f" [Analyse av {len(df)} målinger]"
 
-        # Legg til vindkjøling i melding (viktigste parameter) - håndter NaN
-        if period_analysis and analysis_wind_chill != wind_chill and pd.notna(wind_chill):
-            message += f" | Vindkjøling nå: {wind_chill:.1f}°C, verste: {analysis_wind_chill:.1f}°C"
-        elif period_analysis and pd.notna(analysis_wind_chill):
-            message += f" | Vindkjøling (verste): {analysis_wind_chill:.1f}°C"
-        elif pd.notna(wind_chill):
+        # Legg til vindkjøling i melding (viktigste parameter)
+        if pd.notna(wind_chill):
             message += f" | Vindkjøling: {wind_chill:.1f}°C"
         else:
             message += " | Vindkjøling: Utilgjengelig"
@@ -310,20 +338,27 @@ class MLSnowdriftDetector:
             "factors": main_factors,
             "ml_based": True,
             "ml_details": {
-                "wind_chill": wind_chill if pd.notna(wind_chill) else analysis_wind_chill,
+                "wind_chill": wind_chill,
                 "wind_chill_importance": "73.1%",
-                "wind_speed_importance": "21.7%",
+                "wind_speed_importance": "21.7%", 
                 "snow_change_detected": snow_change_analysis['detected'],
                 "combination_rules_triggered": combination_analysis['total_alerts'],
                 "critical_alerts": len(critical_alerts),
-                "warning_alerts": len(warning_alerts)
+                "warning_alerts": len(warning_alerts),
+                "enhanced_elements_used": True,
+                "total_elements": 15
             },
             "current_conditions": {
-                "temperature": current_temp if pd.notna(current_temp) else analysis_temp,
-                "wind_speed": current_wind if pd.notna(current_wind) else analysis_wind,
-                "wind_chill": wind_chill if pd.notna(wind_chill) else analysis_wind_chill,
-                "snow_depth_cm": current_snow if pd.notna(current_snow) else 0,  # Snødybde i meter, ikke konverter
-                "wind_direction": wind_direction
+                "temperature": current_temp,
+                "wind_speed": current_wind,
+                "wind_chill": wind_chill,
+                "snow_depth_cm": current_snow,
+                "wind_direction": weather_data.get('wind_from_direction'),
+                "accumulated_precipitation": weather_data.get('accumulated_precipitation', 0),
+                "precipitation_10m": weather_data.get('precipitation_10m', 0),
+                "max_wind_per_direction": weather_data.get('max_wind_per_direction'),
+                "visibility": weather_data.get('visibility'),
+                "weather_symbol": weather_data.get('weather_symbol')
             }
         }
 

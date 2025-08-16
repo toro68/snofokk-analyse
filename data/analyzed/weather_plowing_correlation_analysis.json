@@ -1,0 +1,79 @@
+{
+  "summary": {
+    "total_plowing_operations": 166,
+    "correct_predictions": 164,
+    "prediction_accuracy": 98.79518072289156,
+    "avg_correlation_score": 1.0686746987951805,
+    "analysis_period": {
+      "start": "2022-12-21T00:00:00",
+      "end": "2025-04-22T00:00:00"
+    }
+  },
+  "weather_statistics": {
+    "avg_snow_depth": 38.433734939759034,
+    "avg_precipitation": 16.853614457831327,
+    "avg_temperature": -6.079766609929826,
+    "avg_wind_speed": 17.174698795180724
+  },
+  "operational_patterns": {
+    "busiest_month": 1,
+    "busiest_hour": 9,
+    "most_active_unit": "8810.0",
+    "monthly_distribution": {
+      "12": 45,
+      "1": 52,
+      "2": 44,
+      "3": 16,
+      "11": 6,
+      "4": 3
+    },
+    "hourly_distribution": {
+      "12": 8,
+      "9": 25,
+      "11": 7,
+      "8": 17,
+      "16": 7,
+      "7": 21,
+      "17": 7,
+      "5": 11,
+      "0": 6,
+      "6": 16,
+      "4": 3,
+      "14": 5,
+      "10": 13,
+      "23": 2,
+      "2": 1,
+      "15": 7,
+      "19": 1,
+      "13": 4,
+      "18": 2,
+      "20": 2,
+      "21": 1
+    },
+    "unit_distribution": {
+      "8810.0": 76,
+      "8894.0": 60,
+      "9389.0": 30
+    }
+  },
+  "missed_predictions": [
+    {
+      "date": "2024-04-05T00:00:00",
+      "score": 0.0,
+      "weather": {
+        "snow_depth": 0.0,
+        "precipitation": 3.3,
+        "temperature": 3.4384615384615382
+      }
+    },
+    {
+      "date": "2025-04-22T00:00:00",
+      "score": 0.3,
+      "weather": {
+        "snow_depth": 0.0,
+        "precipitation": 15.899999999999999,
+        "temperature": 5.600000000000001
+      }
+    }
+  ]
+}

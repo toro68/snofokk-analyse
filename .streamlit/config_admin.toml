@@ -1,0 +1,60 @@
+# Streamlit konfigurasjon for Admin/Analysis UI
+# Port 8501 for desktop/admin bruk
+
+[server]
+# Admin/desktop optimaliserte innstillinger
+port = 8501
+baseUrlPath = ""
+enableStaticServing = true
+enableWebsocketCompression = true
+maxUploadSize = 200
+headless = false
+enableCORS = false
+enableXsrfProtection = true
+
+# Performance innstillinger
+runOnSave = false
+allowRunOnSave = false
+fileWatcherType = "auto"
+
+[browser]
+# Admin UI bør ikke samle statistikk
+gatherUsageStats = false
+serverAddress = "localhost"
+serverPort = 8501
+
+[client]
+# Cache innstillinger for optimal ytelse
+caching = true
+displayEnabled = true
+showErrorDetails = true
+
+[runner]
+# Python runner konfigurasjon
+magicEnabled = true
+installTracer = false
+fixMatplotlib = true
+
+[logger]
+# Logging for debugging
+level = "info"
+messageFormat = "%(asctime)s %(message)s"
+
+[theme]
+# Admin/professional theme
+primaryColor = "#667eea"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f0f2f6"
+textColor = "#262730"
+font = "sans serif"
+
+[global]
+# Global innstillinger
+developmentMode = false
+logLevel = "info"
+unitTest = false
+
+# Eksperimentelle funksjoner
+[experimental]
+# Ikke aktiver eksperimentelle funksjoner i admin UI
+allowWidgetMutability = false

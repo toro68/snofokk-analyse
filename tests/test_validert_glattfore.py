@@ -1,6 +1,14 @@
 """
 Test suite for validert_glattfore_logikk.py
-Migrated from existing test cases to proper pytest structure
+Fokuserer på KORREKT forståelse av glattføre-risiko:
+
+KRITISK KORREKSJON:
+- **Regn-på-snø** er hovedproblemet for glatte veier
+- **Rimfrost** er sjeldent problem på snødekte fjellveier
+- **Vindblåst snø** forbedrer faktisk kjøreforhold (fjerner løssnø)
+- **Stabil frost** gir BESTE kjøreforhold på snø
+
+Testene validerer empirisk basert nedbørsklassifisering fra 157 vedlikeholdsepisoder.
 """
 
 import os
@@ -14,63 +22,82 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from validert_glattfore_logikk import detect_precipitation_type, is_slippery_road_risk
 
 
-class TestPrecipitationDetection:
-    """Test precipitation type detection"""
+class TestNedbortypeDeteksjon:
+    """Test nedbørstype-deteksjon basert på empiriske data"""
 
     def test_vindblast_sno_detection(self):
-        """Test vindblåst snø detection"""
+        """Test vindblåst snø deteksjon"""
         # Test case from 23. des 2022
         nedbor_type, konfidens = detect_precipitation_type(-0.6, 72.8, -5, 12)
         assert nedbor_type == "vindblast_sno"
         assert konfidens in ["høy", "medium", "lav"]
 
     def test_regn_detection(self):
-        """Test rain detection"""
+        """Test regn deteksjon"""
         # Test case from 21. des 2022
-        nedbor_type, konfidens = detect_precipitation_type(1.0, 20.8, -2, 2)
+        nedbor_type, _ = detect_precipitation_type(1.0, 20.8, -2, 2)
         assert nedbor_type == "regn"
 
     def test_sno_med_vindpavirkning(self):
-        """Test snow with wind influence"""
-        # Test case from 27. des 2022: -3.2°C, high snow increase, moderate wind
+        """Test snø med vindpåvirkning"""
+        # Test case from 27. des 2022: -3.2°C, høy snøøkning, moderat vind
         nedbor_type, _ = detect_precipitation_type(-3.2, 12.0, 15, 8)
-        # With temp < -3.0 and wind < 8, this should be classified as regular snow
+        # Med temp < -3.0 og vind < 8, klassifiseres som vanlig snø
         assert nedbor_type == "sno"
 
     def test_kald_vindblast_sno(self):
-        """Test cold vindblåst snø"""
+        """Test kald vindblåst snø"""
         # Test case from 10. feb 2024
-        nedbor_type, konfidens = detect_precipitation_type(-8.4, 1.2, -698, 14)
+        nedbor_type, _ = detect_precipitation_type(-8.4, 1.2, -698, 14)
         assert nedbor_type == "vindblast_sno"
 
     def test_varm_vindblast_sno(self):
-        """Test warm vindblåst snø near freezing point"""
-        # Test case from 2. feb 2024: 0.8°C, high precip, massive snow reduction, moderate wind
+        """Test varm vindblåst snø nær frysepunktet"""
+        # Test case from 2. feb 2024: 0.8°C, høy nedbør, massiv snøreduksjon, moderat vind
         nedbor_type, _ = detect_precipitation_type(0.8, 138.0, -1021, 11)
-        # With temp >= 0, massive snow reduction, and moderate wind, this should be classified as regn_eller_vindblast
+        # Med temp >= 0, massiv snøreduksjon og moderat vind, klassifiseres som regn_eller_vindblast
         assert nedbor_type == "regn_eller_vindblast"
 
 
-class TestSlipperyRoadRisk:
-    """Test slippery road risk assessment"""
+class TestGlattforeRiskAssessment:
+    """
+    Test korrekt glattføre-risikovurdering basert på empirisk kunnskap:
+    
+    HOVEDPROBLEM: Regn-på-snø skaper glatte veier
+    SJELDENT PROBLEM: Rimfrost (spesielt på snødekte fjellveier)
+    MISFORSTÅELSE: Vindblåst snø gjør veier BEDRE (fjerner løssnø)
+    """
 
-    def test_regn_causes_slippery_risk(self):
-        """Test that rain causes slippery road risk"""
-        # Rain should cause slippery risk
+    def test_regn_paa_sno_hovedproblem(self):
+        """Test at regn på snø identifiseres som hovedrisiko for glattføre"""
+        # Regn på snø = største glattføre-risiko
         risk, reason = is_slippery_road_risk(1.0, 20.8, -2, 2, True)
         assert risk is True
         assert "regn" in reason.lower()
 
-    def test_vindblast_sno_no_risk(self):
-        """Test that vindblåst snø does not cause slippery risk"""
-        # Vindblåst snø should not cause slippery risk
-        risk, reason = is_slippery_road_risk(-0.6, 72.8, -5, 12, True)
+    def test_vindblast_sno_forbedrer_kjoereforhold(self):
+        """Test at vindblåst snø IKKE skaper glattføre-risiko"""
+        # Vindblåst snø fjerner løssnø → BEDRE kjøreforhold
+        risk, _ = is_slippery_road_risk(-0.6, 72.8, -5, 12, True)
         assert risk is False
 
-    def test_sno_no_risk(self):
-        """Test that normal snow does not cause slippery risk"""
-        # Normal snow should not cause slippery risk
-        risk, reason = is_slippery_road_risk(-3.2, 12.0, 15, 8, True)
+    def test_vanlig_sno_ikke_glattfore_problem(self):
+        """Test at normal snø ikke skaper glattføre-risiko"""
+        # Normal snø gir forutsigbare kjøreforhold
+        risk, _ = is_slippery_road_risk(-3.2, 12.0, 15, 8, True)
+        assert risk is False
+
+    def test_stabil_frost_beste_kjoereforhold(self):
+        """Test at stabil frost gir beste kjøreforhold på snø"""
+        # Kald, stabil temperatur med snø = optimale forhold
+        risk, _ = is_slippery_road_risk(-10.0, 5.0, 10, 3, True)
+        assert risk is False
+
+    def test_rimfrost_sjeldent_paa_snodekte_veier(self):
+        """Test at rimfrost sjeldent er problem på snødekte fjellveier"""
+        # Rimfrost oppstår ved klar himmel på bar asfalt - sjeldent på snøveier
+        # Høy luftfuktighet, lav temperatur, men snødekke beskytter
+        risk, _ = is_slippery_road_risk(-2.0, 0.1, 5, 1, True)  # Snødekke = mindre rimfrost-risiko
         assert risk is False
 
 
@@ -86,21 +113,21 @@ class TestKlassifiserNedborstype:
 
 
 class TestEdgeCases:
-    """Test edge cases and boundary conditions"""
+    """Test grensetilfeller og ekstreme værforhold"""
 
     def test_zero_precipitation(self):
-        """Test with zero precipitation"""
-        nedbor_type, konfidens = detect_precipitation_type(0.0, 0.0, 0, 0)
+        """Test med null nedbør"""
+        nedbor_type, _ = detect_precipitation_type(0.0, 0.0, 0, 0)
         assert nedbor_type is not None
 
     def test_extreme_cold(self):
-        """Test with extreme cold temperature"""
-        nedbor_type, konfidens = detect_precipitation_type(-20.0, 5.0, 10, 5)
+        """Test med ekstrem kulde"""
+        nedbor_type, _ = detect_precipitation_type(-20.0, 5.0, 10, 5)
         assert nedbor_type is not None
 
     def test_extreme_wind(self):
-        """Test with extreme wind speed"""
-        nedbor_type, konfidens = detect_precipitation_type(-2.0, 10.0, 5, 25)
+        """Test med ekstrem vindstyrke"""
+        nedbor_type, _ = detect_precipitation_type(-2.0, 10.0, 5, 25)
         assert nedbor_type is not None
 
 
