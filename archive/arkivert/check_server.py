@@ -1,7 +1,7 @@
-import subprocess
-import time
 import socket
+import subprocess
 import sys
+import time
 from datetime import datetime
 
 
@@ -22,7 +22,7 @@ def debug_network_info(ip):
             text=True
         )
         log_event(f"Ping resultat: {ping_result.returncode}", "DEBUG")
-        
+
         # Traceroute
         log_event(f"Utfører traceroute mot {ip}...", "DEBUG")
         trace_result = subprocess.run(
@@ -32,7 +32,7 @@ def debug_network_info(ip):
         )
         if trace_result.stdout:
             log_event(f"Traceroute resultat:\n{trace_result.stdout}", "DEBUG")
-            
+
     except Exception as e:
         log_event(f"Feil ved nettverksdiagnostikk: {str(e)}", "ERROR")
 
@@ -49,7 +49,7 @@ def get_whs_info(ip):
         )
         if result.stdout:
             log_event(f"NetBIOS svar:\n{result.stdout}")
-            
+
         # Test Windows shares med kort timeout
         log_event("Sjekker Windows shares...", "DEBUG")
         result = subprocess.run(
@@ -59,7 +59,7 @@ def get_whs_info(ip):
         )
         if result.stdout:
             log_event(f"SMB shares funnet:\n{result.stdout}")
-            
+
     except Exception as e:
         log_event(f"Feil ved WHS info: {str(e)}", "ERROR")
 
@@ -69,10 +69,10 @@ def check_port(ip, port, service_name=""):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(1)
-        
+
         log_event(f"Tester port {port} ({service_name})...", "DEBUG")
         result = sock.connect_ex((ip, port))
-        
+
         if result == 0:
             log_event(f"Port {port} ({service_name}) er nå ÅPEN!", "SUCCESS")
             try:
@@ -82,23 +82,23 @@ def check_port(ip, port, service_name=""):
                     sock.send(b"\x03\x00\x00\x13")
                 elif port in [80, 8080]:  # HTTP
                     sock.send(b"GET / HTTP/1.0\r\n\r\n")
-                    
+
                 try:
                     banner = sock.recv(1024)
                     log_event(f"Banner fra {service_name}: {banner}", "DEBUG")
-                except socket.timeout:
+                except TimeoutError:
                     log_event(f"Timeout ved banner grab fra {service_name}", "DEBUG")
-                    
+
             except Exception as e:
                 log_event(f"Feil ved banner grab på {service_name}: {str(e)}", "ERROR")
-                
+
         else:
             log_event(f"Port {port} er lukket (error: {result})", "DEBUG")
-                
+
         sock.close()
         return result == 0
-        
-    except socket.error as e:
+
+    except OSError as e:
         log_event(f"Nettverksfeil på {service_name}: {str(e)}", "ERROR")
         return False
 
@@ -115,7 +115,7 @@ def scan_network():
         "192.168.68.113",
         "192.168.68.116"
     ]
-    
+
     log_event("Skanner nettverket for HP MediaSmart Server...")
     for ip in potential_ips:
         try:
@@ -126,7 +126,7 @@ def scan_network():
                 log_event(f"Fant mulig server på {ip}!", "SUCCESS")
                 return ip
             sock.close()
-        except socket.error:
+        except OSError:
             continue
     return None
 
@@ -136,7 +136,7 @@ def main():
     target_server = scan_network()
     if not target_server:
         target_server = "192.168.68.170"  # Fallback til standard IP
-    
+
     # Windows Home Server porter med beskrivelser
     whs_ports = [
         (80, "HTTP Web Admin"),
@@ -150,18 +150,18 @@ def main():
         (55000, "WHS Remote Streaming"),
         (56000, "WHS Remote Access"),
     ]
-    
+
     log_event("Starter overvåkning av HP MediaSmart Server EX490 reset")
     log_event(f"Target IP: {target_server}")
     log_event("Venter på at serveren skal komme online...")
-    
+
     # Hold oversikt over porter som har vært åpne
     ports_seen_open = set()
-    
+
     while True:
         # Kjør nettverksdiagnostikk
         debug_network_info(target_server)
-        
+
         # Test basic connectivity først
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -169,19 +169,19 @@ def main():
             if sock.connect_ex((target_server, 7)) == 0:
                 log_event("Server er online!", "SUCCESS")
             sock.close()
-        except socket.error as e:
+        except OSError as e:
             log_event(f"Venter på nettverkstilkobling... ({str(e)})", "WAIT")
             time.sleep(5)
             continue
-        
+
         # Sjekk Windows-tjenester
         log_event("\nSjekker Windows Home Server tjenester...")
         get_whs_info(target_server)
-        
+
         # Test porter og logg endringer
         for port, service in whs_ports:
             is_open = check_port(target_server, port, service)
-            
+
             # Logg når en port først blir åpen
             if is_open and port not in ports_seen_open:
                 log_event(f"NY TJENESTE OPPDAGET: {service} på port {port}", "SUCCESS")
@@ -190,7 +190,7 @@ def main():
             elif not is_open and port in ports_seen_open:
                 log_event(f"TJENESTE FORSVANT: {service} på port {port}", "WARNING")
                 ports_seen_open.remove(port)
-        
+
         log_event("\nVenter 5 sekunder før neste sjekk...", "INFO")
         time.sleep(5)
 
@@ -200,4 +200,4 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         print("\nOvervåkning avsluttet av bruker")
-        sys.exit(0) 
+        sys.exit(0)

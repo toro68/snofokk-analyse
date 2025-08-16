@@ -8,7 +8,7 @@ Inneholder funksjoner for å hente data fra Frost API og analysere snødrift-ris
 # Standard biblioteker
 import logging
 from datetime import datetime
-from typing import Any, Dict, TypeVar  # ruff: noqa: F401
+from typing import Any, TypeVar  # ruff: noqa: F401
 
 # Tredjeparts biblioteker
 import numpy as np
@@ -20,11 +20,10 @@ import streamlit as st
 from pandas import DataFrame
 from plotly.subplots import make_subplots
 
-from .config import (DEFAULT_PARAMS, FROST_CLIENT_ID)
 # Lokale imports
-from data.src.snofokk.snow_constants import (SnowDepthConfig,
-                                             enforce_snow_processing,
-                                             get_risk_level)
+from data.src.snofokk.snow_constants import SnowDepthConfig, enforce_snow_processing, get_risk_level
+
+from .config import DEFAULT_PARAMS, FROST_CLIENT_ID
 
 # Logging oppsett
 logging.basicConfig(level=logging.INFO)
@@ -36,24 +35,24 @@ def enable_detailed_logging():
     """Konfigurerer detaljert logging for applikasjonen"""
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
-    
+
     # Opprett en filhåndterer
     file_handler = logging.FileHandler('snofokk.log')
     file_handler.setLevel(logging.INFO)
-    
+
     # Opprett en konsolhåndterer
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
-    
+
     # Definer formatet
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
     console_handler.setFormatter(formatter)
-    
+
     # Legg til håndtererne til loggeren
     logger.addHandler(file_handler)
     logger.addHandler(console_handler)
-    
+
     return logger
 # Initialiser logger
 logger = enable_detailed_logging()
@@ -85,7 +84,7 @@ def fetch_frost_data(start_date="2023-11-01", end_date="2024-04-30"):
         "surface_temperature",
         "sum(duration_of_precipitation_as_snow PT1H)"
     ]
-    
+
     parameters = {
         "sources": "SN46220",
         "referencetime": f"{start_date}/{end_date}",
@@ -298,7 +297,7 @@ def identify_risk_periods(df: pd.DataFrame, min_duration: int = 3) -> pd.DataFra
 
         for period_id in unique_periods:
             period_data = df[df["period_id"] == period_id].copy()
-            
+
             if len(period_data) >= min_duration:
                 period_info = {
                     "start_time": period_data.index[0],
@@ -317,11 +316,11 @@ def identify_risk_periods(df: pd.DataFrame, min_duration: int = 3) -> pd.DataFra
                         "wind_stability": period_data["wind_speed"].std(),
                         "strong_wind_hours": len(period_data[period_data["wind_speed"] > 10.0]),
                     }
-                    
+
                     # Beregn vindstøt-faktor
                     if "max(wind_speed_of_gust PT1H)" in period_data.columns:
                         gust_factor = (
-                            period_data["max(wind_speed_of_gust PT1H)"] / 
+                            period_data["max(wind_speed_of_gust PT1H)"] /
                             period_data["wind_speed"]
                         ).mean()
                         wind_stats["gust_factor"] = gust_factor
@@ -335,8 +334,8 @@ def identify_risk_periods(df: pd.DataFrame, min_duration: int = 3) -> pd.DataFra
                             wind_stats.update({
                                 "dir_change_max": dir_changes.max(),
                                 "dir_change_avg": dir_changes.mean(),
-                                "dir_stability": "stabil" if dir_changes.mean() < 30 
-                                              else "moderat" if dir_changes.mean() < 60 
+                                "dir_stability": "stabil" if dir_changes.mean() < 30
+                                              else "moderat" if dir_changes.mean() < 60
                                               else "ustabil"
                             })
 
@@ -549,7 +548,7 @@ def merge_nearby_periods(periods_df: pd.DataFrame, max_gap: int = 2) -> pd.DataF
                     current_period["end_time"] - current_period["start_time"]
                 ).total_seconds() / 3600
                 current_period["max_risk_score"] = max(
-                    current_period["max_risk_score"], 
+                    current_period["max_risk_score"],
                     period["max_risk_score"]
                 )
                 # Oppdater andre statistikker
@@ -732,7 +731,7 @@ def analyze_wind_directions(df: DataFrame) -> dict[str, Any]:
 
 def analyze_settings(
     df: pd.DataFrame, critical_periods: pd.DataFrame
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Analyserer effektiviteten av gjeldende parameterinnstillinger.
 

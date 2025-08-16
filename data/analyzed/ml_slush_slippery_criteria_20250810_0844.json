@@ -1,0 +1,70 @@
+{
+  "metadata": {
+    "generated_at": "2025-08-10T08:44:10.728124",
+    "based_on_ml": true,
+    "domain_rules_applied": true
+  },
+  "domain_insights": {
+    "fresh_snow_protection": "Nysnø (>2mm ved temp <1°C) fungerer som naturlig strøing",
+    "salt_effectiveness": "Strøing kun effektivt på klink is, ikke på snø",
+    "slush_formation": "Slush dannes i temperaturområde -1°C til 4°C med nedbør"
+  },
+  "slush_criteria": {
+    "primary_conditions": {
+      "temperature_range": {
+        "min_temp": -1,
+        "max_temp": 4,
+        "importance": 0.08011858977912877
+      },
+      "precipitation_threshold": {
+        "min_mm": 1.0,
+        "importance": 0.015531358514446198
+      }
+    },
+    "protective_factors": {
+      "fresh_snow": {
+        "threshold_mm": 2.0,
+        "temp_threshold": 1.0,
+        "protection_effect": "Reduserer slush-risiko betydelig"
+      }
+    }
+  },
+  "slippery_road_criteria": {
+    "high_risk_scenarios": {
+      "freeze_thaw_cycle": {
+        "condition": "Temp max > 2°C og temp min < -1°C",
+        "importance": 0.0,
+        "mechanism": "Tining følgt av frysing skaper klink is"
+      },
+      "rain_on_snow": {
+        "condition": "Regn (>1mm) på eksisterende snø ved 0-3°C",
+        "importance": 0.0,
+        "mechanism": "Regn smelter snø og fryser til is"
+      }
+    },
+    "protective_factors": {
+      "fresh_snowfall": {
+        "threshold": "2.0mm ved temp <1°C",
+        "effect": "Naturlig strøing - reduserer behov for salt",
+        "importance": 0.6132789749563186
+      }
+    },
+    "salting_effectiveness": {
+      "most_effective": "På klink is (temp -5°C til 2°C)",
+      "not_effective": "På nysnø eller tykk snødekke",
+      "timing": "Må skje før isdannelse for beste effekt"
+    }
+  },
+  "optimal_thresholds": {
+    "slush_model": {
+      "probability_threshold": 0.6000000000000002,
+      "f1_score": 0.9763779527559056,
+      "interpretation": "Slush-risiko når modell predikerer >0.60"
+    },
+    "slippery_road_model": {
+      "probability_threshold": 0.1,
+      "f1_score": 1.0,
+      "interpretation": "Glatt vei-risiko når modell predikerer >0.10"
+    }
+  }
+}

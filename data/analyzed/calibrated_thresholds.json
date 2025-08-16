@@ -1,0 +1,31 @@
+{
+  "calibration_date": "2025-08-09T21:42:34.574708",
+  "target_days_per_season": "4-5 dager",
+  "target_percentage": "2-3%",
+  "recommended_thresholds": {
+    "wind_chill_critical": -12.0,
+    "wind_speed_critical": 8.0,
+    "air_temperature_critical": -8.0,
+    "combined_required": true,
+    "surface_snow_threshold": 0.1
+  },
+  "alternative_thresholds": {
+    "ultrastrenge": {
+      "wind_chill": -15,
+      "wind_speed": 10
+    },
+    "strenge": {
+      "wind_chill": -12,
+      "wind_speed": 8
+    },
+    "moderate": {
+      "wind_chill": -10,
+      "wind_speed": 6
+    }
+  },
+  "validation": {
+    "original_ml_days": 182,
+    "calibrated_days": 18,
+    "reduction_factor": 10.11111111111111
+  }
+}

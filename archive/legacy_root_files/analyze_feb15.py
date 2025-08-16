@@ -1,5 +1,5 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 # Last inn data
 data = pd.read_csv('scripts/data/processed/frost_data_2025-01-30_to_2025-03-01.csv')
@@ -24,7 +24,7 @@ params = {
 
 # Beregn risiko
 risk_df = pd.DataFrame(index=feb15.index)
-    
+
 # Beregn risikoscore basert på vind, temperatur og snødybde
 wind_risk = np.zeros(len(feb15))
 temp_risk = np.zeros(len(feb15))
@@ -120,4 +120,4 @@ print(f"\nMaksimal risikoscore: {max_risk} (tidspunkt: {max_risk_time})")
 print("\nPerioder med høy risiko for individuelle faktorer:")
 print(f"Vind: {(wind_risk == 1.0).sum()} timer")
 print(f"Temperatur: {(temp_risk == 1.0).sum()} timer")
-print(f"Snø: {(snow_risk == 1.0).sum()} timer") 
+print(f"Snø: {(snow_risk == 1.0).sum()} timer")

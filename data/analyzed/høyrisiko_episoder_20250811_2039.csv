@@ -1,0 +1,95 @@
+dato,date,år,måned,kategori,temp,vind,snø,nedbør,snøfokk_risiko,glattføre_risiko,snøfokk_årsak,glattføre_årsak
+1. jan. 2023,2023-01-01,2023,1,snow_plowing,-3.73,9.5,2137.777777777778,3.8,high,low,Ekstrem vindkjøling -22.7°C + høy vind 9.5m/s,Ingen kriterier oppfylt for glattføre-risiko
+4. jan. 2023,2023-01-04,2023,1,snow_plowing,-1.3200000000000005,16.3,1930.0,0.8,high,high,Ekstrem vindkjøling -33.9°C + høy vind 16.3m/s,"Regn på snø: -1.3°C, 1930.0cm snø, 0.8mm nedbør"
+5. jan. 2023,2023-01-05,2023,1,road_inspection,-2.9566666666666666,16.3,1542.7777777777778,0.5,high,low,Ekstrem vindkjøling -35.6°C + høy vind 16.3m/s,Ingen kriterier oppfylt for glattføre-risiko
+6. jan. 2023,2023-01-06,2023,1,freeze_thaw_salting,-1.586111111111111,16.3,1828.3333333333337,50.9,high,high,Ekstrem vindkjøling -34.2°C + høy vind 16.3m/s,"Regn på snø: -1.6°C, 1828.3cm snø, 50.9mm nedbør"
+6. jan. 2023,2023-01-06,2023,1,freeze_thaw_salting,-1.5849999999999995,16.3,1825.925925925926,59.0,high,high,Ekstrem vindkjøling -34.2°C + høy vind 16.3m/s,"Regn på snø: -1.6°C, 1825.9cm snø, 59.0mm nedbør"
+7. jan. 2023,2023-01-07,2023,1,slush_scraping,2.3000000000000003,7.6,1957.7777777777776,33.900000000000006,medium,high,Vindkjøling -12.9°C + vind 7.6m/s,"Regn på snø: 2.3°C, 1957.8cm snø, 33.9mm nedbør"
+8. jan. 2023,2023-01-08,2023,1,slush_scraping,3.5166666666666666,7.2,1521.6666666666667,9.6,medium,high,Vindkjøling -10.9°C + vind 7.2m/s,"Regn på snø: 3.5°C, 1521.7cm snø, 9.6mm nedbør"
+13. jan. 2023,2023-01-13,2023,1,slush_scraping,1.412777777777778,12.6,1858.3333333333333,109.2,high,high,Ekstrem vindkjøling -23.8°C + høy vind 12.6m/s,"Regn på snø: 1.4°C, 1858.3cm snø, 109.2mm nedbør"
+13. jan. 2023,2023-01-13,2023,1,slush_scraping,1.4288888888888889,12.6,1891.6666666666667,108.6,high,high,Ekstrem vindkjøling -23.8°C + høy vind 12.6m/s,"Regn på snø: 1.4°C, 1891.7cm snø, 108.6mm nedbør"
+15. jan. 2023,2023-01-15,2023,1,snow_plowing,-1.2533333333333334,12.8,2506.111111111111,2.5,high,high,Ekstrem vindkjøling -26.9°C + høy vind 12.8m/s,"Regn på snø: -1.3°C, 2506.1cm snø, 2.5mm nedbør"
+17. jan. 2023,2023-01-17,2023,1,snow_plowing,-1.6233333333333333,6.4,3279.4444444444443,5.6,medium,high,Vindkjøling -14.4°C + vind 6.4m/s,"Regn på snø: -1.6°C, 3279.4cm snø, 5.6mm nedbør"
+25. jan. 2023,2023-01-25,2023,1,slush_scraping,2.7599999999999993,3.5,2271.6666666666665,23.1,low,high,Ingen kriterier oppfylt for snøfokk-risiko,"Regn på snø: 2.8°C, 2271.7cm snø, 23.1mm nedbør"
+26. jan. 2023,2023-01-26,2023,1,slush_scraping,0.42,5.4,1937.7777777777776,5.6000000000000005,medium,high,Vindkjøling -10.4°C + vind 5.4m/s,"Regn på snø: 0.4°C, 1937.8cm snø, 5.6mm nedbør"
+28. jan. 2023,2023-01-28,2023,1,snow_plowing,-0.0733333333333333,5.3,2184.4444444444443,7.2,medium,high,Vindkjøling -10.7°C + vind 5.3m/s,"Regn på snø: -0.1°C, 2184.4cm snø, 7.2mm nedbør"
+28. jan. 2023,2023-01-28,2023,1,snow_plowing,-0.4466666666666665,5.3,2117.777777777778,5.699999999999999,medium,high,Vindkjøling -11.0°C + vind 5.3m/s,"Regn på snø: -0.4°C, 2117.8cm snø, 5.7mm nedbør"
+31. jan. 2023,2023-01-31,2023,1,snow_plowing,-2.3400000000000003,8.4,2792.777777777778,13.9,high,low,Ekstrem vindkjøling -19.1°C + høy vind 8.4m/s,Ingen kriterier oppfylt for glattføre-risiko
+1. feb. 2023,2023-02-01,2023,2,snow_plowing,-0.4633333333333333,6.8,4038.3333333333335,19.2,medium,high,Vindkjøling -14.1°C + vind 6.8m/s,"Regn på snø: -0.5°C, 4038.3cm snø, 19.2mm nedbør"
+2. feb. 2023,2023-02-02,2023,2,snow_plowing,-2.6966666666666668,7.2,4712.222222222222,6.5,high,low,Ekstrem vindkjøling -17.1°C + høy vind 7.2m/s,Ingen kriterier oppfylt for glattføre-risiko
+3. feb. 2023,2023-02-03,2023,2,freeze_thaw_salting,-1.1061111111111113,9.1,3459.2592592592596,86.80000000000001,high,high,Ekstrem vindkjøling -19.3°C + høy vind 9.1m/s,"Regn på snø: -1.1°C, 3459.3cm snø, 86.8mm nedbør"
+3. feb. 2023,2023-02-03,2023,2,freeze_thaw_salting,-1.2372222222222222,9.1,3607.962962962963,86.8,high,high,Ekstrem vindkjøling -19.4°C + høy vind 9.1m/s,"Regn på snø: -1.2°C, 3608.0cm snø, 86.8mm nedbør"
+5. feb. 2023,2023-02-05,2023,2,snow_plowing,-0.7633333333333333,7.2,6434.444444444445,11.5,high,high,Ekstrem vindkjøling -15.2°C + høy vind 7.2m/s,"Regn på snø: -0.8°C, 6434.4cm snø, 11.5mm nedbør"
+9. feb. 2023,2023-02-09,2023,2,slush_scraping,0.0333333333333333,11.5,5302.777777777778,24.8,high,high,Ekstrem vindkjøling -23.0°C + høy vind 11.5m/s,"Regn på snø: 0.0°C, 5302.8cm snø, 24.8mm nedbør"
+9. feb. 2023,2023-02-09,2023,2,snow_plowing,-1.3999999999999997,11.5,5391.666666666666,24.8,high,high,Ekstrem vindkjøling -24.4°C + høy vind 11.5m/s,"Regn på snø: -1.4°C, 5391.7cm snø, 24.8mm nedbør"
+10. feb. 2023,2023-02-10,2023,2,freeze_thaw_salting,-0.4972222222222221,11.5,5984.259259259259,78.9,high,high,Ekstrem vindkjøling -23.5°C + høy vind 11.5m/s,"Regn på snø: -0.5°C, 5984.3cm snø, 78.9mm nedbør"
+10. feb. 2023,2023-02-10,2023,2,freeze_thaw_salting,-0.3727777777777778,11.5,5964.444444444444,86.19999999999999,high,high,Ekstrem vindkjøling -23.4°C + høy vind 11.5m/s,"Regn på snø: -0.4°C, 5964.4cm snø, 86.2mm nedbør"
+13. feb. 2023,2023-02-13,2023,2,snow_plowing,2.1966666666666663,3.6,4221.111111111111,0.4,low,high,Ingen kriterier oppfylt for snøfokk-risiko,"Regn på snø: 2.2°C, 4221.1cm snø, 0.4mm nedbør"
+18. feb. 2023,2023-02-18,2023,2,freeze_thaw_salting,-1.2266666666666666,13.9,4077.777777777778,13.1,high,high,Ekstrem vindkjøling -29.0°C + høy vind 13.9m/s,"Regn på snø: -1.2°C, 4077.8cm snø, 13.1mm nedbør"
+20. feb. 2023,2023-02-20,2023,2,slush_scraping,1.2000000000000002,9.4,5046.666666666667,65.7,high,high,Ekstrem vindkjøling -17.6°C + høy vind 9.4m/s,"Regn på snø: 1.2°C, 5046.7cm snø, 65.7mm nedbør"
+23. feb. 2023,2023-02-23,2023,2,road_inspection,-1.9199999999999997,5.4,5832.222222222223,15.2,medium,high,Vindkjøling -12.7°C + vind 5.4m/s,"Regn på snø: -1.9°C, 5832.2cm snø, 15.2mm nedbør"
+24. feb. 2023,2023-02-24,2023,2,freeze_thaw_salting,-0.1238888888888888,13.9,4899.166666666667,143.5,high,high,Ekstrem vindkjøling -27.9°C + høy vind 13.9m/s,"Regn på snø: -0.1°C, 4899.2cm snø, 143.5mm nedbør"
+24. feb. 2023,2023-02-24,2023,2,freeze_thaw_salting,-0.321111111111111,13.9,5000.37037037037,125.1,high,high,Ekstrem vindkjøling -28.1°C + høy vind 13.9m/s,"Regn på snø: -0.3°C, 5000.4cm snø, 125.1mm nedbør"
+22. nov. 2023,2023-11-22,2023,11,slush_scraping,0.88,6.7,608.8888888888889,44.3,medium,high,Vindkjøling -12.5°C + vind 6.7m/s,"Regn på snø: 0.9°C, 608.9cm snø, 44.3mm nedbør"
+24. nov. 2023,2023-11-24,2023,11,freeze_thaw_salting,-0.6372222222222221,12.3,637.7777777777778,78.3,high,high,Ekstrem vindkjøling -25.2°C + høy vind 12.3m/s,"Regn på snø: -0.6°C, 637.8cm snø, 78.3mm nedbør"
+24. nov. 2023,2023-11-24,2023,11,freeze_thaw_salting,-0.6522222222222223,12.3,625.5555555555555,78.3,high,high,Ekstrem vindkjøling -25.3°C + høy vind 12.3m/s,"Regn på snø: -0.7°C, 625.6cm snø, 78.3mm nedbør"
+27. nov. 2023,2023-11-27,2023,11,snow_plowing,-3.686666666666666,9.8,1200.0,3.0,high,low,Ekstrem vindkjøling -23.3°C + høy vind 9.8m/s,Ingen kriterier oppfylt for glattføre-risiko
+1. jan. 2024,2024-01-01,2024,1,snow_plowing,-3.6766666666666663,18.6,3819.444444444444,0.1,high,low,Ekstrem vindkjøling -40.9°C + høy vind 18.6m/s,Ingen kriterier oppfylt for glattføre-risiko
+2. jan. 2024,2024-01-02,2024,1,road_inspection,-7.996666666666667,15.4,3667.777777777778,0.1,high,low,Ekstrem vindkjøling -38.8°C + høy vind 15.4m/s,Ingen kriterier oppfylt for glattføre-risiko
+3. jan. 2024,2024-01-03,2024,1,snow_plowing,-9.59,16.2,3466.1111111111113,0.0,high,low,Ekstrem vindkjøling -42.0°C + høy vind 16.2m/s,Ingen kriterier oppfylt for glattføre-risiko
+5. jan. 2024,2024-01-05,2024,1,snow_plowing,-6.521666666666667,18.6,3691.388888888889,14.0,high,low,Ekstrem vindkjøling -43.7°C + høy vind 18.6m/s,Ingen kriterier oppfylt for glattføre-risiko
+13. jan. 2024,2024-01-13,2024,1,snow_plowing,-1.6666666666666667,7.9,3080.5555555555557,9.499999999999998,high,high,Ekstrem vindkjøling -17.5°C + høy vind 7.9m/s,"Regn på snø: -1.7°C, 3080.6cm snø, 9.5mm nedbør"
+19. jan. 2024,2024-01-19,2024,1,snow_plowing,-6.265555555555556,7.9,4765.277777777778,38.5,high,low,Ekstrem vindkjøling -22.1°C + høy vind 7.9m/s,Ingen kriterier oppfylt for glattføre-risiko
+19. jan. 2024,2024-01-19,2024,1,snow_plowing,-6.090555555555556,7.9,4516.388888888889,37.400000000000006,high,low,Ekstrem vindkjøling -21.9°C + høy vind 7.9m/s,Ingen kriterier oppfylt for glattføre-risiko
+21. jan. 2024,2024-01-21,2024,1,snow_plowing,-0.03,7.7,7741.666666666667,24.600000000000005,high,high,Ekstrem vindkjøling -15.4°C + høy vind 7.7m/s,"Regn på snø: -0.0°C, 7741.7cm snø, 24.6mm nedbør"
+22. jan. 2024,2024-01-22,2024,1,slush_scraping,1.7600000000000002,8.8,6210.555555555556,97.5,high,high,Ekstrem vindkjøling -15.8°C + høy vind 8.8m/s,"Regn på snø: 1.8°C, 6210.6cm snø, 97.5mm nedbør"
+23. jan. 2024,2024-01-23,2024,1,slush_scraping,0.7066666666666667,8.8,6203.888888888889,22.0,high,high,Ekstrem vindkjøling -16.9°C + høy vind 8.8m/s,"Regn på snø: 0.7°C, 6203.9cm snø, 22.0mm nedbør"
+25. jan. 2024,2024-01-25,2024,1,slush_scraping,0.7166666666666668,9.5,5633.888888888889,2.3000000000000003,high,high,Ekstrem vindkjøling -18.3°C + høy vind 9.5m/s,"Regn på snø: 0.7°C, 5633.9cm snø, 2.3mm nedbør"
+26. jan. 2024,2024-01-26,2024,1,slush_scraping,0.0577777777777778,9.5,6475.37037037037,186.6,high,high,Ekstrem vindkjøling -18.9°C + høy vind 9.5m/s,"Regn på snø: 0.1°C, 6475.4cm snø, 186.6mm nedbør"
+28. jan. 2024,2024-01-28,2024,1,slush_scraping,3.096666666666667,4.8,5152.777777777778,11.6,medium,high,Vindkjøling -6.5°C + vind 4.8m/s,"Regn på snø: 3.1°C, 5152.8cm snø, 11.6mm nedbør"
+1. feb. 2024,2024-02-01,2024,2,snow_plowing,-1.0266666666666666,11.2,7040.000000000001,41.0,high,high,Ekstrem vindkjøling -23.4°C + høy vind 11.2m/s,"Regn på snø: -1.0°C, 7040.0cm snø, 41.0mm nedbør"
+2. feb. 2024,2024-02-02,2024,2,slush_scraping,0.7533333333333332,11.2,6019.444444444444,138.0,high,high,Ekstrem vindkjøling -21.6°C + høy vind 11.2m/s,"Regn på snø: 0.8°C, 6019.4cm snø, 138.0mm nedbør"
+2. feb. 2024,2024-02-02,2024,2,slush_scraping,0.7038888888888888,11.2,5980.277777777777,130.89999999999998,high,high,Ekstrem vindkjøling -21.7°C + høy vind 11.2m/s,"Regn på snø: 0.7°C, 5980.3cm snø, 130.9mm nedbør"
+4. feb. 2024,2024-02-04,2024,2,snow_plowing,-0.6466666666666667,10.0,6705.0,24.799999999999997,high,high,Ekstrem vindkjøling -20.6°C + høy vind 10.0m/s,"Regn på snø: -0.6°C, 6705.0cm snø, 24.8mm nedbør"
+7. feb. 2024,2024-02-07,2024,2,snow_plowing,-6.7299999999999995,7.1,7467.777777777777,7.199999999999999,high,low,Ekstrem vindkjøling -20.9°C + høy vind 7.1m/s,Ingen kriterier oppfylt for glattføre-risiko
+9. feb. 2024,2024-02-09,2024,2,freeze_thaw_salting,-3.695555555555556,13.6,7037.592592592593,88.8,high,low,Ekstrem vindkjøling -30.9°C + høy vind 13.6m/s,Ingen kriterier oppfylt for glattføre-risiko
+10. feb. 2024,2024-02-10,2024,2,snow_plowing,-8.39,14.3,6339.444444444444,1.2,high,low,Ekstrem vindkjøling -37.0°C + høy vind 14.3m/s,Ingen kriterier oppfylt for glattføre-risiko
+10. feb. 2024,2024-02-10,2024,2,snow_plowing,-8.15,15.0,6340.0,2.7,high,low,Ekstrem vindkjøling -38.1°C + høy vind 15.0m/s,Ingen kriterier oppfylt for glattføre-risiko
+11. feb. 2024,2024-02-11,2024,2,snow_plowing,-3.023333333333333,15.9,6242.222222222223,3.2,high,low,Ekstrem vindkjøling -34.8°C + høy vind 15.9m/s,Ingen kriterier oppfylt for glattføre-risiko
+12. feb. 2024,2024-02-12,2024,2,snow_plowing,-3.410000000000001,14.5,6202.777777777778,0.7,high,low,Ekstrem vindkjøling -32.4°C + høy vind 14.5m/s,Ingen kriterier oppfylt for glattføre-risiko
+13. feb. 2024,2024-02-13,2024,2,snow_plowing,-1.7233333333333334,6.9,6600.0,11.6,medium,high,Vindkjøling -15.5°C + vind 6.9m/s,"Regn på snø: -1.7°C, 6600.0cm snø, 11.6mm nedbør"
+14. feb. 2024,2024-02-14,2024,2,snow_plowing,-0.6566666666666666,3.1,7067.222222222222,2.7,medium,high,Vindkjøling -6.9°C + vind 3.1m/s,"Regn på snø: -0.7°C, 7067.2cm snø, 2.7mm nedbør"
+15. feb. 2024,2024-02-15,2024,2,snow_plowing,-0.1566666666666667,14.9,6681.111111111111,1.9,high,high,Ekstrem vindkjøling -30.0°C + høy vind 14.9m/s,"Regn på snø: -0.2°C, 6681.1cm snø, 1.9mm nedbør"
+20. feb. 2024,2024-02-20,2024,2,slush_scraping,1.88,3.1,5157.222222222223,20.6,low,high,Ingen kriterier oppfylt for snøfokk-risiko,"Regn på snø: 1.9°C, 5157.2cm snø, 20.6mm nedbør"
+20. feb. 2024,2024-02-20,2024,2,slush_scraping,1.8833333333333333,3.1,5147.222222222222,21.3,low,high,Ingen kriterier oppfylt for snøfokk-risiko,"Regn på snø: 1.9°C, 5147.2cm snø, 21.3mm nedbør"
+22. feb. 2024,2024-02-22,2024,2,slush_scraping,2.643333333333333,11.8,4893.888888888889,6.000000000000001,high,high,Ekstrem vindkjøling -21.0°C + høy vind 11.8m/s,"Regn på snø: 2.6°C, 4893.9cm snø, 6.0mm nedbør"
+23. feb. 2024,2024-02-23,2024,2,slush_scraping,1.353888888888889,11.8,5273.611111111111,54.900000000000006,high,high,Ekstrem vindkjøling -22.2°C + høy vind 11.8m/s,"Regn på snø: 1.4°C, 5273.6cm snø, 54.9mm nedbør"
+24. feb. 2024,2024-02-24,2024,2,slush_scraping,0.0633333333333332,2.7,6282.777777777777,4.799999999999999,low,high,Ingen kriterier oppfylt for snøfokk-risiko,"Regn på snø: 0.1°C, 6282.8cm snø, 4.8mm nedbør"
+24. feb. 2024,2024-02-24,2024,2,slush_scraping,0.0833333333333332,2.7,6267.777777777777,4.8999999999999995,low,high,Ingen kriterier oppfylt for snøfokk-risiko,"Regn på snø: 0.1°C, 6267.8cm snø, 4.9mm nedbør"
+28. feb. 2024,2024-02-28,2024,2,slush_scraping,0.5500000000000002,4.3,6703.888888888889,20.299999999999997,medium,high,Vindkjøling -8.0°C + vind 4.3m/s,"Regn på snø: 0.6°C, 6703.9cm snø, 20.3mm nedbør"
+29. feb. 2024,2024-02-29,2024,2,slush_scraping,2.9099999999999997,7.9,6156.983240223464,10.2,medium,high,Vindkjøling -12.9°C + vind 7.9m/s,"Regn på snø: 2.9°C, 6157.0cm snø, 10.2mm nedbør"
+4. apr. 2024,2024-04-04,2024,4,snow_plowing,-4.139999999999999,15.1,3000.0,4.199999999999999,high,low,Ekstrem vindkjøling -34.3°C + høy vind 15.1m/s,Ingen kriterier oppfylt for glattføre-risiko
+5. apr. 2024,2024-04-05,2024,4,slush_scraping,1.4344444444444446,15.1,3101.759259259259,17.3,high,high,Ekstrem vindkjøling -28.8°C + høy vind 15.1m/s,"Regn på snø: 1.4°C, 3101.8cm snø, 17.3mm nedbør"
+24. nov. 2024,2024-11-24,2024,11,slush_scraping,1.5800000000000003,14.3,1049.4444444444443,46.60000000000001,high,high,Ekstrem vindkjøling -27.0°C + høy vind 14.3m/s,"Regn på snø: 1.6°C, 1049.4cm snø, 46.6mm nedbør"
+1. jan. 2025,2025-01-01,2025,1,snow_plowing,-2.02,9.7,1573.888888888889,33.4,high,low,Ekstrem vindkjøling -21.4°C + høy vind 9.7m/s,Ingen kriterier oppfylt for glattføre-risiko
+1. jan. 2025,2025-01-01,2025,1,snow_plowing,-2.02,9.7,1573.888888888889,33.4,high,low,Ekstrem vindkjøling -21.4°C + høy vind 9.7m/s,Ingen kriterier oppfylt for glattføre-risiko
+3. jan. 2025,2025-01-03,2025,1,freeze_thaw_salting,-2.781111111111111,9.7,1773.148148148148,108.1,high,low,Ekstrem vindkjøling -22.2°C + høy vind 9.7m/s,Ingen kriterier oppfylt for glattføre-risiko
+6. jan. 2025,2025-01-06,2025,1,snow_plowing,-3.39,16.2,1883.888888888889,4.6,high,low,Ekstrem vindkjøling -35.8°C + høy vind 16.2m/s,Ingen kriterier oppfylt for glattføre-risiko
+7. jan. 2025,2025-01-07,2025,1,snow_plowing,-2.79,14.4,1757.2222222222222,3.0000000000000004,high,low,Ekstrem vindkjøling -31.6°C + høy vind 14.4m/s,Ingen kriterier oppfylt for glattføre-risiko
+10. jan. 2025,2025-01-10,2025,1,snow_plowing,-4.681666666666667,16.2,2291.0185185185182,12.1,high,low,Ekstrem vindkjøling -37.1°C + høy vind 16.2m/s,Ingen kriterier oppfylt for glattføre-risiko
+10. jan. 2025,2025-01-10,2025,1,snow_plowing,-4.703888888888889,16.2,2292.1296296296296,12.1,high,low,Ekstrem vindkjøling -37.1°C + høy vind 16.2m/s,Ingen kriterier oppfylt for glattføre-risiko
+13. jan. 2025,2025-01-13,2025,1,slush_scraping,0.9866666666666666,3.7,1812.2222222222224,36.9,medium,high,Vindkjøling -6.4°C + vind 3.7m/s,"Regn på snø: 1.0°C, 1812.2cm snø, 36.9mm nedbør"
+13. jan. 2025,2025-01-13,2025,1,slush_scraping,0.33,3.5,1862.2222222222224,29.6,medium,high,Vindkjøling -6.7°C + vind 3.5m/s,"Regn på snø: 0.3°C, 1862.2cm snø, 29.6mm nedbør"
+17. jan. 2025,2025-01-17,2025,1,slush_scraping,0.3183333333333331,6.0,1243.0555555555554,58.599999999999994,medium,high,Vindkjøling -11.7°C + vind 6.0m/s,"Regn på snø: 0.3°C, 1243.1cm snø, 58.6mm nedbør"
+25. jan. 2025,2025-01-25,2025,1,slush_scraping,0.5833333333333334,6.1,1415.0,81.8,medium,high,Vindkjøling -11.6°C + vind 6.1m/s,"Regn på snø: 0.6°C, 1415.0cm snø, 81.8mm nedbør"
+25. jan. 2025,2025-01-25,2025,1,slush_scraping,0.7033333333333333,7.9,1280.5555555555554,81.1,high,high,Ekstrem vindkjøling -15.1°C + høy vind 7.9m/s,"Regn på snø: 0.7°C, 1280.6cm snø, 81.1mm nedbør"
+26. jan. 2025,2025-01-26,2025,1,snow_plowing,-0.1666666666666666,6.0,2328.8888888888887,11.4,medium,high,Vindkjøling -12.2°C + vind 6.0m/s,"Regn på snø: -0.2°C, 2328.9cm snø, 11.4mm nedbør"
+27. jan. 2025,2025-01-27,2025,1,snow_plowing,-0.7633333333333333,12.5,2160.5555555555557,1.9,high,high,Ekstrem vindkjøling -25.8°C + høy vind 12.5m/s,"Regn på snø: -0.8°C, 2160.6cm snø, 1.9mm nedbør"
+27. jan. 2025,2025-01-27,2025,1,snow_plowing,-0.5833333333333334,12.5,2063.888888888889,1.8,high,high,Ekstrem vindkjøling -25.6°C + høy vind 12.5m/s,"Regn på snø: -0.6°C, 2063.9cm snø, 1.8mm nedbør"
+28. jan. 2025,2025-01-28,2025,1,freeze_thaw_salting,0.6133333333333334,12.5,1716.6666666666667,0.0,high,low,Ekstrem vindkjøling -24.4°C + høy vind 12.5m/s,Ingen kriterier oppfylt for glattføre-risiko
+7. feb. 2025,2025-02-07,2025,2,slush_scraping,0.2033333333333333,6.5,1765.5555555555554,40.7,medium,high,Vindkjøling -12.8°C + vind 6.5m/s,"Regn på snø: 0.2°C, 1765.6cm snø, 40.7mm nedbør"
+15. feb. 2025,2025-02-15,2025,2,snow_plowing,-4.31,8.6,2123.8888888888887,8.0,high,low,Ekstrem vindkjøling -21.5°C + høy vind 8.6m/s,Ingen kriterier oppfylt for glattføre-risiko
+16. feb. 2025,2025-02-16,2025,2,snow_plowing,-9.486666666666666,8.6,1600.0,0.0,high,low,Ekstrem vindkjøling -26.7°C + høy vind 8.6m/s,Ingen kriterier oppfylt for glattføre-risiko
+21. feb. 2025,2025-02-21,2025,2,freeze_thaw_salting,-3.983888888888889,12.9,1685.675925925926,27.0,high,low,Ekstrem vindkjøling -29.8°C + høy vind 12.9m/s,Ingen kriterier oppfylt for glattføre-risiko
+22. feb. 2025,2025-02-22,2025,2,snow_plowing,5.086666666666667,8.4,869.9999999999999,62.7,high,high,Mye snø 870.0cm + høy vind 8.4m/s,"Regn på snø: 5.1°C, 870.0cm snø, 62.7mm nedbør"
+27. feb. 2025,2025-02-27,2025,2,slush_scraping,0.1999999999999999,2.2,729.4444444444445,9.4,low,high,Ingen kriterier oppfylt for snøfokk-risiko,"Regn på snø: 0.2°C, 729.4cm snø, 9.4mm nedbør"

@@ -1,0 +1,615 @@
+{
+  "timestamp": "2025-08-09T21:11:16.772570",
+  "data_summary": {
+    "total_observations": 26206,
+    "features_analyzed": 15,
+    "risk_distribution": {
+      "0": 20637,
+      "1": 5128,
+      "2": 441
+    }
+  },
+  "threshold_optimization": {
+    "model_performance": {
+      "train_accuracy": 0.9992844876931883,
+      "test_accuracy": 0.9990461655856543,
+      "feature_count": 15
+    },
+    "feature_thresholds": {
+      "air_temperature": {
+        "decision_tree_thresholds": [
+          -5.049999952316284,
+          -0.05000000074505806
+        ],
+        "statistical_thresholds": {
+          "low_risk_median": 0.5,
+          "medium_risk_median": -6.7,
+          "high_risk_median": -3.3,
+          "overall_25th": -3.1,
+          "overall_75th": 2.2,
+          "overall_90th": 4.1
+        },
+        "range": {
+          "min": -13.2,
+          "max": 9.7,
+          "mean": -0.7341585575271895,
+          "std": 4.054646099239192
+        }
+      },
+      "max(air_temperature PT1H)": {
+        "decision_tree_thresholds": [],
+        "statistical_thresholds": {
+          "low_risk_median": 0.0,
+          "medium_risk_median": 0.0,
+          "high_risk_median": -2.9,
+          "overall_25th": 0.0,
+          "overall_75th": 0.0,
+          "overall_90th": 0.0
+        },
+        "range": {
+          "min": -12.7,
+          "max": 9.8,
+          "mean": -0.05794218660560962,
+          "std": 1.6435857790037272
+        }
+      },
+      "max(wind_speed PT1H)": {
+        "decision_tree_thresholds": [],
+        "statistical_thresholds": {
+          "low_risk_median": 0.0,
+          "medium_risk_median": 0.0,
+          "high_risk_median": 11.1,
+          "overall_25th": 0.0,
+          "overall_75th": 0.0,
+          "overall_90th": 2.7
+        },
+        "range": {
+          "min": 0.0,
+          "max": 19.7,
+          "mean": 0.7768937225720284,
+          "std": 2.2600811415012574
+        }
+      },
+      "min(air_temperature PT1H)": {
+        "decision_tree_thresholds": [],
+        "statistical_thresholds": {
+          "low_risk_median": 0.0,
+          "medium_risk_median": 0.0,
+          "high_risk_median": -3.6,
+          "overall_25th": 0.0,
+          "overall_75th": 0.0,
+          "overall_90th": 0.0
+        },
+        "range": {
+          "min": -13.4,
+          "max": 8.8,
+          "mean": -0.17591108567067354,
+          "std": 1.7126384674991828
+        }
+      },
+      "relative_humidity": {
+        "decision_tree_thresholds": [],
+        "statistical_thresholds": {
+          "low_risk_median": 0.0,
+          "medium_risk_median": 0.0,
+          "high_risk_median": 70.0,
+          "overall_25th": 0.0,
+          "overall_75th": 0.0,
+          "overall_90th": 72.0
+        },
+        "range": {
+          "min": 0.0,
+          "max": 99.0,
+          "mean": 12.55476054188132,
+          "std": 29.05529368066219
+        }
+      },
+      "sum(precipitation_amount PT1H)": {
+        "decision_tree_thresholds": [],
+        "statistical_thresholds": {
+          "low_risk_median": 0.0,
+          "medium_risk_median": 0.0,
+          "high_risk_median": 0.0,
+          "overall_25th": 0.0,
+          "overall_75th": 0.0,
+          "overall_90th": 0.0
+        },
+        "range": {
+          "min": 0.0,
+          "max": 8.8,
+          "mean": 0.049670864338866624,
+          "std": 0.3611023030927066
+        }
+      },
+      "surface_snow_thickness": {
+        "decision_tree_thresholds": [
+          1.25,
+          1.399999976158142,
+          4.450000047683716
+        ],
+        "statistical_thresholds": {
+          "low_risk_median": 32.0,
+          "medium_risk_median": 32.0,
+          "high_risk_median": 36.6,
+          "overall_25th": 5.0,
+          "overall_75th": 51.9,
+          "overall_90th": 63.0
+        },
+        "range": {
+          "min": -1.0,
+          "max": 91.0,
+          "mean": 30.777012974623165,
+          "std": 24.41559652063804
+        }
+      },
+      "wind_from_direction": {
+        "decision_tree_thresholds": [],
+        "statistical_thresholds": {
+          "low_risk_median": 0.0,
+          "medium_risk_median": 0.0,
+          "high_risk_median": 168.0,
+          "overall_25th": 0.0,
+          "overall_75th": 0.0,
+          "overall_90th": 156.0
+        },
+        "range": {
+          "min": 0.0,
+          "max": 360.0,
+          "mean": 29.223382942186607,
+          "std": 72.22797686473768
+        }
+      },
+      "wind_speed": {
+        "decision_tree_thresholds": [
+          4.049999952316284,
+          5.049999952316284,
+          7.049999952316284
+        ],
+        "statistical_thresholds": {
+          "low_risk_median": 0.0,
+          "medium_risk_median": 0.0,
+          "high_risk_median": 9.7,
+          "overall_25th": 0.0,
+          "overall_75th": 0.0,
+          "overall_90th": 2.0
+        },
+        "range": {
+          "min": 0.0,
+          "max": 18.6,
+          "mean": 0.6273993512688418,
+          "std": 1.9349446924328333
+        }
+      },
+      "wind_chill": {
+        "decision_tree_thresholds": [
+          -5.071565389633179
+        ],
+        "statistical_thresholds": {
+          "low_risk_median": 0.32897299391547774,
+          "medium_risk_median": -7.1,
+          "high_risk_median": -11.692422132079626,
+          "overall_25th": -3.9,
+          "overall_75th": 1.9,
+          "overall_90th": 3.9
+        },
+        "range": {
+          "min": -23.277110110280493,
+          "max": 9.7,
+          "mean": -1.283195415117314,
+          "std": 4.436160456149816
+        }
+      },
+      "frost_risk": {
+        "decision_tree_thresholds": [],
+        "statistical_thresholds": {
+          "low_risk_median": 0.0,
+          "medium_risk_median": 1.0,
+          "high_risk_median": 1.0,
+          "overall_25th": 0.0,
+          "overall_75th": 1.0,
+          "overall_90th": 1.0
+        },
+        "range": {
+          "min": "0",
+          "max": "1",
+          "mean": 0.524327418431597,
+          "std": 0.4994197375501229
+        }
+      },
+      "near_freezing": {
+        "decision_tree_thresholds": [],
+        "statistical_thresholds": {
+          "low_risk_median": 1.0,
+          "medium_risk_median": 0.0,
+          "high_risk_median": 0.0,
+          "overall_25th": 0.0,
+          "overall_75th": 1.0,
+          "overall_90th": 1.0
+        },
+        "range": {
+          "min": "0",
+          "max": "1",
+          "mean": 0.4235355848120588,
+          "std": 0.4941303877249037
+        }
+      },
+      "hour": {
+        "decision_tree_thresholds": [],
+        "statistical_thresholds": {
+          "low_risk_median": 12.0,
+          "medium_risk_median": 12.0,
+          "high_risk_median": 11.0,
+          "overall_25th": 6.0,
+          "overall_75th": 18.0,
+          "overall_90th": 21.0
+        },
+        "range": {
+          "min": "0",
+          "max": "23",
+          "mean": 11.544695668765502,
+          "std": 6.941118847646013
+        }
+      },
+      "month": {
+        "decision_tree_thresholds": [],
+        "statistical_thresholds": {
+          "low_risk_median": 4.0,
+          "medium_risk_median": 2.0,
+          "high_risk_median": 3.0,
+          "overall_25th": 2.0,
+          "overall_75th": 11.0,
+          "overall_90th": 12.0
+        },
+        "range": {
+          "min": "1",
+          "max": "12",
+          "mean": 5.502862049227247,
+          "std": 4.362070563840457
+        }
+      },
+      "is_winter": {
+        "decision_tree_thresholds": [],
+        "statistical_thresholds": {
+          "low_risk_median": 1.0,
+          "medium_risk_median": 1.0,
+          "high_risk_median": 1.0,
+          "overall_25th": 1.0,
+          "overall_75th": 1.0,
+          "overall_90th": 1.0
+        },
+        "range": {
+          "min": "0",
+          "max": "1",
+          "mean": 0.8375310055332952,
+          "std": 0.3688892942313225
+        }
+      }
+    },
+    "decision_rules": "|--- wind_chill <= -5.07\n|   |--- wind_speed <= 7.05\n|   |   |--- air_temperature <= -5.05\n|   |   |   |--- class: 1\n|   |   |--- air_temperature >  -5.05\n|   |   |   |--- wind_speed <= 4.05\n|   |   |   |   |--- class: 0\n|   |   |   |--- wind_speed >  4.05\n|   |   |   |   |--- surface_snow_thickness <= 1.40\n|   |   |   |   |   |--- class: 1\n|   |   |   |   |--- surface_snow_thickness >  1.40\n|   |   |   |   |   |--- class: 1\n|   |--- wind_speed >  7.05\n|   |   |--- air_temperature <= -0.05\n|   |   |   |--- surface_snow_thickness <= 4.45\n|   |   |   |   |--- class: 2\n|   |   |   |--- surface_snow_thickness >  4.45\n|   |   |   |   |--- class: 2\n|   |   |--- air_temperature >  -0.05\n|   |   |   |--- class: 1\n|--- wind_chill >  -5.07\n|   |--- wind_speed <= 4.05\n|   |   |--- class: 0\n|   |--- wind_speed >  4.05\n|   |   |--- wind_speed <= 5.05\n|   |   |   |--- surface_snow_thickness <= 1.25\n|   |   |   |   |--- class: 0\n|   |   |   |--- surface_snow_thickness >  1.25\n|   |   |   |   |--- class: 1\n|   |   |--- wind_speed >  5.05\n|   |   |   |--- class: 1\n",
+    "feature_importance": {
+      "air_temperature": 0.0381373335468872,
+      "max(air_temperature PT1H)": 0.0,
+      "max(wind_speed PT1H)": 0.0,
+      "min(air_temperature PT1H)": 0.0,
+      "relative_humidity": 0.0,
+      "sum(precipitation_amount PT1H)": 0.0,
+      "surface_snow_thickness": 0.012887365192537938,
+      "wind_from_direction": 0.0,
+      "wind_speed": 0.21749188671737102,
+      "wind_chill": 0.7314834145432038,
+      "frost_risk": 0.0,
+      "near_freezing": 0.0,
+      "hour": 0.0,
+      "month": 0.0,
+      "is_winter": 0.0
+    }
+  },
+  "combination_analysis": {
+    "random_forest_performance": {
+      "train_accuracy": 0.9996565671983515,
+      "feature_importance": {
+        "air_temperature": 0.2897354972500695,
+        "max(air_temperature PT1H)": 0.015653343318713025,
+        "max(wind_speed PT1H)": 0.07449826596780802,
+        "min(air_temperature PT1H)": 0.021701623436361003,
+        "relative_humidity": 0.009345521922636591,
+        "sum(precipitation_amount PT1H)": 0.0011486616601239592,
+        "surface_snow_thickness": 0.00978462627701292,
+        "wind_from_direction": 0.014112557673933825,
+        "wind_speed": 0.09976014645919647,
+        "wind_chill": 0.38345114599138463,
+        "frost_risk": 0.03594219049859657,
+        "near_freezing": 0.03126797549499383,
+        "hour": 0.0006187420924841803,
+        "month": 0.010807823910361804,
+        "is_winter": 0.0021718780463237304
+      }
+    },
+    "feature_interactions": {
+      "top_interactions": [
+        [
+          [
+            "wind_chill",
+            "wind_speed"
+          ],
+          6694
+        ],
+        [
+          [
+            "max(wind_speed PT1H)",
+            "wind_speed"
+          ],
+          6492
+        ],
+        [
+          [
+            "max(wind_speed PT1H)",
+            "wind_chill"
+          ],
+          4889
+        ],
+        [
+          [
+            "air_temperature",
+            "wind_speed"
+          ],
+          4563
+        ],
+        [
+          [
+            "min(air_temperature PT1H)",
+            "wind_speed"
+          ],
+          4558
+        ],
+        [
+          [
+            "surface_snow_thickness",
+            "wind_speed"
+          ],
+          4270
+        ],
+        [
+          [
+            "wind_speed",
+            "wind_speed"
+          ],
+          4202
+        ],
+        [
+          [
+            "wind_from_direction",
+            "wind_speed"
+          ],
+          3938
+        ],
+        [
+          [
+            "max(air_temperature PT1H)",
+            "wind_speed"
+          ],
+          3858
+        ],
+        [
+          [
+            "min(air_temperature PT1H)",
+            "wind_chill"
+          ],
+          3542
+        ],
+        [
+          [
+            "air_temperature",
+            "max(wind_speed PT1H)"
+          ],
+          3506
+        ],
+        [
+          [
+            "air_temperature",
+            "wind_chill"
+          ],
+          3498
+        ],
+        [
+          [
+            "max(wind_speed PT1H)",
+            "min(air_temperature PT1H)"
+          ],
+          3437
+        ],
+        [
+          [
+            "relative_humidity",
+            "wind_speed"
+          ],
+          3396
+        ],
+        [
+          [
+            "max(air_temperature PT1H)",
+            "wind_chill"
+          ],
+          3162
+        ],
+        [
+          [
+            "surface_snow_thickness",
+            "wind_chill"
+          ],
+          3157
+        ],
+        [
+          [
+            "wind_chill",
+            "wind_from_direction"
+          ],
+          3092
+        ],
+        [
+          [
+            "max(wind_speed PT1H)",
+            "surface_snow_thickness"
+          ],
+          3089
+        ],
+        [
+          [
+            "max(air_temperature PT1H)",
+            "max(wind_speed PT1H)"
+          ],
+          2977
+        ],
+        [
+          [
+            "max(wind_speed PT1H)",
+            "wind_from_direction"
+          ],
+          2945
+        ]
+      ],
+      "total_interactions_found": 120
+    },
+    "combination_rules": {
+      "high_wind_frost_snow": {
+        "conditions": {
+          "wind_speed": "> 8.3 m/s",
+          "air_temperature": "< -1.6°C",
+          "surface_snow_thickness": "> 29.500 m"
+        },
+        "risk_level": "HIGH",
+        "frequency": 441,
+        "confidence": 1.0
+      },
+      "medium_wind_combinations": {
+        "conditions": {
+          "wind_speed": "2.1 - 6.7 m/s",
+          "air_temperature": "< -5.3°C"
+        },
+        "risk_level": "MEDIUM",
+        "frequency": 5128,
+        "confidence": 1.0
+      },
+      "extreme_wind_chill": {
+        "conditions": {
+          "wind_chill": "< -7.7°C"
+        },
+        "risk_level": "HIGH",
+        "frequency": 2587,
+        "confidence": 0.14959412446849632
+      }
+    },
+    "rule_validation": {
+      "high_wind_frost_snow": {
+        "total_applicable_cases": 441,
+        "confidence": 1.0,
+        "coverage": 0.016828207280775394
+      },
+      "medium_wind_combinations": {
+        "total_applicable_cases": 5128,
+        "confidence": 1.0,
+        "coverage": 0.19568037853926581
+      },
+      "extreme_wind_chill": {
+        "total_applicable_cases": 2587,
+        "confidence": 0.14959412446849632,
+        "coverage": 0.09871785087384569
+      }
+    }
+  },
+  "recommendations": {
+    "critical_thresholds": {
+      "wind_chill": {
+        "value": 3.9,
+        "importance": 0.7314834145432038,
+        "description": "Kritisk grense for wind_chill"
+      },
+      "wind_speed": {
+        "value": 2.0,
+        "importance": 0.21749188671737102,
+        "description": "Kritisk grense for wind_speed"
+      },
+      "air_temperature": {
+        "value": 4.1,
+        "importance": 0.0381373335468872,
+        "description": "Kritisk grense for air_temperature"
+      },
+      "surface_snow_thickness": {
+        "value": 63.0,
+        "importance": 0.012887365192537938,
+        "description": "Kritisk grense for surface_snow_thickness"
+      },
+      "max(air_temperature PT1H)": {
+        "value": 0.0,
+        "importance": 0.0,
+        "description": "Kritisk grense for max(air_temperature PT1H)"
+      }
+    },
+    "warning_thresholds": {
+      "wind_chill": {
+        "value": 1.9,
+        "importance": 0.7314834145432038,
+        "description": "Advarselsgrense for wind_chill"
+      },
+      "wind_speed": {
+        "value": 0.0,
+        "importance": 0.21749188671737102,
+        "description": "Advarselsgrense for wind_speed"
+      },
+      "air_temperature": {
+        "value": 2.2,
+        "importance": 0.0381373335468872,
+        "description": "Advarselsgrense for air_temperature"
+      },
+      "surface_snow_thickness": {
+        "value": 51.9,
+        "importance": 0.012887365192537938,
+        "description": "Advarselsgrense for surface_snow_thickness"
+      },
+      "max(air_temperature PT1H)": {
+        "value": 0.0,
+        "importance": 0.0,
+        "description": "Advarselsgrense for max(air_temperature PT1H)"
+      }
+    },
+    "combination_rules": {
+      "high_wind_frost_snow": {
+        "conditions": {
+          "wind_speed": "> 8.3 m/s",
+          "air_temperature": "< -1.6°C",
+          "surface_snow_thickness": "> 29.500 m"
+        },
+        "risk_level": "HIGH",
+        "confidence": 1.0
+      },
+      "medium_wind_combinations": {
+        "conditions": {
+          "wind_speed": "2.1 - 6.7 m/s",
+          "air_temperature": "< -5.3°C"
+        },
+        "risk_level": "MEDIUM",
+        "confidence": 1.0
+      }
+    },
+    "implementation_guidance": {
+      "monitoring_priority": [
+        "wind_chill",
+        "wind_speed",
+        "air_temperature",
+        "surface_snow_thickness",
+        "max(air_temperature PT1H)"
+      ],
+      "alert_system_config": {
+        "use_combinations": true,
+        "confidence_threshold": 0.7,
+        "require_multiple_conditions": true
+      },
+      "validation_needed": [
+        "Test mot historiske hendelser",
+        "Kalibrere mot lokale forhold",
+        "Justere for sesongvariasjoner"
+      ]
+    }
+  },
+  "status": "completed"
+}

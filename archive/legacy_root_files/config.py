@@ -2,6 +2,7 @@
 # Kategori: Configuration
 
 import os
+
 import streamlit as st
 from dotenv import load_dotenv
 
@@ -16,12 +17,12 @@ try:
     # Først prøv å hente fra miljøvariabel
     FROST_CLIENT_ID = os.getenv('FROST_CLIENT_ID')
     print(f"Prøver å hente fra miljøvariabel: {FROST_CLIENT_ID}")
-    
+
     # Hvis ikke funnet, prøv streamlit secrets
     if not FROST_CLIENT_ID:
         FROST_CLIENT_ID = st.secrets.get("FROST_CLIENT_ID")
         print(f"Prøver å hente fra streamlit secrets: {FROST_CLIENT_ID}")
-        
+
     # Logg resultatet
     if FROST_CLIENT_ID:
         print(f"FROST_CLIENT_ID funnet: {FROST_CLIENT_ID[:8]}...")
@@ -29,7 +30,7 @@ try:
         print(f"API-nøkkel bytes: {FROST_CLIENT_ID.encode()}")
     else:
         print("ADVARSEL: FROST_CLIENT_ID ikke funnet")
-        
+
 except Exception as e:
     print(f"ADVARSEL: Kunne ikke hente FROST_CLIENT_ID: {str(e)}")
     FROST_CLIENT_ID = None

@@ -20,7 +20,7 @@ try:
     # Prøv å hente fra streamlit secrets først
     FROST_CLIENT_ID = st.secrets["general"]["FROST_CLIENT_ID"]
     logger.info("FROST_CLIENT_ID funnet i Streamlit secrets")
-    
+
 except KeyError:
     try:
         # Hvis ikke i secrets, prøv miljøvariabel

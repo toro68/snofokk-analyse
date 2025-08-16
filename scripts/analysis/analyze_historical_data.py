@@ -2,11 +2,11 @@
 """Script for å analysere historiske værdata for vintermåneder."""
 
 # Standard biblioteker
-import os
-import sys
+import argparse
 import json
 import logging
-import argparse
+import os
+import sys
 from datetime import datetime, timedelta
 from functools import lru_cache
 
@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 # Direkteimport av FROST API-nøkkel for å unngå streamlit-avhengighet
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -79,7 +80,7 @@ def split_period(start_date, end_date, chunk_days=30):
     start = datetime.strptime(start_date, '%Y-%m-%d')
     end = datetime.strptime(end_date, '%Y-%m-%d')
     chunks = []
-    
+
     current = start
     while current < end:
         chunk_end = min(current + timedelta(days=chunk_days), end)
@@ -88,7 +89,7 @@ def split_period(start_date, end_date, chunk_days=30):
             chunk_end.strftime('%Y-%m-%d')
         ))
         current = chunk_end
-    
+
     return chunks
 
 
@@ -162,9 +163,9 @@ def fetch_frost_data(start_date, end_date, use_cache=True):
         'sum(precipitation_amount PT1H)',
         'dew_point_temperature'
     ]
-    
+
     cache_file = get_cached_data_filename(start_date, end_date)
-    
+
     # Sjekk om dataen finnes i cache
     if use_cache and os.path.exists(cache_file):
         try:
@@ -174,10 +175,10 @@ def fetch_frost_data(start_date, end_date, use_cache=True):
             logger.warning(
                 f"Kunne ikke lese fra cache ({cache_file}): {str(e)}. Henter på nytt."
             )
-    
+
     try:
         logger.info(f"Henter data fra {start_date} til {end_date}")
-        
+
         session = get_frost_session()
         endpoint = 'https://frost.met.no/observations/v0.jsonld'
         parameters = {
@@ -186,16 +187,16 @@ def fetch_frost_data(start_date, end_date, use_cache=True):
             'elements': ','.join(elements),
             'timeresolutions': 'PT1H'
         }
-        
+
         r = session.get(endpoint, params=parameters)
-        
+
         if r.status_code == 200:
             data = r.json()
-            
+
             if not data.get('data'):
                 logger.error("Ingen data mottatt fra API")
                 return None
-                
+
             # Konverter til DataFrame med forbedret formatering
             records = []
             for item in data['data']:
@@ -204,11 +205,11 @@ def fetch_frost_data(start_date, end_date, use_cache=True):
                         item['referenceTime'].rstrip('Z')
                     )
                 }
-                
+
                 # Samle alle verdier fra observasjoner
                 for obs in item['observations']:
                     key = obs['elementId']
-                    
+
                     # Forenkle kolonnenavn
                     if key.startswith('max('):
                         key = 'max_' + key.split('(')[1].split(' ')[0]
@@ -216,7 +217,7 @@ def fetch_frost_data(start_date, end_date, use_cache=True):
                         key = 'min_' + key.split('(')[1].split(' ')[0]
                     elif key.startswith('sum('):
                         key = key.split('(')[1].split(' ')[0]
-                    
+
                     # Erstatt kompliserte navn med enklere
                     key = key.replace('wind_speed_of_gust', 'wind_gust')
                     # Erstatt langere navn med kortere
@@ -226,25 +227,25 @@ def fetch_frost_data(start_date, end_date, use_cache=True):
                     key = key.replace(
                         'precipitation_amount', 'precip_amount'
                     )
-                    
+
                     record[key] = obs['value']
-                
+
                 records.append(record)
-            
+
             if not records:
                 logger.warning("Ingen data kunne konverteres")
                 return None
-                
+
             # Opprett DataFrame
             df = pd.DataFrame(records)
             df.set_index('timestamp', inplace=True)
-            
+
             # Valider og reparer data
             for col in df.columns:
                 # Konverter -1 verdier til NaN for snødybde
                 if col == 'surface_snow_thickness':
                     df[col] = df[col].replace(-1, np.nan)
-            
+
             # Lagre til cache hvis cache er aktivert
             if use_cache:
                 try:
@@ -252,15 +253,15 @@ def fetch_frost_data(start_date, end_date, use_cache=True):
                     logger.info(f"Data cachet til {cache_file}")
                 except Exception as e:
                     logger.warning(f"Kunne ikke cache data: {str(e)}")
-            
+
             return df
-            
+
         else:
             logger.error(
                 f"API-feil {r.status_code}: {r.text}"
             )
             return None
-            
+
     except requests.exceptions.RequestException as e:
         logger.error(f"Nettverksfeil ved henting av data: {str(e)}")
         return None
@@ -285,7 +286,7 @@ def analyze_data(df):
     if df is None or df.empty:
         logger.warning("Ingen data å analysere")
         return {}
-    
+
     # Grunnleggende statistikk
     results = {
         'periode_start': df.index.min().strftime('%Y-%m-%d'),
@@ -302,7 +303,7 @@ def analyze_data(df):
             'gjennomsnitt': float(df['wind_speed'].mean())
         }
     }
-    
+
     # Legg til snøstatistikk hvis tilgjengelig
     if 'surface_snow_thickness' in df.columns:
         snow_data = df['surface_snow_thickness'].dropna()
@@ -312,7 +313,7 @@ def analyze_data(df):
                 'gjennomsnitt': float(snow_data.mean()),
                 'dager_med_snø': int((snow_data > 0).sum())
             }
-    
+
     return results
 
 
@@ -376,7 +377,7 @@ def parse_arguments():
         default='data/analyzed/historical_analysis.json',
         help="Sti til JSON-resultatfil"
     )
-    
+
     return parser.parse_args()
 
 
@@ -385,32 +386,32 @@ def main():
     try:
         args = parse_arguments()
         ensure_directories()
-        
+
         logger.info(
             f"Starter analyse av vinterperioder fra {args.start_year} til {args.end_year}"
         )
-        
+
         # Få liste over vinterperioder
         winter_periods = get_winter_periods(args.start_year, args.end_year)
-        
+
         all_data = []
         analysis_results = []
-        
+
         # Hent data for hver vinterperiode i mindre biter
         for winter_start, winter_end in winter_periods:
             logger.info(f"Prosesserer vinterperiode {winter_start} til {winter_end}")
-            
+
             # Del opp perioden i 30-dagers biter
             chunks = split_period(winter_start, winter_end, chunk_days=30)
             period_data = []
-            
+
             for chunk_start, chunk_end in chunks:
                 df = fetch_frost_data(
-                    chunk_start, 
-                    chunk_end, 
+                    chunk_start,
+                    chunk_end,
                     use_cache=not args.no_cache
                 )
-                
+
                 if df is not None:
                     period_data.append(df)
                     logger.info(
@@ -420,45 +421,45 @@ def main():
                     logger.warning(
                         f"Kunne ikke hente data for {chunk_start} til {chunk_end}"
                     )
-            
+
             if period_data:
                 # Kombiner data for perioden
                 period_df = pd.concat(period_data)
                 winter_label = f"Vinter {winter_start[:4]}-{winter_end[:4]}"
-                
+
                 # Analyser vinterperioden
                 period_results = analyze_data(period_df)
                 period_results['periode_navn'] = winter_label
                 analysis_results.append(period_results)
-                
+
                 all_data.append(period_df)
                 logger.info(f"Fullført analyse av {winter_label}")
             else:
                 logger.error(f"Ingen data for perioden {winter_start} til {winter_end}")
-        
+
         if all_data:
             # Kombiner alle dataframes
             final_df = pd.concat(all_data)
-            
+
             # Lagre rådata
             raw_data_path = 'data/raw/historical_data.csv'
             final_df.to_csv(raw_data_path)
             logger.info(f"Rådata lagret til {raw_data_path}")
-            
+
             # Lagre analyseresultater
             with open(args.output, 'w', encoding='utf-8') as f:
                 # Konverter NumPy-datatyper før serialisering
                 converted_results = convert_numpy_types(analysis_results)
                 json.dump(converted_results, f, indent=2, ensure_ascii=False)
             logger.info(f"Analyseresultater lagret til {args.output}")
-            
+
         else:
             logger.error("Ingen data ble hentet")
-            
+
     except Exception as e:
         logger.error(f"En feil oppstod: {str(e)}", exc_info=True)
         sys.exit(1)
 
 
 if __name__ == "__main__":
-    main() 
+    main()

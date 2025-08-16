@@ -1,7 +1,7 @@
 import socket
+import subprocess
 import sys
 from datetime import datetime
-import subprocess
 
 
 def log(msg, level="INFO"):
@@ -11,7 +11,7 @@ def log(msg, level="INFO"):
 def ping_test(ip):
     """Test om IP er aktiv med ping"""
     try:
-        result = subprocess.run(['ping', '-c', '1', '-W', '1', ip], 
+        result = subprocess.run(['ping', '-c', '1', '-W', '1', ip],
                               capture_output=True, text=True)
         if result.returncode == 0:
             log(f"Ping vellykket til {ip}", "SUCCESS")
@@ -50,17 +50,17 @@ def check_port(ip, port):
 
 def main():
     log("Starter debugging av nettverkstilkobling...")
-    
+
     # Test spesifikke IP-adresser først
     test_ips = [
         "192.168.68.1",   # Router
         "192.168.68.102", # Mulig server
-        "192.168.68.105", 
+        "192.168.68.105",
         "192.168.68.109",
         "192.168.68.110",
         "192.168.68.111"
     ]
-    
+
     log("Tester tilkobling til kjente IP-adresser...")
     for ip in test_ips:
         if ping_test(ip):
@@ -76,4 +76,4 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         print("\nDebugging avbrutt av bruker")
-        sys.exit(0) 
+        sys.exit(0)

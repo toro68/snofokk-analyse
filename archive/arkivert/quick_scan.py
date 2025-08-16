@@ -2,6 +2,7 @@ import socket
 import subprocess
 from datetime import datetime
 
+
 def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
 
@@ -11,7 +12,7 @@ server_ip = "192.168.68.116"
 # Test ping først
 try:
     log(f"\nTester ping mot {server_ip}...")
-    result = subprocess.run(['ping', '-c', '3', server_ip], 
+    result = subprocess.run(['ping', '-c', '3', server_ip],
                           capture_output=True, text=True)
     if result.returncode == 0:
         log("✓ Server svarer på ping")
@@ -41,4 +42,4 @@ for port in ports:
         sock.close()
     except Exception as e:
         log(f"Feil ved testing av port {port}: {e}")
-        continue 
+        continue

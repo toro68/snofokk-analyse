@@ -1,19 +1,21 @@
-# Snøfokk & Glatt Vei Analyse - Fysisk Realistisk Vurdering
+# Snøfokk & Glatt Vei Analyse - Empirisk Validert System
 
-Et norsk væranalysesystem for realistisk snøfokk- og glatt vei-risikovurdering basert på **fysisk korrekte kriterier** og operasjonell relevans.
+Et norsk væranalysesystem for realistisk snøfokk- og glatt vei-risikovurdering basert på **empirisk validerte kriterier** og operasjonell relevans.
 
-**SISTE OPPDATERING**: Kritisk gjennomgang med korrekt Gullingen stasjon (SN46220) - alle analyser er rerun og validert.
+**SISTE OPPDATERING**: 12. august 2025 - Nedbørtype-klassifisering fullført og validert
 
-## 🌐 **LIVE VÆRAPP TILGJENGELIG**
+## 🌐 **LIVE VÆRAPP - PRODUKSJONSKLART**
 
 **Professional Live Conditions App**: `src/live_conditions_app.py`
+- ✅ **Empirisk validert nedbørtype-klassifisering** (149 episoder)
+- ✅ **Vindblåst snø-deteksjon** med korrekte terskler
+- ✅ **Kombinert risikograf** (snøfokk + glattføre + slush)
+- ✅ **Robust håndtering av manglende data**
+- ✅ **Glattføre kun ved regn** (ikke vindblåst snø)
 - Minimal datanedlasting (48 timer)
-- Profesjonelt grensesnitt uten emoji-støy
-- Real-time snøfokk og glatt vei-risiko
-- Sesongbevisst analyse (sommer/vinter)
 - Optimert for Gullingen Skisenter (SN46220)
 
-### 🚀 **Rask Start (alltid aktiver venv):**
+### 🚀 **Rask Start:**
 
 **Unix/macOS:**
 ```bash
@@ -35,185 +37,113 @@ venv\Scripts\Activate.ps1
 streamlit run src/live_conditions_app.py
 ```
 
-## 🚨 KRITISKE FUNN: Glatt Vei-Analyse
+## 🎯 **EMPIRISK VALIDERTE KRITERIER**
 
-### 🌧️❄️ **REGN-PÅ-SNØ: Det egentlige problemet!**
+### 📊 **Nedbørtype-klassifisering (NYTT)**
+Basert på analyse av 149 episoder med nedbør og vinddata:
 
-Omfattende analyse av sesongen 2023-2024 (Gullingen SN46220) avslører at **REGN PÅ SNØDEKTE VEIER** - ikke rimfrost - er hovedårsaken til farlige kjøreforhold:
+#### 🌧️ **REGN**: 
+- Temp > 0°C + snømengde MINKENDE + vind < 8 m/s
+- Høy konfidens ved temp > 2°C
 
-#### 📊 **Nøkkelresultater:**
-- **99 farlige perioder** per vintersesong (realistisk!)
-- **460 timer** (19.2 døgn) med regn-på-snø forhold = **1.8% av vinteren**
-- **Gjennomsnittlig varighet**: 4.6 timer per episode
+#### ❄️ **SNØ**: 
+- Temp < -2°C + snømengde ØKENDE + vind < 8 m/s
+- Høy konfidens ved temp < -3°C
 
-#### 🎭 **To hovedscenarier:**
-1. **🌧️ Regn på snø (mildvær)**: 49 perioder
-   - Mildvær 0-4°C + regn på eksisterende snødekke  
-   - Snøen smelter og blir til is/slush
+#### 🌪️ **VINDBLÅST SNØ**: 
+- **Høy konfidens**: Temp < 0°C + vind > 12 m/s + snø-reduksjon < -5 cm
+- **Medium konfidens**: Temp < 0°C + vind > 10 m/s + snø-reduksjon < -3 cm
+- **Median vindterskel**: 12.2 m/s
+- **29 empiriske episoder** identifisert
 
-2. **🧊 Frysing etter mildvær**: 50 perioder
-   - Temperatur faller under 0°C etter mildværsperiode
-   - Våt snø/slush fryser til farlige is-lag
+#### 🌨️ **SNØ MED VINDPÅVIRKNING**: 
+- Temp < 0°C + vind 6-10 m/s + liten snø-endring
 
-#### 📅 **Sesongrealisme** (månedlig fordeling):
-- **November**: 4 perioder (vinterstart)
-- **Desember**: 10 perioder 
-- **Januar**: 20 perioder 
-- **Februar**: 25 perioder 
-- **Mars**: 29 perioder (**VERST** - vårløsning!)
-- **April**: 11 perioder (vinterslutt)
+#### 💧 **VÅT SNØ**: 
+- Temp rundt 0°C + snømengde ØKENDE + moderat vind
 
-#### 🏆 **Værste episoder registrert:**
-1. **23-24 januar 2024**: 22 timer, 41mm regn på 60cm snø
-2. **02 februar 2024**: 11 timer, 20mm regn på 83cm snø  
-3. **15-16 februar 2024**: 11 timer, 26mm regn på 58cm snø
+## 🚨 **KRITISKE GLATTFØRE-KRITERIER**
 
-### ✅ **KRITISK ERKJENNELSE:**
-> **"Stabilt kaldt vær er ensbetydende med gode kjøreforhold på snødekte veier"**
+### ⚠️ **VIKTIG: KUN REGN SKAPER GLATTFØRE**
 
-Det er **TEMPERATUROVERGANGENE** - ikke konstant kaldt vær - som skaper farlige forhold!
+**Empirisk validert regel**: VINDBLÅST SNØ ≠ GLATTFØRE
+- ❌ **Vindblåst snø er IKKE regn** 
+- ❌ **Vindblåst snø skaper IKKE glattføre**
+- ✅ **Kun regn ved lav temperatur gir risiko**
 
-#### ❌ **FEIL fokus (tidligere):**
-- Rimfrost-kriterier: 45 perioder
-- Fokus på lave temperaturer + fuktighet
-- Ignorerte snøfall som beskyttende faktor
+### �️ **Glattføre-deteksjon:**
+- **Høy risiko**: Regn + temp 0-2°C + tidligere frost
+- **Medium risiko**: Regn + temp rundt 0°C
+- **INGEN risiko**: Vindblåst snø (uavhengig av temperatur)
 
-#### ✅ **RIKTIG fokus (oppdatert):**
-- **Regn-på-snø kriterier**: 99 perioder
-- Mildvær (0-4°C) + regn på snødekt vei
-- **Snøfall >0.3mm/h BESKYTTER mot glatte forhold**
+### 🎯 **Korrelasjon vind vs snømengde-endring:**
+- **Kald** (< -2°C): -0.423 (sterk negativ korrelasjon)
+- **Rundt frysing** (-2 til 0°C): -0.411 (sterk negativ korrelasjon)  
+- **Lett pluss** (0 til 2°C): -0.165 (svak negativ korrelasjon)
 
-## 🏔️ Snøfokk-Analyse Funn
+## 🏔️ **SNØFOKK-ANALYSE FUNN**
 
-### ❄️ **FYSISK REALISTISKE SNØFOKK-KRITERIER**
+### ❄️ **FYSISK REALISTISKE KRITERIER**
 
-For at snøfokk skal kunne oppstå må **ALLE** følgende være oppfylt:
+For snøfokk må **ALLE** følgende være oppfylt:
 
-#### 🌨️ **1. Grunnleggende meteorologiske kriterier:**
+#### 🌨️ **Meteorologiske kriterier:**
 - **Vindstyrke** ≥ 6 m/s
 - **Temperatur** ≤ -1°C  
 - **Snødybde** ≥ 3 cm
 
-#### ❄️ **2. KRITISK: Løssnø-tilgjengelighet** 
+#### ❄️ **KRITISK: Løssnø-tilgjengelighet** 
 - **Ingen mildvær** (>0°C) siste 24-48 timer
 - **Sammenhengende frost** siste 12+ timer
 - **Helst nysnø** (nedbør) siste 72 timer
 
-#### 🎯 **3. Data-kvalitetskrav:**
-- Gyldig vinddata tilgjengelig
-- Temperaturdata for siste 24-48t
-
 ### 📊 **SESONG 2023-2024 RESULTATER (Gullingen)**
 
-Med fysisk realistiske kriterier:
-- **27 snøfokk-perioder** totalt (ikke 64!)
+- **27 snøfokk-perioder** totalt (fysisk realistisk)
 - **310 timer** ekte snøfokk-forhold (13 døgn)
 - **Kun 5.1%** av sesongen har snøfokk-risiko
 - **Mildvær ødelegger løssnø** 69.3% av tiden
 
-#### **Intensitetsfordeling:**
-- **EKSTREM**: 5 perioder (18.5%) - høyere andel enn tidligere!
-- **ALVORLIG**: 4 perioder (14.8%)
-- **MODERAT**: 6 perioder (22.2%) 
-- **LETT**: 12 perioder (44.4%)
+## 💻 **STREAMLIT-APP FUNKSJONER**
 
-### 🚨 **FEBRUAR 8-11, 2024 KRISE - BEKREFTET!**
+### 🎨 **Visualiseringer:**
+1. **Kombinert risikograf** (snøfokk + glattføre + slush)
+2. **Nedbørtype-klassifisering** (empirisk validert)
+3. **Værtrender** med risikovurdering
+4. **Robust fallback** for manglende data
 
-Selv med strenge løssnø-kriterier:
-- **6 snøfokk-perioder** med tilstrekkelig løssnø
-- **82 timer** med ekte snøfokk-forhold
-- **4 EKSTREME perioder** (maks 15.9 m/s)
-- **GOOD snøkvalitet** i alle perioder
+### � **Tekniske features:**
+- Empirisk validert `detect_precipitation_type()`
+- Korrekt `is_slippery_road_risk()` (kun regn)
+- Automatisk kolonne-deteksjon for nedbør
+- Real-time data fra Frost API
 
-#### **Mest ekstreme episoder:**
-1. **1-4. januar 2024**: 74 timer (16.2 m/s)
-2. **10-11. februar 2024**: 33 timer krise (15.9 m/s)
-3. **11-12. februar 2024**: 32 timer fortsatt krise (14.5 m/s)
-4. **27-31. desember 2023**: 27 timer (18.6 m/s!)
+## 📁 **RYDDIG PROSJEKTSTRUKTUR**
 
-### 💡 **Revolusjonerende erkjennelser:**
+**Arkivering fullført 12. august 2025** - Systemet er nå produksjonsklart med kun relevante filer.
 
-1. ✅ **Snøfokk er MYE sjeldnere** enn tidligere antatt
-2. ✅ **Mildvær er den kritiske begrensende faktoren**
-3. ✅ **240 mildvær-perioder** ødelegger løssnø regelmessig
-4. ✅ **Høyere andel ekstreme episoder** når løssnø er tilstede
-5. ✅ **"Usynlig snøfokk"** er den vanligste typen
+### 🎯 **Aktive filer (hovedmappen):**
+- **`validert_glattfore_logikk.py`** - Empirisk validert hovedlogikk
+- **6 dokumentasjonsfiler** - Kun aktuelle MD-filer
+- **Konfigurasjon** - `.aigenrc`, `requirements.txt`, aktivering-script
 
-Dette er den **FYSISK MEST REALISTISKE** snøfokk-analysen for norske forhold!
-
-## 📁 Project Structure
-
+### 📂 **Organiserte mapper:**
 ```
-alarm-system/
-├── src/snofokk/                    # Core application package
-│   ├── __init__.py
-│   ├── config.py                   # Modern configuration management
-│   ├── models.py                   # Data models and type definitions
-│   └── services/                   # Service layer
-│       ├── __init__.py
-│       ├── weather.py              # Weather data fetching (Frost API)
-│       ├── analysis.py             # Snow drift risk analysis
-│       └── plotting.py             # Visualization services
-│
-├── scripts/                        # Organized executable scripts
-│   ├── reports/                    # Report generation scripts
-│   │   ├── weekly_weather_report_v2_refactored.py  # Main weekly report (NEW)
-│   │   ├── weekly_weather_report_v2.py             # Legacy weekly report
-│   │   ├── weekly_weather_report.py                # Original version
-│   │   └── daily_report.py                         # Daily reporting
-│   ├── analysis/                   # Analysis scripts
-│   │   ├── analyze_historical_data.py
-│   │   ├── analyze_snowdrift.py
-│   │   ├── analyze_slippery_roads.py
-│   │   ├── analyze_historical.py
-│   │   ├── analyze_seasons.py
-│   │   ├── season_periods_analyzer.py              # Snowdrift period grouping
-│   │   ├── cached_major_periods_analyzer.py        # Cached analysis with caching
-│   │   ├── diagnose_snowdrift_data.py              # Data diagnostic script
-│   │   ├── realistic_snowdrift_analyzer.py         # Basic realistic analysis
-│   │   ├── investigate_snow_quality_data.py        # Loose snow investigation
-│   │   └── revised_snowdrift_with_loose_snow.py    # FINAL: Physical realistic analysis
-│   ├── alerts/                     # Alert/notification scripts
-│   │   ├── snowdrift_alert.py
-│   │   ├── snow_accumulation_alert.py
-│   │   └── slippery_roads_alert.py
-│   └── utils/                      # Utility scripts
-│       ├── fetch_netatmo_data.py
-│       ├── generate_weather_map.py
-│       ├── extract_dates.py
-│       ├── plot_snowdrift_timeline.py
-│       ├── plow_planning.py
-│       ├── precipitation_type.py
-│       └── check_last_plowing.py
-│
-├── config/                         # Configuration files
-│   ├── test_config.json           # Test configuration
-│   └── alert_config.json          # Alert settings
-│
-├── data/                          # Data storage
-│   ├── analyzed/                  # Analysis results
-│   ├── db/                        # Database files
-│   ├── graphs/                    # Generated plots
-│   ├── maps/                      # Map files
-│   ├── models/                    # ML models
-│   └── raw/                       # Raw data files
-│
-├── logs/                          # Application logs
-├── models/                        # ML model artifacts
-├── tests/                         # Test files
-├── archive/                       # Archived/legacy files
-│   ├── legacy_root_files/         # Old root directory files
-│   ├── legacy_data_src/           # Old src structure
-│   ├── arkivert/                  # Archived scripts
-│   ├── data/                      # Archived data
-│   └── logs/                      # Archived logs
-│
-├── venv/                          # Python virtual environment
-├── requirements.txt               # Python dependencies
-├── .env                          # Environment variables (not in git)
-├── .gitignore                    # Git ignore rules
-└── README.md                     # Project documentation
+src/                    # Hovedapplikasjon (Streamlit)
+scripts/                # Organiserte script etter kategori  
+data/                   # Kun aktuelle data (gullingen-stasjon)
+logs/                   # Relevante logger (app, alerts)
+config/                 # Systemkonfigurasjoner
+docs/                   # Teknisk dokumentasjon
+models/                 # ML-modeller
+tests/                  # Organiserte tester
+archive/                # Arkiverte filer (33 script + data)
 ```
+
+### 🗄️ **Arkiv-struktur:**
+- **`archive/outdated_scripts/`** - 33 arkiverte Python-filer
+- **`archive/outdated_md_files/`** - 9 utdaterte MD-filer  
+- **`archive/outdated_data/`** - Gamle data og logger
 
 ## 🚀 Getting Started
 

@@ -4,11 +4,12 @@ DEBUG VERSJON - Live Føreforhold
 ===============================
 """
 
-import streamlit as st
+import os
+from datetime import UTC, datetime, timedelta
+
 import pandas as pd
 import requests
-import os
-from datetime import datetime, timedelta
+import streamlit as st
 from dotenv import load_dotenv
 
 # Last miljøvariabler
@@ -16,27 +17,26 @@ load_dotenv()
 
 def test_api_connection():
     """Test API-tilkobling med debugging."""
-    
+
     st.title("🔧 DEBUG: Live Føreforhold")
-    
+
     # Sjekk API-nøkkel
     api_key = os.getenv('FROST_CLIENT_ID')
     if not api_key:
         st.error("❌ FROST_CLIENT_ID ikke funnet i .env fil!")
         st.info("Opprett .env fil med: FROST_CLIENT_ID=din_nokkel")
         return
-    
+
     st.success(f"✅ API-nøkkel funnet: {api_key[:10]}...")
-    
+
     # Test enkel API-kall
     with st.spinner("Tester API-tilkobling..."):
         try:
             # Enkel test - bare siste målinger
-            from datetime import timezone
-            end_time = datetime.now(timezone.utc)
+            end_time = datetime.now(UTC)
             start_time = end_time - timedelta(hours=24)
             fmt = "%Y-%m-%dT%H:%M:%SZ"
-            
+
             url = 'https://frost.met.no/observations/v0.jsonld'
             parameters = {
                 'sources': os.getenv('WEATHER_STATION', 'SN46220'),  # Gullingen Skisenter
@@ -44,22 +44,22 @@ def test_api_connection():
                 'referencetime': f"{start_time.strftime(fmt)}/{end_time.strftime(fmt)}",
                 'timeoffsets': 'PT0H'
             }
-            
+
             st.write("🔗 API URL:", url)
             st.write("📋 Parametere:", parameters)
-            
+
             response = requests.get(url, parameters, auth=(api_key, ''), timeout=30)
-            
+
             st.write(f"📡 HTTP Status: {response.status_code}")
-            
+
             if response.status_code == 200:
                 data = response.json()
                 st.success(f"✅ API suksess! Fikk {len(data.get('data', []))} målinger")
-                
+
                 # Vis litt data
                 if data.get('data'):
                     st.json(data['data'][0])  # Vis første måling
-                    
+
                     # Parse til DataFrame
                     records = []
                     for obs in data['data'][:10]:  # Kun første 10
@@ -69,20 +69,20 @@ def test_api_connection():
                             value = observation['value']
                             record[element] = value
                         records.append(record)
-                    
+
                     df = pd.DataFrame(records)
                     st.success(f"✅ DataFrame opprettet med {len(df)} rader")
                     st.dataframe(df.head())
-                    
+
                     # Sjekk siste målinger
                     if 'air_temperature' in df.columns:
                         latest_temp = df['air_temperature'].iloc[-1]
                         st.metric("🌡️ Siste temperatur", f"{latest_temp:.1f}°C")
-                    
+
                     if 'wind_speed' in df.columns:
                         latest_wind = df['wind_speed'].iloc[-1]
                         st.metric("💨 Siste vindstyrke", f"{latest_wind:.1f} m/s")
-                
+
             elif response.status_code == 401:
                 st.error("❌ 401 Unauthorized - Sjekk API-nøkkel!")
             elif response.status_code == 403:
@@ -93,7 +93,7 @@ def test_api_connection():
                 st.error(f"❌ API feil: {response.status_code}")
                 st.text("Response text:")
                 st.text(response.text)
-                
+
         except requests.exceptions.Timeout:
             st.error("❌ Timeout - API bruker for lang tid!")
         except requests.exceptions.ConnectionError:
@@ -105,19 +105,19 @@ def test_api_connection():
 
 def show_environment_info():
     """Vis miljøinformasjon."""
-    
+
     st.subheader("🔧 Miljøinformasjon")
-    
+
     # Python miljø
     import sys
     st.write(f"🐍 Python versjon: {sys.version}")
-    
+
     # Installed packages
     import pkg_resources
     packages = [d.project_name for d in pkg_resources.working_set]
     relevant_packages = [p for p in packages if any(x in p.lower() for x in ['requests', 'pandas', 'streamlit', 'dotenv'])]
     st.write("📦 Relevante pakker:", relevant_packages)
-    
+
     # Miljøvariabler
     st.write("🌍 Miljøvariabler:")
     env_vars = {
@@ -125,26 +125,26 @@ def show_environment_info():
         'PWD': os.getenv('PWD', 'Ikke satt'),
         'HOME': os.getenv('HOME', 'Ikke satt')[:50] + '...' if os.getenv('HOME') else 'Ikke satt'
     }
-    
+
     for key, value in env_vars.items():
         st.write(f"  • {key}: {value}")
 
 def main():
     """Hovedfunksjon for debugging."""
-    
+
     st.set_page_config(
         page_title="DEBUG: Live Føreforhold",
         page_icon="🔧"
     )
-    
+
     # Test API
     test_api_connection()
-    
+
     st.markdown("---")
-    
+
     # Vis miljøinfo
     show_environment_info()
-    
+
     st.markdown("---")
     st.info("💡 Når dette fungerer, kan du gå tilbake til hovedappen!")
 
