@@ -1,0 +1,181 @@
+{
+  "summary": {
+    "total_episodes": 8,
+    "justified_count": 0,
+    "avg_ml_accuracy": 0.2,
+    "weather_triggers": {},
+    "seasonal_patterns": {
+      "by_month": {
+        "12": 45,
+        "1": 52,
+        "2": 44,
+        "3": 16,
+        "11": 6,
+        "4": 3
+      },
+      "by_type": {
+        "inspeksjon": 17,
+        "normal_broyting": 95,
+        "stor_broyting": 54
+      },
+      "by_hour": {
+        "12": 8,
+        "9": 25,
+        "11": 7,
+        "8": 17,
+        "16": 7,
+        "7": 21,
+        "17": 7,
+        "5": 11,
+        "0": 6,
+        "6": 16,
+        "4": 3,
+        "14": 5,
+        "10": 13,
+        "23": 2,
+        "2": 1,
+        "15": 7,
+        "19": 1,
+        "13": 4,
+        "18": 2,
+        "20": 2,
+        "21": 1
+      },
+      "recommendations": [
+        "Mest aktive måned: Jan (52 brøytinger)",
+        "Mest aktive time: 09:00 (25 brøytinger)",
+        "Inspeksjonsandel: 10.2% av alle brøytinger"
+      ]
+    }
+  },
+  "detailed_results": [
+    {
+      "event": {
+        "dato": "30. des. 2022",
+        "start_datetime": "2022-12-30T09:19:50",
+        "end_datetime": "2022-12-30T16:56:24",
+        "type": "stor_broyting",
+        "varighet_timer": 6.1,
+        "distanse_km": 28.0
+      },
+      "justification": {
+        "was_justified": false,
+        "reasons": [],
+        "ml_accuracy": 0.2,
+        "weather_triggers": []
+      }
+    },
+    {
+      "event": {
+        "dato": "27. des. 2022",
+        "start_datetime": "2022-12-27T07:42:43",
+        "end_datetime": "2022-12-27T13:16:00",
+        "type": "stor_broyting",
+        "varighet_timer": 5.25,
+        "distanse_km": 28.8
+      },
+      "justification": {
+        "was_justified": false,
+        "reasons": [],
+        "ml_accuracy": 0.2,
+        "weather_triggers": []
+      }
+    },
+    {
+      "event": {
+        "dato": "29. des. 2023",
+        "start_datetime": "2023-12-29T07:00:11",
+        "end_datetime": "2023-12-29T19:59:19",
+        "type": "stor_broyting",
+        "varighet_timer": 11.25,
+        "distanse_km": 51.4
+      },
+      "justification": {
+        "was_justified": false,
+        "reasons": [],
+        "ml_accuracy": 0.2,
+        "weather_triggers": []
+      }
+    },
+    {
+      "event": {
+        "dato": "24. feb. 2023",
+        "start_datetime": "2023-02-24T02:53:06",
+        "end_datetime": "2023-02-24T18:01:03",
+        "type": "stor_broyting",
+        "varighet_timer": 10.533333333333333,
+        "distanse_km": 32.7
+      },
+      "justification": {
+        "was_justified": false,
+        "reasons": [],
+        "ml_accuracy": 0.2,
+        "weather_triggers": []
+      }
+    },
+    {
+      "event": {
+        "dato": "19. jan. 2024",
+        "start_datetime": "2024-01-19T07:02:04",
+        "end_datetime": "2024-01-19T22:42:38",
+        "type": "stor_broyting",
+        "varighet_timer": 9.016666666666667,
+        "distanse_km": 33.6
+      },
+      "justification": {
+        "was_justified": false,
+        "reasons": [],
+        "ml_accuracy": 0.2,
+        "weather_triggers": []
+      }
+    },
+    {
+      "event": {
+        "dato": "1. feb. 2024",
+        "start_datetime": "2024-02-01T04:40:36",
+        "end_datetime": "2024-02-01T20:15:58",
+        "type": "stor_broyting",
+        "varighet_timer": 8.6,
+        "distanse_km": 42.0
+      },
+      "justification": {
+        "was_justified": false,
+        "reasons": [],
+        "ml_accuracy": 0.2,
+        "weather_triggers": []
+      }
+    },
+    {
+      "event": {
+        "dato": "3. jan. 2025",
+        "start_datetime": "2025-01-03T09:10:20",
+        "end_datetime": "2025-01-03T20:47:20",
+        "type": "stor_broyting",
+        "varighet_timer": 9.816666666666666,
+        "distanse_km": 31.1
+      },
+      "justification": {
+        "was_justified": false,
+        "reasons": [],
+        "ml_accuracy": 0.2,
+        "weather_triggers": []
+      }
+    },
+    {
+      "event": {
+        "dato": "1. jan. 2025",
+        "start_datetime": "2025-01-01T00:01:20",
+        "end_datetime": "2025-01-01T20:39:29",
+        "type": "stor_broyting",
+        "varighet_timer": 7.316666666666666,
+        "distanse_km": 16.6
+      },
+      "justification": {
+        "was_justified": false,
+        "reasons": [],
+        "ml_accuracy": 0.2,
+        "weather_triggers": []
+      }
+    }
+  ]
+}

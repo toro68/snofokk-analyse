@@ -1,8 +1,7 @@
+import logging
 import os
 import sys
-import logging
 from datetime import datetime
-from typing import Dict, Any
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -17,17 +16,18 @@ from . import (
 )
 from .config import DEFAULT_PARAMS
 from .db_utils import delete_settings, get_saved_settings, init_db, save_settings
-from .ml_utils import SnowDriftOptimizer
 from .ml_evaluation import MLEvaluator
+from .ml_utils import SnowDriftOptimizer
+
 
 def setup_logging():
     """Konfigurerer og returnerer logger"""
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
-    
+
     # Opprett logs-mappe hvis den ikke eksisterer
     os.makedirs('logs', exist_ok=True)
-    
+
     # Filhåndtering
     file_handler = logging.FileHandler('logs/snofokk_debug.log')
     file_handler.setLevel(logging.DEBUG)
@@ -35,7 +35,7 @@ def setup_logging():
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
     file_handler.setFormatter(file_formatter)
-    
+
     # Konsolhåndtering
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO)
@@ -43,10 +43,10 @@ def setup_logging():
         '%(levelname)s: %(message)s'
     )
     console_handler.setFormatter(console_formatter)
-    
+
     logger.addHandler(file_handler)
     logger.addHandler(console_handler)
-    
+
     return logger
 
 # Initialiser logger globalt
@@ -505,7 +505,7 @@ def display_critical_alerts(df: pd.DataFrame, periods_df: pd.DataFrame):
 
         # Vis statistikk først
         st.header("📊 Analyse av kritiske perioder")
-        
+
         col1, col2, col3 = st.columns(3)
         with col1:
             st.metric("Kritiske perioder", len(critical_periods))
@@ -528,18 +528,18 @@ def display_critical_alerts(df: pd.DataFrame, periods_df: pd.DataFrame):
 
         # Vis detaljert liste under grafen
         st.subheader("Detaljer for kritiske perioder")
-        
+
         for _, period in critical_periods.iterrows():
             period_data = df[
-                (df.index >= period["start_time"]) & 
+                (df.index >= period["start_time"]) &
                 (df.index <= period["end_time"])
             ]
-            
+
             # Beregn statistikk
             avg_wind = period_data["wind_speed"].mean() if "wind_speed" in period_data else 0
             max_wind = period_data["wind_speed"].max() if "wind_speed" in period_data else 0
             min_temp = period_data["air_temperature"].min() if "air_temperature" in period_data else 0
-            
+
             # Lag ekspander for hver periode
             with st.expander(
                 f"Periode {int(period['period_id'])} - "
@@ -547,7 +547,7 @@ def display_critical_alerts(df: pd.DataFrame, periods_df: pd.DataFrame):
                 f"(Risiko: {period['max_risk_score']*100:.0f}%)"
             ):
                 col1, col2, col3, col4 = st.columns(4)
-                
+
                 with col1:
                     st.metric("Varighet", f"{period['duration']:.1f} timer")
                 with col2:
@@ -672,16 +672,16 @@ def show_ml_optimization():
                     # Vis optimaliserte parametre
                     st.write("### Optimaliserte parametre")
                     opt_params = results.get('best_params', {})
-                    
+
                     # Del parametrene inn i kategorier
                     wind_params = {k: v for k, v in opt_params.items() if 'wind' in k}
                     temp_params = {k: v for k, v in opt_params.items() if 'temp' in k}
                     snow_params = {k: v for k, v in opt_params.items() if 'snow' in k}
-                    
+
                     # Opprett MLEvaluator og analyser
                     evaluator = MLEvaluator()
                     impact_analysis = evaluator.evaluate_parameter_impact(
-                        df, 
+                        df,
                         original_params=optimizer.initial_params,
                         optimized_params=results['best_params']
                     )
@@ -692,7 +692,7 @@ def show_ml_optimization():
                             st.write("#### Anbefalinger for parameterinnstillinger")
                             for rec in impact_analysis['recommendations']:
                                 st.info(rec['message'])
-                        
+
                         # Vis parameterendringer
                         if impact_analysis.get('risk_scores'):
                             st.write("#### Effekt på risikoscore")
@@ -710,12 +710,12 @@ def show_ml_optimization():
                         st.write("#### Vindparametre")
                         for param, value in wind_params.items():
                             st.metric(param, f"{value:.2f}")
-                    
+
                     with col2:
                         st.write("#### Temperaturparametre")
                         for param, value in temp_params.items():
                             st.metric(param, f"{value:.2f}")
-                    
+
                     with col3:
                         st.write("#### Snøparametre")
                         for param, value in snow_params.items():
@@ -907,23 +907,23 @@ def show_date_selector():
 def main():
     logger.info("Starter applikasjon")
     st.set_page_config(page_title="Snøfokk-analyse", layout="wide")
-    
+
     try:
         # Initialiser database med debugging
         logger.debug("Initialiserer database...")
         init_db()
         logger.debug("Database initialisert")
-        
+
         # Legg til menyvalg
         menu = ["Hovedanalyse", "ML-optimalisering", "Innstillinger"]
         choice = st.sidebar.selectbox("Velg analyse", menu)
         logger.debug(f"Menyvalg: {choice}")
-        
+
         # Vis parameterkontrollen for relevante sider
         if choice in ["Hovedanalyse", "ML-optimalisering"]:
             logger.debug(f"Viser parameter-kontroller for {choice}")
             show_parameter_controls()
-        
+
         # Vis valgt side
         if choice == "Hovedanalyse":
             show_main_analysis()
@@ -931,8 +931,8 @@ def main():
             show_ml_optimization()
         elif choice == "Innstillinger":
             show_settings()
-            
-    except Exception as e:
+
+    except Exception:
         logger.error("Kritisk feil i applikasjon", exc_info=True)
         st.error("En kritisk feil oppstod. Sjekk loggene for detaljer.")
 

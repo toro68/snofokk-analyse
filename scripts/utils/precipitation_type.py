@@ -1,6 +1,5 @@
 import logging
 from dataclasses import dataclass
-from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -102,7 +101,7 @@ class PrecipitationTypeAnalyzer:
             np.select(conditions, choices, default="none"), index=self.df.index
         )
 
-    def _calculate_probabilities(self) -> Dict[str, pd.Series]:
+    def _calculate_probabilities(self) -> dict[str, pd.Series]:
         """Beregner sannsynlighet for hver nedbørstype"""
         temp = self.df[self.required_columns["temperature"]]
         humidity = self.df[self.required_columns["humidity"]]

@@ -1,5 +1,5 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 # Last inn data
 data = pd.read_csv('scripts/data/processed/frost_data_2025-01-30_to_2025-03-01.csv')
@@ -24,7 +24,7 @@ params = {
 
 # Beregn risiko
 risk_df = pd.DataFrame(index=feb15.index)
-    
+
 # Beregn risikoscore basert på vind, temperatur og snødybde
 wind_risk = np.zeros(len(feb15))
 temp_risk = np.zeros(len(feb15))
@@ -33,23 +33,23 @@ snow_risk = np.zeros(len(feb15))
 # Vindrisiko - bruk både vindhastighet og vindkast
 # Sett til 0 når vindstyrken er under 6 m/s, men ta hensyn til vindkast
 mask_wind = (feb15['wind_speed'] >= 6.0) | (feb15['max_wind_gust'] >= 10.0)
-wind_risk[mask_wind & ((feb15['wind_speed'] >= params['wind_strong']) | 
+wind_risk[mask_wind & ((feb15['wind_speed'] >= params['wind_strong']) |
                        (feb15['max_wind_gust'] >= 12.0))] = 1.0
-wind_risk[mask_wind & ((feb15['wind_speed'] >= params['wind_moderate']) & 
-                       (feb15['wind_speed'] < params['wind_strong']) | 
-                       (feb15['max_wind_gust'] >= 10.0) & 
+wind_risk[mask_wind & ((feb15['wind_speed'] >= params['wind_moderate']) &
+                       (feb15['wind_speed'] < params['wind_strong']) |
+                       (feb15['max_wind_gust'] >= 10.0) &
                        (feb15['max_wind_gust'] < 12.0))] = 0.5
 
 # Temperaturrisiko
 temp_risk[feb15['air_temperature'] <= params['temp_cold']] = 1.0
-temp_risk[(feb15['air_temperature'] > params['temp_cold']) & 
+temp_risk[(feb15['air_temperature'] > params['temp_cold']) &
           (feb15['air_temperature'] <= params['temp_cool'])] = 0.5
 
 # Snørisiko - sjekk om det er snø tilgjengelig
 snow_available = feb15['surface_snow_thickness'] > 0
 snow_diff = feb15['surface_snow_thickness'].diff().abs()
 snow_risk[snow_available & (snow_diff >= params['snow_high'])] = 1.0
-snow_risk[snow_available & (snow_diff >= params['snow_moderate']) & 
+snow_risk[snow_available & (snow_diff >= params['snow_moderate']) &
           (snow_diff < params['snow_high'])] = 0.5
 
 # Beregn total risikoscore - vektet sum av risikoene
@@ -153,4 +153,4 @@ if max_consecutive >= params['min_duration']:
     print("Alarmen BURDE ha blitt utløst!")
 else:
     print(f"Det var ingen perioder med høy risiko som varte lenger enn minstekravet på {params['min_duration']} timer.")
-    print("Dette kan være grunnen til at alarmen ikke ble utløst.") 
+    print("Dette kan være grunnen til at alarmen ikke ble utløst.")

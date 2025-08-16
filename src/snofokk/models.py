@@ -2,13 +2,13 @@
 Data models for Snøfokk application
 """
 from dataclasses import dataclass
-from typing import Dict, Union
 from datetime import datetime
+
 import pandas as pd
 
 # Type aliases
 WeatherData = pd.DataFrame
-WeatherAnalysis = Dict[str, Union[datetime, Dict[str, float]]]
+WeatherAnalysis = dict[str, datetime | dict[str, float]]
 
 @dataclass
 class SnowAnalysis:
@@ -27,9 +27,9 @@ class RiskPeriod:
     duration: float  # timer
     max_risk_score: float
     avg_risk_score: float
-    conditions: Dict[str, float]  # {'wind_speed': 12.0, 'temperature': -5.0, etc}
+    conditions: dict[str, float]  # {'wind_speed': 12.0, 'temperature': -5.0, etc}
 
-@dataclass 
+@dataclass
 class WeatherSummary:
     """Sammendrag av værdata for en periode."""
     period_start: datetime

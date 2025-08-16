@@ -1,0 +1,27 @@
+{
+  "analysis_period": "2018-02-06T14:00:00 - 2024-04-30T23:00:00",
+  "total_winter_observations": 28114,
+  "high_risk_observations": 123,
+  "percentage": 0.44,
+  "yearly_analysis": {
+    "2018": 8,
+    "2019": 2,
+    "2023": 1,
+    "2024": 7
+  },
+  "total_alert_days": 18,
+  "average_days_per_season": 4.5,
+  "monthly_distribution": {
+    "Jan": 5,
+    "Feb": 5,
+    "Mar": 5,
+    "Apr": 2,
+    "Des": 1
+  },
+  "thresholds_used": {
+    "wind_chill_critical": -15.0,
+    "wind_speed_critical": 10.0,
+    "snow_depth_minimum_cm": 20.0
+  },
+  "validation_timestamp": "2025-08-09T22:06:04.767119"
+}

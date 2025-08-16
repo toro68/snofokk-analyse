@@ -8,7 +8,7 @@ Inneholder funksjoner for å hente data fra Frost API og analysere snødrift-ris
 # Standard biblioteker
 import logging
 from datetime import datetime
-from typing import Any, Dict, TypeVar  # ruff: noqa: F401
+from typing import Any, TypeVar  # ruff: noqa: F401
 
 # Tredjeparts biblioteker
 import numpy as np
@@ -20,11 +20,10 @@ import streamlit as st
 from pandas import DataFrame
 from plotly.subplots import make_subplots
 
-from data.src.snofokk.config import (DEFAULT_PARAMS, FROST_CLIENT_ID)
+from data.src.snofokk.config import DEFAULT_PARAMS, FROST_CLIENT_ID
+
 # Lokale imports
-from data.src.snofokk.snow_constants import (SnowDepthConfig,
-                                             enforce_snow_processing,
-                                             get_risk_level)
+from data.src.snofokk.snow_constants import SnowDepthConfig, enforce_snow_processing, get_risk_level
 
 # Logging oppsett
 logging.basicConfig(level=logging.INFO)
@@ -254,7 +253,7 @@ def identify_risk_periods(df: pd.DataFrame, min_duration: int = 3) -> pd.DataFra
 
         for period_id in unique_periods:
             period_data = df[df["period_id"] == period_id].copy()
-            
+
             if len(period_data) >= min_duration:
                 period_info = {
                     "start_time": period_data.index[0],
@@ -273,11 +272,11 @@ def identify_risk_periods(df: pd.DataFrame, min_duration: int = 3) -> pd.DataFra
                         "wind_stability": period_data["wind_speed"].std(),
                         "strong_wind_hours": len(period_data[period_data["wind_speed"] > 10.0]),
                     }
-                    
+
                     # Beregn vindstøt-faktor
                     if "max(wind_speed_of_gust PT1H)" in period_data.columns:
                         gust_factor = (
-                            period_data["max(wind_speed_of_gust PT1H)"] / 
+                            period_data["max(wind_speed_of_gust PT1H)"] /
                             period_data["wind_speed"]
                         ).mean()
                         wind_stats["gust_factor"] = gust_factor
@@ -291,8 +290,8 @@ def identify_risk_periods(df: pd.DataFrame, min_duration: int = 3) -> pd.DataFra
                             wind_stats.update({
                                 "dir_change_max": dir_changes.max(),
                                 "dir_change_avg": dir_changes.mean(),
-                                "dir_stability": "stabil" if dir_changes.mean() < 30 
-                                              else "moderat" if dir_changes.mean() < 60 
+                                "dir_stability": "stabil" if dir_changes.mean() < 30
+                                              else "moderat" if dir_changes.mean() < 60
                                               else "ustabil"
                             })
 
@@ -343,11 +342,11 @@ def calculate_snow_drift_risk(
         logger.info(
             f"Tidsperiode: {snow_df.index[0].strftime('%Y-%m-%d')} til {snow_df.index[-1].strftime('%Y-%m-%d')}"
         )
-        
+
         # Håndter manglende verdier
         df["surface_snow_thickness"] = df["surface_snow_thickness"].replace(-1, np.nan)
         df["surface_snow_thickness"] = df["surface_snow_thickness"].fillna(method='ffill')
-        
+
         # Beregn snødybdeendringer med forbedret metode
         df["snow_depth_change"] = (
             df["surface_snow_thickness"]
@@ -359,7 +358,7 @@ def calculate_snow_drift_risk(
             .mean()
             .clip(SnowDepthConfig.MIN_CHANGE, SnowDepthConfig.MAX_CHANGE)
         )
-        
+
         # Forbedret vindanalyse
         df["sustained_wind"] = (
             df["wind_speed"]
@@ -367,26 +366,26 @@ def calculate_snow_drift_risk(
             .mean()
             .ffill(limit=2)
         )
-        
+
         # Beregn vindstabilitet
         df["wind_stability"] = (
             df["wind_speed"].rolling(window=6, min_periods=3).std().fillna(0)
         )
-        
+
         # Forbedret vindretningsanalyse
         df["wind_dir_change"] = df["wind_from_direction"].diff().abs()
         df.loc[df["wind_dir_change"] > 180, "wind_dir_change"] = (
             360 - df.loc[df["wind_dir_change"] > 180, "wind_dir_change"]
         )
-        
+
         # Beregn risikoscore med forbedret logikk
         def calculate_risk_score(row):
             score = 0
-            
+
             # Sjekk om det er snø tilgjengelig
             if pd.isna(row["surface_snow_thickness"]) or row["surface_snow_thickness"] <= 0:
                 return 0
-            
+
             # Vindrisiko med stabilitetsvurdering
             if row["wind_speed"] >= params["wind_strong"]:
                 wind_factor = 40
@@ -396,21 +395,21 @@ def calculate_snow_drift_risk(
                 score += wind_factor * params["wind_weight"]
             elif row["wind_speed"] >= params["wind_moderate"]:
                 score += 20 * params["wind_weight"]
-            
+
             # Vindkast-risiko
             if (
                 "max(wind_speed_of_gust PT1H)" in row
                 and row["max(wind_speed_of_gust PT1H)"] >= params["wind_gust"]
             ):
                 score += 10 * params["wind_weight"]
-            
+
             # Vindretningsrisiko med forbedret vurdering
             if row["wind_dir_change"] >= params["wind_dir_change"]:
                 dir_factor = min(
                     20, row["wind_dir_change"] / 9
                 )  # Maks 20 poeng ved 180° endring
                 score += dir_factor * params["wind_weight"]
-            
+
             # Temperaturrisiko med gradert vurdering
             if row["air_temperature"] <= params["temp_cold"]:
                 score += 20 * params["temp_weight"]
@@ -419,7 +418,7 @@ def calculate_snow_drift_risk(
                     params["temp_cool"] - params["temp_cold"]
                 )
                 score += 10 * temp_factor * params["temp_weight"]
-            
+
             # Snørisiko med forbedret vurdering
             snow_change = abs(row["snow_depth_change"]) if pd.notna(row["snow_depth_change"]) else 0
             if snow_change >= params["snow_high"]:
@@ -431,9 +430,9 @@ def calculate_snow_drift_risk(
                 score += (20 + 20 * snow_factor) * params["snow_weight"]
             elif snow_change >= params["snow_low"]:
                 score += 10 * params["snow_weight"]
-            
+
             return min(100, score) / 100  # Normaliser til 0-1
-        
+
         # Beregn total risiko
         df["risk_score"] = df.apply(calculate_risk_score, axis=1)
         df["risk_level"] = pd.cut(
@@ -441,20 +440,20 @@ def calculate_snow_drift_risk(
             bins=[-np.inf, 0.3, 0.5, 0.7, np.inf],
             labels=["Lav", "Moderat", "Høy", "Kritisk"],
         )
-        
+
         # Identifiser perioder
         df["is_risk"] = df["risk_score"] > params.get("risk_threshold", 0.3)
         df["period_start"] = df["is_risk"].ne(df["is_risk"].shift()).cumsum()
         df["period_id"] = np.where(df["is_risk"], df["period_start"], np.nan)
         df = df.drop(["is_risk", "period_start"], axis=1)
-        
+
         # Analyser perioder
         periods_df = identify_risk_periods(
             df, min_duration=params.get("min_duration", 3)
         )
-        
+
         return df, periods_df
-        
+
     except Exception as e:
         logger.error(f"Feil i calculate_snow_drift_risk: {str(e)}", exc_info=True)
         raise
@@ -674,7 +673,7 @@ def analyze_wind_directions(df: DataFrame) -> dict[str, Any]:
 
 def analyze_settings(
     df: pd.DataFrame, critical_periods: pd.DataFrame
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Analyserer effektiviteten av gjeldende parameterinnstillinger.
 

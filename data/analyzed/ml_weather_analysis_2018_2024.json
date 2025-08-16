@@ -1,0 +1,184 @@
+{
+  "analysis_period": "2018-2024",
+  "timestamp": "2025-08-09T21:04:08.206942",
+  "status": "completed",
+  "data_points": 26206,
+  "snowdrift_classification": {
+    "train_accuracy": 1.0,
+    "test_accuracy": 1.0,
+    "feature_importance": [
+      [
+        "wind_speed",
+        0.20582605961979858
+      ],
+      [
+        "wind_chill",
+        0.1297890872511555
+      ],
+      [
+        "max(wind_speed PT1H)",
+        0.123769550638567
+      ],
+      [
+        "wind_gust",
+        0.1157181545469511
+      ],
+      [
+        "air_temperature",
+        0.1018469310205104
+      ],
+      [
+        "min(air_temperature PT1H)",
+        0.08216603819971177
+      ],
+      [
+        "max(air_temperature PT1H)",
+        0.07886324356077462
+      ],
+      [
+        "wind_gust_moderate",
+        0.061165366800926164
+      ],
+      [
+        "surface_snow_thickness",
+        0.02221664479620654
+      ],
+      [
+        "wind_gust_ratio",
+        0.020655037634381073
+      ],
+      [
+        "wind_from_direction",
+        0.014634169422039878
+      ],
+      [
+        "frost_risk",
+        0.010181717653294996
+      ],
+      [
+        "wind_y",
+        0.007121573432632132
+      ],
+      [
+        "near_freezing",
+        0.006543297857354423
+      ],
+      [
+        "temp_range_1h",
+        0.006003557103996627
+      ],
+      [
+        "relative_humidity",
+        0.0044967651433081976
+      ],
+      [
+        "wind_x",
+        0.004211294639824516
+      ],
+      [
+        "wind_gust_strong",
+        0.0028472337940777586
+      ],
+      [
+        "sum(precipitation_amount PT1H)",
+        0.0012564250734449262
+      ],
+      [
+        "temp_rising",
+        0.0003479228011601231
+      ],
+      [
+        "temp_falling",
+        0.000339929009883714
+      ],
+      [
+        "wind_gust_extreme",
+        0.0
+      ],
+      [
+        "temp_volatility",
+        0.0
+      ]
+    ],
+    "model_type": "RandomForestClassifier",
+    "features_used": [
+      "air_temperature",
+      "max(air_temperature PT1H)",
+      "min(air_temperature PT1H)",
+      "wind_speed",
+      "max(wind_speed PT1H)",
+      "wind_from_direction",
+      "surface_snow_thickness",
+      "sum(precipitation_amount PT1H)",
+      "relative_humidity",
+      "wind_x",
+      "wind_y",
+      "wind_chill",
+      "wind_gust",
+      "wind_gust_ratio",
+      "wind_gust_moderate",
+      "wind_gust_strong",
+      "wind_gust_extreme",
+      "temp_range_1h",
+      "temp_volatility",
+      "temp_rising",
+      "temp_falling",
+      "near_freezing",
+      "frost_risk"
+    ]
+  },
+  "weather_clustering": {
+    "n_clusters": 5,
+    "cluster_stats": {
+      "cluster_0": {
+        "size": 5370,
+        "percentage": 20.491490498359155,
+        "avg_temp": -6.097206703910614,
+        "avg_wind": 1.495031055900621,
+        "avg_snow": 25.519832402234638
+      },
+      "cluster_1": {
+        "size": 8748,
+        "percentage": 33.381668320232,
+        "avg_temp": 1.3845450388660265,
+        "avg_wind": 1.8421336206896552,
+        "avg_snow": 46.40139460448103
+      },
+      "cluster_2": {
+        "size": 7531,
+        "percentage": 28.737693657940927,
+        "avg_temp": 1.809985393706015,
+        "avg_wind": 1.9760820045558087,
+        "avg_snow": 1.8013145664586376
+      },
+      "cluster_3": {
+        "size": 1549,
+        "percentage": 5.910860108372129,
+        "avg_temp": -0.38902517753389276,
+        "avg_wind": 7.449515816655906,
+        "avg_snow": 32.24144609425436
+      },
+      "cluster_4": {
+        "size": 3008,
+        "percentage": 11.47828741509578,
+        "avg_temp": -3.7524268617021272,
+        "avg_wind": 1.8144475920679888,
+        "avg_snow": 65.29893617021277
+      }
+    },
+    "features_used": [
+      "air_temperature",
+      "wind_speed",
+      "surface_snow_thickness"
+    ]
+  },
+  "long_term_trends": {},
+  "summary": {
+    "data_quality": "høy",
+    "model_performance": "god",
+    "key_findings": [
+      "Snøfokk-klassifikator oppnår 100.0% nøyaktighet",
+      "Identifiserte 5 distinkte værsmønstre"
+    ]
+  }
+}

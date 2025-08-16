@@ -3,45 +3,43 @@
 
 import logging
 import logging.handlers
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import joblib
 import numpy as np
 import pandas as pd
 import psutil
 
-from .snow_constants import SnowDepthConfig
-
 
 # Forbedret logging-oppsett
 def setup_logging():
     """Konfigurerer logging med roterende filer og formattering"""
     logger = logging.getLogger(__name__)
-    
+
     # Fjern eksisterende handlers for å unngå duplikater
     if logger.handlers:
         for handler in logger.handlers:
             logger.removeHandler(handler)
-    
+
     logger.setLevel(logging.INFO)
-    
+
     # Rotering av loggfiler
     file_handler = logging.handlers.RotatingFileHandler(
         "ml_evaluation.log",
         maxBytes=1024 * 1024,
         backupCount=5,
     )
-    
+
     # Forbedret formattering
     formatter = logging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s"
     )
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
-    
+
     # Unngå propagering til root logger for å hindre duplikater
     logger.propagate = False
-    
+
     return logger
 
 
@@ -57,7 +55,7 @@ class MLEvaluator:
         self.metrics = {}
         self.logger = logging.getLogger(__name__)
         self.logger.info("Initialiserer MLEvaluator")
-        self.grouped_features: Dict[str, List[str]] = {
+        self.grouped_features: dict[str, list[str]] = {
             "temperature": ["air_temperature", "min_temp", "max_temp"],
             "wind": ["wind_speed", "max_wind"],
             "snow": ["snow_depth", "snow_change"],
@@ -67,7 +65,7 @@ class MLEvaluator:
         self,
         y_true: np.ndarray,
         y_pred: np.ndarray,
-        feature_importance: Optional[dict[str, float]] = None,
+        feature_importance: dict[str, float] | None = None,
     ) -> dict[str, Any]:
         """
         Evaluerer modellens ytelse med flere metrikker
@@ -336,7 +334,7 @@ class MLEvaluator:
     ) -> dict[str, Any]:
         """Evaluerer effekten av optimaliserte parametre mot originale parametre"""
         self.logger.info("Starter evaluering av parametereffekt")
-        
+
         try:
             # Komplette snøfokk-parametre
             snow_params = {
@@ -358,10 +356,10 @@ class MLEvaluator:
                 'risk_threshold': 0.7     # Risikogrense
             }
             from snofokk import calculate_snow_drift_risk
-            
+
             # Beregn risiko med standardparametre
             original_df, original_periods = calculate_snow_drift_risk(df, snow_params)
-            
+
             # Juster parametre basert på ML-optimalisering
             adjusted_params = snow_params.copy()
             if 'n_estimators' in optimized_params:
@@ -369,9 +367,9 @@ class MLEvaluator:
                 adjusted_params['wind_strong'] = 8.0 + (optimized_params['max_depth'] / 20.0) * 4.0
                 adjusted_params['wind_moderate'] = 5.0 + (optimized_params['min_samples_split'] / 10.0) * 2.0
                 adjusted_params['temp_threshold'] = -2.0 + (optimized_params['min_samples_leaf'] / 5.0)
-                
+
             optimized_df, optimized_periods = calculate_snow_drift_risk(df, adjusted_params)
-            
+
             return {
                 "risk_scores": {
                     "original": {
@@ -515,9 +513,9 @@ class MLEvaluator:
 
     def evaluate_parameters(
         self,
-        actual_params: Dict[str, float],
-        expected_params: Optional[Dict[str, float]] = None,
-    ) -> Dict[str, Any]:
+        actual_params: dict[str, float],
+        expected_params: dict[str, float] | None = None,
+    ) -> dict[str, Any]:
         """
         Evaluerer parametere.
 
@@ -531,7 +529,7 @@ class MLEvaluator:
         if expected_params is None:
             expected_params = {}
 
-        results: Dict[str, Dict[str, Any]] = {}
+        results: dict[str, dict[str, Any]] = {}
         for param, actual_value in actual_params.items():
             results[param] = {
                 "actual": actual_value,
