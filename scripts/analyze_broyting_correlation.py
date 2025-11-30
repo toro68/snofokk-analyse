@@ -44,7 +44,7 @@ def load_broyting_data() -> pd.DataFrame:
         try:
             dt = parse_norwegian_date(row['Dato'], row['Starttid'])
             datetimes.append(dt)
-        except:
+        except (ValueError, KeyError, TypeError):
             datetimes.append(None)
 
     df['datetime'] = datetimes

@@ -270,7 +270,7 @@ class HistoricalWeatherService:
             try:
                 with open(plowing_file, encoding='utf-8') as f:
                     plowing_data = json.load(f)
-            except:
+            except (json.JSONDecodeError, OSError, ValueError):
                 plowing_data = []
 
         # Legg til ny hendelse

@@ -235,12 +235,12 @@ class FrostClient:
 
             response.raise_for_status()
 
-        except requests.exceptions.Timeout:
-            raise FrostAPIError("Tidsavbrudd mot Frost API (30s)")
-        except requests.exceptions.ConnectionError:
-            raise FrostAPIError("Kunne ikke koble til Frost API. Sjekk internettforbindelse.")
+        except requests.exceptions.Timeout as e:
+            raise FrostAPIError("Tidsavbrudd mot Frost API (30s)") from e
+        except requests.exceptions.ConnectionError as e:
+            raise FrostAPIError("Kunne ikke koble til Frost API. Sjekk internettforbindelse.") from e
         except requests.exceptions.HTTPError as e:
-            raise FrostAPIError(f"HTTP-feil: {e}")
+            raise FrostAPIError(f"HTTP-feil: {e}") from e
 
         return self._parse_response(response.json())
 
