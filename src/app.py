@@ -57,7 +57,7 @@ def main():
         
         st.divider()
         
-        if st.button("🔄 Oppdater data", use_container_width=True):
+        if st.button("🔄 Oppdater data", width='stretch'):
             st.cache_data.clear()
             st.rerun()
         
@@ -148,7 +148,7 @@ def main():
                 'surface_snow_thickness': '{:.0f} cm',
                 'precipitation_1h': '{:.1f} mm',
             }),
-            use_container_width=True
+            width='stretch'
         )
     
     # Footer

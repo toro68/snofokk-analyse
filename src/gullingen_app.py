@@ -234,7 +234,7 @@ def main():
             step=6
         )
         
-        if st.button("Oppdater", use_container_width=True):
+        if st.button("Oppdater", width='stretch'):
             st.cache_data.clear()
             st.rerun()
         
@@ -377,7 +377,7 @@ def main():
             
             st.dataframe(
                 df[available_cols].tail(24).sort_values('reference_time', ascending=False),
-                use_container_width=True,
+                width='stretch',
                 hide_index=True
             )
         
@@ -524,7 +524,7 @@ def render_netatmo_map():
         map_style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",  # Lyst kart
     )
     
-    st.pydeck_chart(deck, use_container_width=True)
+    st.pydeck_chart(deck, width='stretch')
     
     # Temperaturstatistikk under kartet
     temps = [s.temperature for s in temp_stations]
@@ -565,7 +565,7 @@ def render_netatmo_map():
                 "temp_str": "Temp",
                 "hum_str": "Fukt"
             }),
-            use_container_width=True,
+            width='stretch',
             hide_index=True
         )
 
