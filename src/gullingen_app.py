@@ -18,7 +18,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import pandas as pd
 import pydeck as pdk
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import logging
 
 from src.config import settings
@@ -226,17 +226,59 @@ def main():
     with st.sidebar:
         st.header("Innstillinger")
         
-        hours_back = st.slider(
-            "Timer tilbake",
-            min_value=6,
-            max_value=72,
-            value=24,
-            step=6
+        local_now = datetime.now().astimezone()
+        local_tz = local_now.tzinfo or timezone.utc
+
+        if "period_start_local" not in st.session_state:
+            st.session_state["period_start_local"] = (local_now - timedelta(hours=24)).replace(second=0, microsecond=0)
+        if "period_end_local" not in st.session_state:
+            st.session_state["period_end_local"] = local_now.replace(second=0, microsecond=0)
+
+        active_start = st.session_state["period_start_local"].astimezone(local_tz)
+        active_end = st.session_state["period_end_local"].astimezone(local_tz)
+
+        min_date = (local_now - timedelta(days=7)).date()
+        max_date = local_now.date()
+
+        start_date = st.date_input(
+            "Startdato",
+            value=active_start.date(),
+            min_value=min_date,
+            max_value=max_date,
+            key="period_start_date"
         )
-        
-        if st.button("Oppdater", use_container_width=True):
-            st.cache_data.clear()
-            st.rerun()
+        start_time = st.time_input(
+            "Starttid",
+            value=active_start.time(),
+            key="period_start_time"
+        )
+
+        end_date = st.date_input(
+            "Sluttdato",
+            value=max(start_date, active_end.date()),
+            min_value=start_date,
+            max_value=max_date,
+            key="period_end_date"
+        )
+        end_time = st.time_input(
+            "Slutttid",
+            value=active_end.time(),
+            key="period_end_time"
+        )
+
+        if st.button("Oppdater", width='stretch'):
+            candidate_start = datetime.combine(start_date, start_time).replace(tzinfo=local_tz)
+            candidate_end = datetime.combine(end_date, end_time).replace(tzinfo=local_tz)
+
+            if candidate_end <= candidate_start:
+                st.error("Slutttid må være etter starttid")
+            elif candidate_end - candidate_start > timedelta(days=7):
+                st.error("Velg en periode på maks 7 dager")
+            else:
+                st.session_state["period_start_local"] = candidate_start
+                st.session_state["period_end_local"] = candidate_end
+                st.cache_data.clear()
+                st.rerun()
         
         st.divider()
         
@@ -297,10 +339,13 @@ def main():
         """)
     
     # Fetch data
+    selected_start_utc = st.session_state["period_start_local"].astimezone(timezone.utc)
+    selected_end_utc = st.session_state["period_end_local"].astimezone(timezone.utc)
+
     try:
         client = FrostClient()
         with st.spinner("Henter værdata..."):
-            weather_data = client.fetch_recent(hours_back=hours_back)
+            weather_data = client.fetch_period(selected_start_utc, selected_end_utc)
     except FrostAPIError as e:
         st.error(f"❌ Kunne ikke hente data: {e}")
         st.stop()
