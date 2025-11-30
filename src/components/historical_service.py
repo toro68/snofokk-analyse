@@ -3,7 +3,7 @@ Historisk værdata service med nysnø-beregninger og brøyting-tracking
 """
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
@@ -35,7 +35,7 @@ class HistoricalWeatherService:
             return False, "Maksimal periode er 14 dager"
         
         # Sjekk at det ikke er fremtid
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         if start_date > now:
             return False, "Startdato kan ikke være i fremtiden"
         
@@ -258,7 +258,7 @@ class HistoricalWeatherService:
             'dominant_type': dominant_type,
             'plowing_needed': plowing_needed,
             'recommendation': recommendation,
-            'hours_since_plowing': (datetime.now() - last_plowed).total_seconds() / 3600
+            'hours_since_plowing': (datetime.now(timezone.utc) - last_plowed).total_seconds() / 3600
         }
 
     def save_plowing_event(self, timestamp: datetime, notes: str = ""):
@@ -278,7 +278,7 @@ class HistoricalWeatherService:
         new_event = {
             'timestamp': timestamp.isoformat(),
             'notes': notes,
-            'recorded_at': datetime.now().isoformat()
+            'recorded_at': datetime.now(timezone.utc).isoformat()
         }
         
         plowing_data.append(new_event)

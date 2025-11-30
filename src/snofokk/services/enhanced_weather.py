@@ -5,7 +5,7 @@ Demonstrerer hvordan vi kan forbedre datautnyttelsen betydelig.
 """
 import asyncio
 import aiohttp
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 import pandas as pd
@@ -125,7 +125,7 @@ class EnhancedWeatherService:
     
     async def get_real_time_conditions(self) -> Dict[str, float]:
         """Hent sanntids værforhold med alle tilgjengelige detaljer"""
-        end_time = datetime.now()
+        end_time = datetime.now(timezone.utc)
         start_time = end_time - timedelta(hours=2)
         
         data = await self.get_enhanced_weather_data(start_time, end_time)
@@ -171,7 +171,7 @@ class EnhancedWeatherService:
         hours_back: int = 6
     ) -> Dict[str, any]:
         """Detaljert snøfokk-analyse med alle tilgjengelige data"""
-        end_time = datetime.now()
+        end_time = datetime.now(timezone.utc)
         start_time = end_time - timedelta(hours=hours_back)
         
         data = await self.get_enhanced_weather_data(start_time, end_time)
