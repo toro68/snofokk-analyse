@@ -55,3 +55,15 @@ data/*.json
 archive/legacy_root_files/
 archive/old_src/
 archive/old_scripts/
+archive/outdated_scripts/
+archive/outdated_md_files/
+archive/outdated_data/
+archive/analysis_data/
+archive/analysis_docs/
+archive/analysis_py/
+archive/root_misc/
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/

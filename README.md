@@ -241,13 +241,17 @@ config/                 # Systemkonfigurasjoner
 docs/                   # Teknisk dokumentasjon
 models/                 # ML-modeller
 tests/                  # Organiserte tester
-archive/                # Arkiverte filer (33 script + data)
+archive/                # Arkiverte filer (gamle script + data)
 ```
 
 ### 🗄️ **Arkiv-struktur:**
-- **`archive/outdated_scripts/`** - 33 arkiverte Python-filer
-- **`archive/outdated_md_files/`** - 9 utdaterte MD-filer  
-- **`archive/outdated_data/`** - Gamle data og logger
+- **`archive/analysis_data/`** – Historiske analyseresultater (CSV/JSON/PNG) flyttet ut av `data/analyzed/`
+- **`archive/analysis_docs/`** – Tidligere Markdown-rapporter og sammendrag
+- **`archive/analysis_py/`** – Samlet katalog for eldre Python-skript (124 filer flyttet hit)
+- **`archive/outdated_scripts/`** – Opprinnelig arkiv for utdaterte script (beholdt for historikk)
+- **`archive/outdated_md_files/`** – 9 utdaterte MD-filer  
+- **`archive/outdated_data/`** – Gamle data og logger
+- **`archive/root_misc/`** – Opprydding fra rot (eldre logg-filer, plowman-prototyper, cache-mapper, osv.)
 
 ## 🚀 Getting Started
 

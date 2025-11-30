@@ -1,4 +1,0 @@
-dato,date,år,måned,kategori,temp,vind,snø,nedbør,snøfokk_risiko,glattføre_risiko,snøfokk_årsak,glattføre_årsak
-25. feb. 2023,2023-02-25,2023,2,snow_plowing,-4.13,3.2,6338.333333333333,0.0,medium,low,Vindkjøling -10.5°C + vind 3.2m/s,Ingen kriterier oppfylt for glattføre-risiko
-20. jan. 2024,2024-01-20,2024,1,snow_plowing,-5.336666666666667,5.0,7106.666666666666,3.8000000000000007,medium,low,Vindkjøling -15.3°C + vind 5.0m/s,Ingen kriterier oppfylt for glattføre-risiko
-5. jan. 2025,2025-01-05,2025,1,snow_plowing,-3.9033333333333338,6.7,3202.2222222222226,4.800000000000001,medium,low,Vindkjøling -17.3°C + vind 6.7m/s,Ingen kriterier oppfylt for glattføre-risiko

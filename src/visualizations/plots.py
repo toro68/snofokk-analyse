@@ -96,6 +96,104 @@ class WeatherPlots:
         cls._safe_layout(fig)
         
         return fig
+
+    @classmethod
+    def create_snow_precip_plot(
+        cls,
+        df: pd.DataFrame,
+        title: str = "Snødybde og nedbør"
+    ) -> plt.Figure:
+        """Lag enkeltplot med snødybde og nedbør."""
+        if df is None or df.empty:
+            return cls._empty_figure("Ingen data tilgjengelig")
+
+        fig, ax = plt.subplots(figsize=(12, 4))
+        fig.suptitle(title, fontsize=13, fontweight='bold')
+
+        times = df['reference_time']
+        viz = settings.viz
+
+        cls._plot_snow_precip(ax, times, df, viz)
+        cls._format_time_axis(ax)
+        cls._safe_layout(fig)
+
+        return fig
+
+    @classmethod
+    def create_snow_depth_plot(
+        cls,
+        df: pd.DataFrame,
+        title: str = "Snødybde"
+    ) -> plt.Figure:
+        """Lag enkel visualisering av snødybde."""
+        if df is None or df.empty:
+            return cls._empty_figure("Ingen data tilgjengelig")
+
+        fig, ax = plt.subplots(figsize=(6, 4))
+        fig.suptitle(title, fontsize=12, fontweight='bold')
+
+        times = df['reference_time']
+        viz = settings.viz
+        cls._plot_snow_only(ax, times, df, viz)
+        cls._format_time_axis(ax)
+        cls._safe_layout(fig)
+        return fig
+
+    @classmethod
+    def create_precip_plot(
+        cls,
+        df: pd.DataFrame,
+        title: str = "Nedbør"
+    ) -> plt.Figure:
+        """Lag enkel visualisering av nedbør."""
+        if df is None or df.empty:
+            return cls._empty_figure("Ingen data tilgjengelig")
+
+        fig, ax = plt.subplots(figsize=(6, 4))
+        fig.suptitle(title, fontsize=12, fontweight='bold')
+
+        times = df['reference_time']
+        viz = settings.viz
+        cls._plot_precip_only(ax, times, df, viz)
+        cls._format_time_axis(ax)
+        cls._safe_layout(fig)
+        return fig
+
+    @classmethod
+    def create_temperature_plot(
+        cls,
+        df: pd.DataFrame,
+        title: str = "Temperatur"
+    ) -> plt.Figure:
+        if df is None or df.empty:
+            return cls._empty_figure("Ingen data tilgjengelig")
+
+        fig, ax = plt.subplots(figsize=(6, 4))
+        fig.suptitle(title, fontsize=12, fontweight='bold')
+        times = df['reference_time']
+        viz = settings.viz
+        cls._plot_temperature(ax, times, df, viz)
+        cls._format_time_axis(ax)
+        cls._safe_layout(fig)
+        return fig
+
+    @classmethod
+    def create_wind_plot(
+        cls,
+        df: pd.DataFrame,
+        title: str = "Vind"
+    ) -> plt.Figure:
+        if df is None or df.empty:
+            return cls._empty_figure("Ingen data tilgjengelig")
+
+        fig, ax = plt.subplots(figsize=(6, 4))
+        fig.suptitle(title, fontsize=12, fontweight='bold')
+        times = df['reference_time']
+        viz = settings.viz
+        cls._plot_wind(ax, times, df, viz)
+        cls._format_time_axis(ax)
+        cls._safe_layout(fig)
+        return fig
     
     @classmethod
     def create_wind_chill_plot(
@@ -162,17 +260,18 @@ class WeatherPlots:
         """Plot temperatur."""
         if 'air_temperature' in df.columns:
             temp = df['air_temperature'].ffill()
-            ax.plot(times, temp, color=viz.color_temp, 
-                   linewidth=2, label='Temperatur')
-            ax.axhline(y=0, color='navy', linestyle='--', 
-                      alpha=0.5, label='Frysepunkt')
-            ax.axhline(y=-5, color=viz.color_critical,
-                      linestyle=':', alpha=0.4, label='Snøfokk-terskel')
-        
+            ax.plot(times, temp, color=viz.color_temp,
+                   linewidth=2, label='Lufttemperatur')
+
+            if 'dew_point_temperature' in df.columns:
+                dew_point = df['dew_point_temperature'].ffill()
+                ax.plot(times, dew_point, color='#7E57C2',
+                        linewidth=1.8, linestyle='--', label='Duggpunkt')
+
         ax.set_ylabel('°C')
         ax.legend(loc='upper right', fontsize=8)
         ax.grid(True, alpha=0.3)
-    
+
     @classmethod
     def _plot_wind(cls, ax, times, df, viz):
         """Plot vindstyrke."""
@@ -180,22 +279,18 @@ class WeatherPlots:
             wind = df['wind_speed'].ffill()
             ax.plot(times, wind, color=viz.color_wind,
                    linewidth=2, label='Vind')
-            
+
             # Vindkast hvis tilgjengelig
             if 'wind_gust' in df.columns:
                 gust = df['wind_gust'].ffill()
                 ax.plot(times, gust, color=viz.color_wind,
-                       linewidth=1, alpha=0.5, linestyle='--', label='Vindkast')
-            
-            ax.axhline(y=8, color=viz.color_warning,
-                      linestyle='--', alpha=0.5, label='Advarsel (8 m/s)')
-            ax.axhline(y=10, color=viz.color_critical,
-                      linestyle='--', alpha=0.5, label='Kritisk (10 m/s)')
-        
+                        linewidth=1, alpha=0.6, linestyle='--', label='Vindkast')
+
+
         ax.set_ylabel('m/s')
         ax.legend(loc='upper right', fontsize=8)
         ax.grid(True, alpha=0.3)
-    
+
     @classmethod
     def _plot_snow_precip(cls, ax, times, df, viz):
         """Plot snødybde og nedbør."""
@@ -207,50 +302,92 @@ class WeatherPlots:
             ax.fill_between(times, 0, snow, color=viz.color_snow,
                            alpha=0.3, label='Snødybde')
             ax.plot(times, snow, color=viz.color_snow, linewidth=2)
-        
+
+
         ax.set_ylabel('Snødybde (cm)', color=viz.color_snow)
         ax.tick_params(axis='y', labelcolor=viz.color_snow)
-        
+
         # Nedbør (høyre akse)
         if 'precipitation_1h' in df.columns:
             precip = df['precipitation_1h'].fillna(0)
             ax2.bar(times, precip, width=0.03, alpha=0.6,
                    color=viz.color_precip, label='Nedbør')
-        
+
+
         ax2.set_ylabel('Nedbør (mm/h)', color=viz.color_precip)
         ax2.tick_params(axis='y', labelcolor=viz.color_precip)
-        
+
         # Kombinert legend
         lines1, labels1 = ax.get_legend_handles_labels()
         lines2, labels2 = ax2.get_legend_handles_labels()
         ax.legend(lines1 + lines2, labels1 + labels2, loc='upper right', fontsize=8)
         
         ax.grid(True, alpha=0.3)
+
+    @classmethod
+    def _plot_snow_only(cls, ax, times, df, viz):
+        if 'surface_snow_thickness' not in df.columns:
+            ax.text(0.5, 0.5, 'Ingen snødata', ha='center', va='center', transform=ax.transAxes)
+            return
+
+        snow = df['surface_snow_thickness'].ffill()
+        ax.fill_between(times, 0, snow, color=viz.color_snow,
+                        alpha=0.3)
+        ax.plot(times, snow, color=viz.color_snow, linewidth=2, label='Snødybde')
+
+        ax.set_ylabel('Snødybde (cm)')
+        ax.legend(loc='upper right', fontsize=8)
+        ax.grid(True, alpha=0.3)
+
+    @classmethod
+    def _plot_precip_only(cls, ax, times, df, viz):
+        if 'precipitation_1h' not in df.columns:
+            ax.text(0.5, 0.5, 'Ingen nedbørsdata', ha='center', va='center', transform=ax.transAxes)
+            return
+
+        precip = df['precipitation_1h'].fillna(0)
+        ax.bar(times, precip, width=0.03, alpha=0.6,
+               color=viz.color_precip, label='Nedbør (mm/h)')
+
+
+        ax.set_ylabel('Nedbør (mm/h)')
+        ax.legend(loc='upper right', fontsize=8)
+        ax.grid(True, alpha=0.3)
     
     @classmethod
     def _plot_temp_wind_combined(cls, ax, times, df, viz):
         """Plot temperatur og vind på samme akse."""
         ax2 = ax.twinx()
-        
+
         # Temperatur (venstre)
         if 'air_temperature' in df.columns:
             temp = df['air_temperature'].ffill()
             ax.plot(times, temp, color=viz.color_temp,
-                   linewidth=2, label='Temp')
-            ax.axhline(y=0, color='navy', linestyle='--', alpha=0.3)
-        
+                   linewidth=2, label='Lufttemperatur')
+
+        if 'dew_point_temperature' in df.columns:
+            dew_point = df['dew_point_temperature'].ffill()
+            ax.plot(times, dew_point, color='#7E57C2', linestyle='--',
+                    linewidth=1.6, label='Duggpunkt')
+
         ax.set_ylabel('°C', color=viz.color_temp)
         ax.tick_params(axis='y', labelcolor=viz.color_temp)
-        
+
         # Vind (høyre)
         if 'wind_speed' in df.columns:
             wind = df['wind_speed'].ffill()
             ax2.plot(times, wind, color=viz.color_wind,
-                    linewidth=2, label='Vind')
-        
+                     linewidth=2, label='Vind')
+
+        if 'wind_gust' in df.columns:
+            gust = df['wind_gust'].ffill()
+            ax2.plot(times, gust, color=viz.color_wind,
+                     linewidth=1.2, linestyle='--', alpha=0.7, label='Vindkast')
+
+
         ax2.set_ylabel('m/s', color=viz.color_wind)
         ax2.tick_params(axis='y', labelcolor=viz.color_wind)
-        
+
         # Legend
         lines1, labels1 = ax.get_legend_handles_labels()
         lines2, labels2 = ax2.get_legend_handles_labels()

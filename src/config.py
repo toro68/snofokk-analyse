@@ -107,7 +107,7 @@ class SnowdriftThresholds:
     wind_speed_median: float = 12.2     # Empirisk median for snøtransport
     
     # Vindkast-terskler (NY - bedre trigger!)
-    wind_gust_critical: float = 20.0    # Kritisk risiko
+    wind_gust_critical: float = 22.0    # Kritisk risiko
     wind_gust_warning: float = 15.0     # Moderat risiko
     
     # Kritiske vindretninger (SE-S)
@@ -116,7 +116,7 @@ class SnowdriftThresholds:
     
     # Andre terskler
     temperature_max: float = -1.0       # Må være frost
-    snow_depth_min_cm: float = 3.0      # Minimum snødekke
+    snow_depth_min_cm: float = 6.0      # Minimum snødekke
     fresh_snow_threshold: float = 0.3   # cm/h for nysnø
 
 

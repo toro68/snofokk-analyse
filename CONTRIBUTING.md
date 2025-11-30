@@ -11,12 +11,12 @@
 2. **Set up Python environment**:
    ```bash
    python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   source venv/bin/activate  # Windows: venv\Scripts\activate
    pip install -r requirements.txt
-   pip install -r requirements-lock.txt  # For exact reproducible builds
+   # Bruk requirements-lock.txt kun ved behov for helt identiske builds
    ```
 
-3. **Install development dependencies**:
+3. **Install development dependencies** (dersom ikke allerede i requirements):
    ```bash
    pip install pytest pytest-cov ruff black mypy
    ```
@@ -65,18 +65,22 @@ The project uses GitHub Actions for continuous integration:
 
 ```
 alarm-system/
-├── src/                    # Main application code
-│   ├── snofokk/           # Core package
-│   │   ├── services/      # Service layer (weather, analysis, plotting)
-│   │   ├── config.py      # Pydantic configuration
-│   │   └── models.py      # Data models
-│   └── live_conditions_app.py  # Main Streamlit app
-├── tests/                 # Test suite
-├── data/                  # Data files
-├── docs/                  # Documentation
-├── scripts/               # Analysis scripts
-└── config/                # Configuration files
+├── src/                     # Hovedapplikasjon (Streamlit)
+│   ├── gullingen_app.py     # Aktuell dashboard-app
+│   ├── analyzers/           # Risikoanalyse-moduler (snøfokk, slaps, is, nysnø)
+│   ├── visualizations/      # Matplotlib-grafer og PyDeck-kart
+│   ├── config.py            # Dataclass-konfig (terskler, API)
+│   ├── frost_client.py      # Frost API-klient
+│   └── netatmo_client.py    # Netatmo-klient (valgfri)
+├── tests/                  # Pytest-suite (f.eks. test_validert_glattfore.py)
+├── data/                   # Aktive datasett (historiske CSV/JSON)
+├── docs/                   # Dokumentasjon
+├── scripts/                # Analyse-/hjelpeskript
+├── archive/                # Historiske filer (analysis_data/docs/py/root_misc)
+└── config/                 # Konfigurasjonsfiler og templates
 ```
+
+> **Merk:** Flytt gamle resultater til `archive/analysis_*` eller `archive/root_misc/` i stedet for å slette. Disse mappene er ignorert i Git og holder repoet ryddig.
 
 ## Making Changes
 

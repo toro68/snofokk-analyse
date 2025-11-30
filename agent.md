@@ -50,6 +50,12 @@ Viser:
 - **166 brøyteepisoder** analysert
 - **Fordeling**: Januar (52), Desember (45), Februar (44), Mars (16)
 
+**Siste analyser (29. november 2025):**
+- `data/analyzed/broyting_weather_correlation_2025.csv`
+- `data/analyzed/maintenance_weather_analysis.json`
+
+Guiden i `data/analyzed/ANALYSIS_METHOD_GUIDE.md` beskriver hele kjøringen og oppdateres ved nye analyser.
+
 ### Værdata  
 - **Kilde**: Frost API, stasjon SN46220 Gullingen (639 moh)
 - **Elementer**: Temperatur, vind, nedbør, snødybde, fuktighet
@@ -388,11 +394,13 @@ Analyse av 166 brøyteepisoder (2022-2025) viser:
 | SNØFOKK | 11% | -3.9°C | -5.6°C | 0.2mm | 10.3 m/s |
 | ANNET | 42% | - | - | - | - |
 
-### Analysemoduler
-1. `SnowdriftAnalyzer` - Snøfokk-risiko
-2. `SlipperyRoadAnalyzer` - Glattføre-risiko
-3. `FreshSnowDetector` - Nysnø-deteksjon (TODO)
-4. `SlapsDetector` - Slaps-deteksjon (TODO)
+### Analysemoduler (per 30. november 2025)
+1. `SnowdriftAnalyzer` – Snøfokk-risiko (live i `src/analyzers/snowdrift.py`)
+2. `SlipperyRoadAnalyzer` – Glattføre-risiko (live i `src/analyzers/slippery_road.py`)
+3. `FreshSnowAnalyzer` – Nysnø-deteksjon (live i `src/analyzers/fresh_snow.py`)
+4. `SlapsAnalyzer` – Slaps-deteksjon (live i `src/analyzers/slaps.py`)
+
+> **Merk:** Alle fire analysatorene kjøres direkte på ferske Frost-data i `src/gullingen_app.py` og bruker terskler fra `src/config.py`. Historiske ML-prototyper ligger i `archive/analysis_py/` og er ikke i aktiv bruk.
 
 ---
 
@@ -529,14 +537,13 @@ For spørsmål om systemet eller tilgang til varsler, kontakt administrator.
 
 ## 📁 Datakilder
 
-### Analyserapporter
-- `data/analyzed/FINAL_CORRECTED_SEASON_ANALYSIS.md` - Snøfokk 2023-2024
-- `data/analyzed/realistic_snowdrift_report.txt` - Snøfokk-statistikk
-- `data/analyzed/realistic_slippery_road_report.txt` - Glatt vei-analyse
-- `data/analyzed/ml_slush_slippery_criteria_20250810_0844.json` - ML-terskler
-- `data/analyzed/final_calibrated_thresholds.json` - Kalibrerte grenseverdier
-- `data/analyzed/broyting_weather_correlation_20250811_2007.json` - Brøytekorrelasjon
+### Analyserapporter (oppdatert 29. november 2025)
+- `data/analyzed/broyting_weather_correlation_2025.csv` – Vær + brøyting (166 episoder, 2022-2025)
+- `data/analyzed/maintenance_weather_analysis.json` – Oppsummering pr. vedlikeholdstype
+- `data/analyzed/ANALYSIS_METHOD_GUIDE.md` – Dokumentert fremgangsmåte for siste kjøring
+
+> Historiske rapporter og ML-filer ligger i `archive/analysis_*` for referanse. Kun filene over brukes som grunnlag akkurat nå.
 
 ### Rådata
-- `data/analyzed/Rapport 2022-2025.csv` - Brøyterapporter
-- Frost API stasjon SN46220 - Historiske værdata
+- `data/analyzed/Rapport 2022-2025.csv` – Manuellt beriket brøyte-logg (166 episoder)
+- Frost API stasjon SN46220 – Live værdata til appen

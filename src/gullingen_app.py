@@ -32,6 +32,7 @@ from src.analyzers import (
     RiskLevel
 )
 from src.plowing_service import PlowingInfo, get_plowing_info
+from src.visualizations import WeatherPlots
 
 logger = logging.getLogger(__name__)
 
@@ -141,6 +142,20 @@ def render_compact_risk_card(icon: str, title: str, result, key: str):
                 st.caption(f"Scenario: {result.scenario}")
 
 
+def render_risk_details(result):
+    """Vis detaljer for et analyseresultat i tabber."""
+    emoji = get_risk_emoji(result.risk_level)
+    st.markdown(f"{emoji} **{result.risk_level.norwegian.upper()}** – {result.message}")
+
+    if result.factors:
+        st.caption("Nøkkelfaktorer:")
+        for factor in result.factors:
+            st.write(f"• {factor}")
+
+    if result.scenario:
+        st.caption(f"Scenario: {result.scenario}")
+
+
 def render_key_metrics(df, plowing_info: PlowingInfo):
     """Render current weather metrics."""
     latest = df.iloc[-1]
@@ -180,10 +195,10 @@ def render_key_metrics(df, plowing_info: PlowingInfo):
     with col5:
         if plowing_info.last_plowing:
             st.metric(f"{plowing_info.status_emoji} Siste brøyting", plowing_info.formatted_time)
-        elif plowing_info.error:
-            st.metric("🚜 Siste brøyting", "N/A", help=plowing_info.error)
         else:
-            st.metric("🚜 Siste brøyting", "Ingen data")
+            st.metric("🚜 Siste brøyting", "Ingen registrert")
+            if plowing_info.error:
+                st.caption(plowing_info.error)
 
 
 def get_overall_status(results: dict) -> tuple[str, str, RiskLevel]:
@@ -394,18 +409,50 @@ def main():
     
     st.divider()
     
-    # Risk cards - 2x2 grid on desktop, stacked on mobile
+    st.subheader("Værgrafer")
+    snow_tab, precip_tab, temp_tab, wind_tab = st.tabs([
+        "❄️ Snødybde",
+        "🌧️ Nedbør",
+        "🌡️ Temperatur",
+        "🌬️ Vind",
+    ])
+
+    with snow_tab:
+        fig = WeatherPlots.create_snow_depth_plot(df)
+        st.pyplot(fig)
+        plt.close(fig)
+
+    with precip_tab:
+        fig = WeatherPlots.create_precip_plot(df)
+        st.pyplot(fig)
+        plt.close(fig)
+
+    with temp_tab:
+        fig = WeatherPlots.create_temperature_plot(df)
+        st.pyplot(fig)
+        plt.close(fig)
+
+    with wind_tab:
+        fig = WeatherPlots.create_wind_plot(df)
+        st.pyplot(fig)
+        plt.close(fig)
+
+    # Risiko og detaljer – linjert visning
     st.subheader("Varslingsstatus")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        render_compact_risk_card("❄️", "Nysnø", results["Nysnø"], "snow")
-        render_compact_risk_card("❄️", "Slaps", results["Slaps"], "slaps")
-    
-    with col2:
-        render_compact_risk_card("🌬️", "Snøfokk", results["Snøfokk"], "drift")
-        render_compact_risk_card("🧊", "Glatte veier", results["Glatte veier"], "ice")
+    st.markdown("### ❄️ Nysnø")
+    render_risk_details(results["Nysnø"])
+
+    st.divider()
+    st.markdown("### ❄️ Slaps")
+    render_risk_details(results["Slaps"])
+
+    st.divider()
+    st.markdown("### 🌬️ Snøfokk")
+    render_risk_details(results["Snøfokk"])
+
+    st.divider()
+    st.markdown("### 🧊 Glatte veier")
+    render_risk_details(results["Glatte veier"])
     
     st.divider()
     
