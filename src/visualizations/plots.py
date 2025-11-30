@@ -257,16 +257,28 @@ class WeatherPlots:
     
     @classmethod
     def _plot_temperature(cls, ax, times, df, viz):
-        """Plot temperatur."""
+        """Plot temperatur med bakketemperatur."""
         if 'air_temperature' in df.columns:
             temp = df['air_temperature'].ffill()
             ax.plot(times, temp, color=viz.color_temp,
                    linewidth=2, label='Lufttemperatur')
 
-            if 'dew_point_temperature' in df.columns:
-                dew_point = df['dew_point_temperature'].ffill()
-                ax.plot(times, dew_point, color='#7E57C2',
-                        linewidth=1.8, linestyle='--', label='Duggpunkt')
+        # Bakketemperatur - kritisk for isdannelse
+        if 'surface_temperature' in df.columns:
+            surface_temp = df['surface_temperature'].ffill()
+            ax.plot(times, surface_temp, color='#1E88E5',
+                    linewidth=2, linestyle='-', label='Bakketemperatur')
+            # Marker frysefare: luft > 0, bakke < 0
+            if 'air_temperature' in df.columns:
+                temp = df['air_temperature'].ffill()
+                freeze_risk = (temp > 0) & (surface_temp < 0)
+                if freeze_risk.any():
+                    ax.fill_between(times, temp, surface_temp,
+                                   where=freeze_risk, alpha=0.3,
+                                   color='#E53935', label='Skjult frysefare')
+
+        # Frysepunkt-linje
+        ax.axhline(y=0, color='navy', linestyle='-', alpha=0.4, linewidth=1)
 
         ax.set_ylabel('°C')
         ax.legend(loc='upper right', fontsize=8)
@@ -335,8 +347,32 @@ class WeatherPlots:
                         alpha=0.3)
         ax.plot(times, snow, color=viz.color_snow, linewidth=2, label='Snødybde')
 
+        # Beregn snøendring siste 6 timer (nysnø-indikator)
+        ax2 = ax.twinx()
+        snow_change_6h = snow.diff(periods=6).fillna(0)  # 6 timers endring
+        
+        # Vis bare positive endringer (nysnø)
+        new_snow = snow_change_6h.clip(lower=0)
+        ax2.bar(times, new_snow, width=0.02, alpha=0.6,
+                color='#43A047', label='Nysnø (6t)')
+        
+        # Marker signifikant nysnø (≥5 cm)
+        significant = new_snow >= 5
+        if significant.any():
+            ax2.scatter(times[significant], new_snow[significant],
+                       color='#E53935', s=50, zorder=5, marker='v',
+                       label='≥5 cm (brøyting)')
+
+        ax2.set_ylabel('Nysnø siste 6t (cm)', color='#43A047')
+        ax2.tick_params(axis='y', labelcolor='#43A047')
+        ax2.set_ylim(bottom=0)
+
+        # Kombinert legend
+        lines1, labels1 = ax.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax.legend(lines1 + lines2, labels1 + labels2, loc='upper right', fontsize=8)
+
         ax.set_ylabel('Snødybde (cm)')
-        ax.legend(loc='upper right', fontsize=8)
         ax.grid(True, alpha=0.3)
 
     @classmethod
