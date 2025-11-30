@@ -194,6 +194,44 @@ class WeatherPlots:
         cls._format_time_axis(ax)
         cls._safe_layout(fig)
         return fig
+
+    @classmethod
+    def create_wind_direction_plot(
+        cls,
+        df: pd.DataFrame,
+        title: str = "Vindretning"
+    ) -> plt.Figure:
+        """Lag plot for vindretning med kritisk sektor markert."""
+        if df is None or df.empty:
+            return cls._empty_figure("Ingen data tilgjengelig")
+
+        fig, ax = plt.subplots(figsize=(6, 4))
+        fig.suptitle(title, fontsize=12, fontweight='bold')
+        times = df['reference_time']
+        viz = settings.viz
+        cls._plot_wind_direction(ax, times, df, viz)
+        cls._format_time_axis(ax)
+        cls._safe_layout(fig)
+        return fig
+
+    @classmethod
+    def create_accumulated_precip_plot(
+        cls,
+        df: pd.DataFrame,
+        title: str = "Akkumulert nedbør"
+    ) -> plt.Figure:
+        """Lag plot for akkumulert nedbør."""
+        if df is None or df.empty:
+            return cls._empty_figure("Ingen data tilgjengelig")
+
+        fig, ax = plt.subplots(figsize=(6, 4))
+        fig.suptitle(title, fontsize=12, fontweight='bold')
+        times = df['reference_time']
+        viz = settings.viz
+        cls._plot_accumulated_precip(ax, times, df, viz)
+        cls._format_time_axis(ax)
+        cls._safe_layout(fig)
+        return fig
     
     @classmethod
     def create_wind_chill_plot(
@@ -228,10 +266,10 @@ class WeatherPlots:
             for t, w in zip(temp, wind)
         ]
         
-        ax.plot(times, temp, color=settings.viz.color_temp, 
-               linewidth=2, label='Lufttemperatur', alpha=0.7)
+        ax.plot(times, temp, color=settings.viz.color_temp,
+                linewidth=2, label='Lufttemperatur', alpha=0.7)
         ax.plot(times, wind_chill, color=settings.viz.color_critical,
-               linewidth=2, label='Vindkjøling', linestyle='--')
+                linewidth=2, label='Vindkjøling', linestyle='--')
         
         # Terskler
         ax.axhline(y=-12, color=settings.viz.color_warning, 
@@ -240,10 +278,24 @@ class WeatherPlots:
                   linestyle=':', alpha=0.7, label='Kritisk (-15°C)')
         ax.axhline(y=0, color='navy', linestyle='-', alpha=0.3)
         
-        ax.fill_between(times, temp, wind_chill, 
-                       where=[wc < t for t, wc in zip(temp, wind_chill)],
-                       alpha=0.2, color=settings.viz.color_critical,
-                       label='Vindkjøling-effekt')
+        ax.fill_between(times, temp, wind_chill,
+                        where=[wc < t for t, wc in zip(temp, wind_chill)],
+                        alpha=0.2, color=settings.viz.color_critical,
+                        label='Vindkjøling-effekt')
+
+        invalid_mask = [t >= 10 or w < 1.34 for t, w in zip(temp, wind)]
+        if any(invalid_mask):
+            y_min, y_max = ax.get_ylim()
+            ax.fill_between(
+                times,
+                [y_min] * len(times),
+                [y_max] * len(times),
+                where=invalid_mask,
+                color='#B0BEC5',
+                alpha=0.15,
+                label='Ikke gyldig (mildvær/lite vind)'
+            )
+            ax.set_ylim(y_min, y_max)
         
         ax.set_ylabel('Temperatur (°C)')
         ax.set_title(title)
@@ -257,7 +309,7 @@ class WeatherPlots:
     
     @classmethod
     def _plot_temperature(cls, ax, times, df, viz):
-        """Plot temperatur med bakketemperatur."""
+        """Plot temperatur med bakketemperatur og duggpunkt."""
         if 'air_temperature' in df.columns:
             temp = df['air_temperature'].ffill()
             ax.plot(times, temp, color=viz.color_temp,
@@ -277,6 +329,12 @@ class WeatherPlots:
                                    where=freeze_risk, alpha=0.3,
                                    color='#E53935', label='Skjult frysefare')
 
+        # Duggpunkt - kritisk for snø vs regn
+        if 'dew_point_temperature' in df.columns:
+            dew_point = df['dew_point_temperature'].ffill()
+            ax.plot(times, dew_point, color='#7E57C2',
+                    linewidth=1.5, linestyle='--', label='Duggpunkt')
+
         # Frysepunkt-linje
         ax.axhline(y=0, color='navy', linestyle='-', alpha=0.4, linewidth=1)
 
@@ -287,10 +345,18 @@ class WeatherPlots:
     @classmethod
     def _plot_wind(cls, ax, times, df, viz):
         """Plot vindstyrke."""
+        thresholds = settings.snowdrift
+
         if 'wind_speed' in df.columns:
             wind = df['wind_speed'].ffill()
             ax.plot(times, wind, color=viz.color_wind,
-                   linewidth=2, label='Vind')
+                    linewidth=2, label='Vind')
+
+            # Marker terskler for snittvind
+            ax.axhline(thresholds.wind_speed_warning, color=viz.color_warning,
+                       linestyle=':', linewidth=1, alpha=0.7, label='Vind 8 m/s (advarsel)')
+            ax.axhline(thresholds.wind_speed_critical, color=viz.color_critical,
+                       linestyle='--', linewidth=1, alpha=0.7, label='Vind 10 m/s (kritisk)')
 
             # Vindkast hvis tilgjengelig
             if 'wind_gust' in df.columns:
@@ -298,6 +364,10 @@ class WeatherPlots:
                 ax.plot(times, gust, color=viz.color_wind,
                         linewidth=1, alpha=0.6, linestyle='--', label='Vindkast')
 
+                ax.axhline(thresholds.wind_gust_warning, color='#EF6C00', linestyle=':',
+                           linewidth=1, alpha=0.6, label='Vindkast 15 m/s (advarsel)')
+                ax.axhline(thresholds.wind_gust_critical, color='#B71C1C', linestyle='--',
+                           linewidth=1, alpha=0.6, label='Vindkast 22 m/s (kritisk)')
 
         ax.set_ylabel('m/s')
         ax.legend(loc='upper right', fontsize=8)
@@ -309,11 +379,25 @@ class WeatherPlots:
         ax2 = ax.twinx()
         
         # Snødybde (venstre akse)
+        thresholds = settings.fresh_snow
+
         if 'surface_snow_thickness' in df.columns:
             snow = df['surface_snow_thickness'].ffill()
             ax.fill_between(times, 0, snow, color=viz.color_snow,
                            alpha=0.3, label='Snødybde')
             ax.plot(times, snow, color=viz.color_snow, linewidth=2)
+
+            # Vis seks-timers snøøkning direkte i figuren
+            snow_change_6h = snow.diff(periods=6)
+            significant = snow_change_6h >= thresholds.snow_increase_warning
+            critical = snow_change_6h >= thresholds.snow_increase_critical
+            if significant.any():
+                ax.scatter(times[significant], snow[significant],
+                           color='#E65100', marker='^', s=40, label='≥5 cm (6t)')
+            if critical.any():
+                ax.scatter(times[critical], snow[critical],
+                           color='#B71C1C', marker='^', s=80,
+                           linewidth=1.5, label='≥10 cm (6t)')
 
 
         ax.set_ylabel('Snødybde (cm)', color=viz.color_snow)
@@ -388,6 +472,60 @@ class WeatherPlots:
 
         ax.set_ylabel('Nedbør (mm/h)')
         ax.legend(loc='upper right', fontsize=8)
+        ax.grid(True, alpha=0.3)
+
+    @classmethod
+    def _plot_wind_direction(cls, ax, times, df, viz):
+        """Plot vindretning med kritisk sektor markert (SE-S 135-225°)."""
+        if 'wind_from_direction' not in df.columns:
+            ax.text(0.5, 0.5, 'Ingen vindretningsdata', ha='center', va='center', transform=ax.transAxes)
+            return
+
+        wind_dir = df['wind_from_direction'].ffill()
+        
+        # Plott vindretning
+        ax.scatter(times, wind_dir, c=viz.color_wind, s=15, alpha=0.7, label='Vindretning')
+        
+        # Marker kritisk sektor (SE-S: 135-225°) - spesielt utsatt for snøfokk
+        ax.axhspan(135, 225, alpha=0.2, color='#E53935', label='Kritisk sektor (SE-S)')
+        
+        # Horisontal linje for hovedretninger
+        ax.axhline(y=0, color='gray', linestyle=':', alpha=0.5)
+        ax.axhline(y=90, color='gray', linestyle=':', alpha=0.5)
+        ax.axhline(y=180, color='gray', linestyle=':', alpha=0.5)
+        ax.axhline(y=270, color='gray', linestyle=':', alpha=0.5)
+        ax.axhline(y=360, color='gray', linestyle=':', alpha=0.5)
+        
+        # Y-akse labels
+        ax.set_ylim(0, 360)
+        ax.set_yticks([0, 45, 90, 135, 180, 225, 270, 315, 360])
+        ax.set_yticklabels(['N', 'NE', 'Ø', 'SE', 'S', 'SW', 'V', 'NW', 'N'])
+        
+        ax.set_ylabel('Retning')
+        ax.legend(loc='upper right', fontsize=8)
+        ax.grid(True, alpha=0.3)
+
+    @classmethod
+    def _plot_accumulated_precip(cls, ax, times, df, viz):
+        """Plot akkumulert nedbør over perioden."""
+        if 'precipitation_1h' not in df.columns:
+            ax.text(0.5, 0.5, 'Ingen nedbørsdata', ha='center', va='center', transform=ax.transAxes)
+            return
+
+        precip = df['precipitation_1h'].fillna(0)
+        accumulated = precip.cumsum()
+        
+        # Akkumulert linje
+        ax.fill_between(times, 0, accumulated, alpha=0.3, color=viz.color_precip)
+        ax.plot(times, accumulated, color=viz.color_precip, linewidth=2, label='Akkumulert nedbør')
+        
+        # Vis total
+        total = accumulated.iloc[-1] if len(accumulated) > 0 else 0
+        ax.axhline(y=total, color=viz.color_precip, linestyle='--', alpha=0.5)
+        ax.text(times.iloc[-1], total, f'  {total:.1f} mm', va='center', fontsize=9, color=viz.color_precip)
+        
+        ax.set_ylabel('Akkumulert (mm)')
+        ax.legend(loc='upper left', fontsize=8)
         ax.grid(True, alpha=0.3)
     
     @classmethod

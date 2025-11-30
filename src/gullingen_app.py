@@ -410,11 +410,12 @@ def main():
     st.divider()
     
     st.subheader("Værgrafer")
-    snow_tab, precip_tab, temp_tab, wind_tab = st.tabs([
+    snow_tab, precip_tab, temp_tab, wind_tab, wind_dir_tab = st.tabs([
         "❄️ Snødybde",
         "🌧️ Nedbør",
         "🌡️ Temperatur",
-        "🌬️ Vind",
+        "🌬️ Vindstyrke",
+        "🧭 Vindretning",
     ])
 
     with snow_tab:
@@ -423,18 +424,31 @@ def main():
         plt.close(fig)
 
     with precip_tab:
-        fig = WeatherPlots.create_precip_plot(df)
-        st.pyplot(fig)
-        plt.close(fig)
+        col1, col2 = st.columns(2)
+        with col1:
+            fig = WeatherPlots.create_precip_plot(df)
+            st.pyplot(fig)
+            plt.close(fig)
+        with col2:
+            fig = WeatherPlots.create_accumulated_precip_plot(df)
+            st.pyplot(fig)
+            plt.close(fig)
 
     with temp_tab:
         fig = WeatherPlots.create_temperature_plot(df)
         st.pyplot(fig)
+        st.caption("💡 Duggpunkt < 0°C = nedbør faller som snø")
         plt.close(fig)
 
     with wind_tab:
         fig = WeatherPlots.create_wind_plot(df)
         st.pyplot(fig)
+        plt.close(fig)
+
+    with wind_dir_tab:
+        fig = WeatherPlots.create_wind_direction_plot(df)
+        st.pyplot(fig)
+        st.caption("⚠️ SE-S (135-225°) er kritisk retning for snøfokk på Gullingen")
         plt.close(fig)
 
     # Risiko og detaljer – linjert visning
