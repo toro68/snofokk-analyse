@@ -236,44 +236,36 @@ class PlowmanClient:
         """
         Scrape brøytedata direkte fra HTML-siden.
         
-        Fallback hvis API ikke fungerer.
+        Henter GeoJSON-data fra Next.js-applikasjonen.
+        Finner lastUpdated-tidspunkter som er encoded som "$D2025-11-27T11:20:34.000Z".
         """
         try:
+            import re
+            
             response = self.session.get(
                 f'{self.BASE_URL}/nb/share/{self.share_id}',
                 timeout=15
             )
             
             if response.status_code != 200:
+                logger.warning(f"Plowman share-side returnerte {response.status_code}")
                 return None
             
             html = response.text
             
-            # Let etter JSON-data i Next.js script-tagger
-            import re
-            
-            # Finn self.__next_f.push data
-            pattern = r'self\.__next_f\.push\(\[1,"([^"]+)"\]\)'
+            # Next.js encoder datoer som "$D<ISO-timestamp>"
+            # Finn alle lastUpdated-tidspunkter i GeoJSON-dataene
+            pattern = r'\$D(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z)'
             matches = re.findall(pattern, html)
             
-            for match in matches:
-                try:
-                    # Unescape JSON
-                    unescaped = match.replace('\\"', '"').replace('\\n', '\n')
-                    
-                    # Let etter dato/tidspunkt
-                    date_pattern = r'(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})'
-                    dates = re.findall(date_pattern, unescaped)
-                    
-                    if dates:
-                        # Ta den nyeste datoen
-                        latest_date = max(dates)
-                        ts = datetime.fromisoformat(latest_date.replace('Z', '+00:00'))
-                        return PlowingEvent(timestamp=ts)
-                        
-                except Exception:
-                    continue
+            if matches:
+                # Finn nyeste tidspunkt
+                latest_date = max(matches)
+                ts = datetime.fromisoformat(latest_date.replace('Z', '+00:00'))
+                logger.info(f"Fant siste brøyting: {ts}")
+                return PlowingEvent(timestamp=ts)
             
+            logger.warning("Ingen lastUpdated-tidspunkter funnet i HTML")
             return None
             
         except Exception as e:

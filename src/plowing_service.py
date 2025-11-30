@@ -14,11 +14,12 @@ from typing import Optional
 from dataclasses import dataclass
 import logging
 
+from src.plowman_client import get_last_plowing_time
+
 logger = logging.getLogger(__name__)
 
 # Cache-fil for brøytingsdata
 CACHE_FILE = Path(__file__).parent.parent / "data" / "cache" / "plowing_cache.json"
-PLOWMAN_HTML_FILE = Path(__file__).parent.parent / "plowman_page.html"
 
 # Hvor lenge siden brøyting skal anses som "nylig" (timer)
 RECENT_PLOWING_HOURS = 24
@@ -137,31 +138,25 @@ def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int = 1) -> Pl
         except (json.JSONDecodeError, KeyError, ValueError) as e:
             logger.warning(f"Cache-lesefeil: {e}")
     
-    # Prøv å lese fra HTML-fil (fra siste fetch)
-    if PLOWMAN_HTML_FILE.exists():
-        try:
-            with open(PLOWMAN_HTML_FILE, 'r') as f:
-                html_content = f.read()
+    # Hent live data fra Plowman
+    try:
+        event = get_last_plowing_time()
+        
+        if event and event.timestamp:
+            hours_since = (now - event.timestamp).total_seconds() / 3600
             
-            timestamps = parse_timestamps_from_html(html_content)
+            # Lagre til cache
+            _save_cache(event.timestamp, [event.timestamp])
             
-            if timestamps:
-                # Finn siste tidspunkt
-                latest = max(timestamps)
-                hours_since = (now - latest).total_seconds() / 3600
-                
-                # Lagre til cache
-                _save_cache(latest, timestamps)
-                
-                return PlowingInfo(
-                    last_plowing=latest,
-                    hours_since=hours_since,
-                    is_recent=hours_since < RECENT_PLOWING_HOURS,
-                    all_timestamps=sorted(set(timestamps), reverse=True),
-                    source='live'
-                )
-        except Exception as e:
-            logger.warning(f"HTML-lesefeil: {e}")
+            return PlowingInfo(
+                last_plowing=event.timestamp,
+                hours_since=hours_since,
+                is_recent=hours_since < RECENT_PLOWING_HOURS,
+                all_timestamps=[event.timestamp],
+                source='live'
+            )
+    except Exception as e:
+        logger.warning(f"Feil ved henting fra Plowman: {e}")
     
     # Ingen data tilgjengelig
     return PlowingInfo(
