@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Sjekk hvilke elementer som faktisk har data på Gullingen."""
 
-import requests
 import os
 from datetime import datetime, timedelta
+
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,13 +18,13 @@ if not client_id:
 elements_to_test = [
     # Brukes i dag
     'air_temperature',
-    'wind_speed', 
+    'wind_speed',
     'wind_from_direction',
     'surface_snow_thickness',
     'sum(precipitation_amount PT1H)',
     'dew_point_temperature',
     'relative_humidity',
-    
+
     # Potensielt nyttige
     'surface_temperature',
     'max(wind_speed_of_gust PT1H)',
@@ -54,21 +55,21 @@ for element in elements_to_test:
         'elements': element,
         'referencetime': ref_time,
     }
-    
+
     try:
         response = requests.get(url, params=params, auth=(client_id, ''), timeout=10)
-        
+
         if response.status_code == 200:
             data = response.json()
             obs_count = len(data.get('data', []))
-            
+
             if obs_count > 0:
                 # Hent noen verdier for å vise
                 values = []
                 for obs in data.get('data', [])[:5]:
                     for o in obs.get('observations', []):
                         values.append(o.get('value'))
-                
+
                 results[element] = {
                     'status': 'OK',
                     'count': obs_count,
@@ -81,14 +82,14 @@ for element in elements_to_test:
             else:
                 results[element] = {'status': 'INGEN DATA', 'count': 0}
                 print(f"  {element}")
-                print(f"    INGEN DATA i perioden")
+                print("    INGEN DATA i perioden")
                 print()
         else:
             results[element] = {'status': f'FEIL {response.status_code}', 'count': 0}
             print(f"  {element}")
             print(f"    FEIL: HTTP {response.status_code}")
             print()
-            
+
     except Exception as e:
         results[element] = {'status': f'FEIL: {str(e)}', 'count': 0}
         print(f"  {element}")

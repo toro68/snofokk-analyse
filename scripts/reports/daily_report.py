@@ -206,7 +206,7 @@ def create_graphs(df, report_time, output_dir):
 
         # Lag én søyle per time med riktig farge
         colors = []
-        for idx, row in df.iterrows():
+        for _idx, row in df.iterrows():
             if row['sum(precipitation_amount PT1H)'] > 0:
                 colors.append(color_map[row['precip_type']])
             else:

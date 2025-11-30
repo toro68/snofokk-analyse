@@ -751,7 +751,7 @@ def analyze_settings(
 
         if not df.empty:
             # Værstatistikk
-            for col, name in {
+            for col, _name in {
                 "wind_speed": "Vindstyrke",
                 "air_temperature": "Temperatur",
                 "surface_snow_thickness": "Snødybde",
@@ -952,7 +952,7 @@ def plot_risk_analysis(df: pd.DataFrame) -> go.Figure:
             x=df.index,
             y=df["risk_score"],
             name="Risikoscore",
-            line=dict(color="red", width=2),
+            line={"color": "red", "width": 2},
             fill="tozeroy",
             fillcolor="rgba(255,0,0,0.1)",
         ),
@@ -978,7 +978,7 @@ def plot_risk_analysis(df: pd.DataFrame) -> go.Figure:
                     name=f"{level} risiko",
                     fill="tozeroy",
                     fillcolor=color,
-                    line=dict(width=0),
+                    line={"width": 0},
                     showlegend=True,
                 ),
                 row=1,
@@ -992,7 +992,7 @@ def plot_risk_analysis(df: pd.DataFrame) -> go.Figure:
                 x=df.index,
                 y=df["sustained_wind"],
                 name="Vedvarende vind",
-                line=dict(color="blue", width=2),
+                line={"color": "blue", "width": 2},
             ),
             row=2,
             col=1,
@@ -1004,7 +1004,7 @@ def plot_risk_analysis(df: pd.DataFrame) -> go.Figure:
                 x=df.index,
                 y=df["max(wind_speed_of_gust PT1H)"],
                 name="Vindkast",
-                line=dict(color="lightblue", width=1, dash="dash"),
+                line={"color": "lightblue", "width": 1, "dash": "dash"},
             ),
             row=2,
             col=1,
@@ -1017,7 +1017,7 @@ def plot_risk_analysis(df: pd.DataFrame) -> go.Figure:
                 x=df.index,
                 y=df["air_temperature"],
                 name="Temperatur",
-                line=dict(color="green", width=2),
+                line={"color": "green", "width": 2},
                 fill="tozeroy",
                 fillcolor="rgba(0,255,0,0.1)",
             ),
@@ -1032,7 +1032,7 @@ def plot_risk_analysis(df: pd.DataFrame) -> go.Figure:
                 x=df.index,
                 y=df["surface_snow_thickness"],
                 name="Snødybde",
-                line=dict(color="purple", width=2),
+                line={"color": "purple", "width": 2},
                 fill="tozeroy",
                 fillcolor="rgba(128,0,128,0.1)",
             ),
@@ -1046,7 +1046,7 @@ def plot_risk_analysis(df: pd.DataFrame) -> go.Figure:
                 x=df.index,
                 y=df["snow_depth_change"],
                 name="Endring i snødybde",
-                line=dict(color="magenta", width=1, dash="dot"),
+                line={"color": "magenta", "width": 1, "dash": "dot"},
             ),
             row=4,
             col=1,
@@ -1075,13 +1075,13 @@ def plot_risk_analysis(df: pd.DataFrame) -> go.Figure:
             "x": 0.5,
             "xanchor": "center",
             "yanchor": "top",
-            "font": dict(size=24),
+            "font": {"size": 24},
         },
         showlegend=True,
         height=1200,
         plot_bgcolor="white",
         paper_bgcolor="white",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        legend={"orientation": "h", "yanchor": "bottom", "y": 1.02, "xanchor": "right", "x": 1},
     )
 
     # Legg til rutenett og forbedrede aksetitler
@@ -1089,11 +1089,11 @@ def plot_risk_analysis(df: pd.DataFrame) -> go.Figure:
     fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="rgba(128,128,128,0.2)")
 
     # Spesifikke y-akse titler med forbedret styling
-    fig.update_yaxes(title_text="Score", title_font=dict(size=14), row=1, col=1)
-    fig.update_yaxes(title_text="m/s", title_font=dict(size=14), row=2, col=1)
-    fig.update_yaxes(title_text="°C", title_font=dict(size=14), row=3, col=1)
-    fig.update_yaxes(title_text="cm", title_font=dict(size=14), row=4, col=1)
-    fig.update_yaxes(title_text="min", title_font=dict(size=14), row=5, col=1)
+    fig.update_yaxes(title_text="Score", title_font={"size": 14}, row=1, col=1)
+    fig.update_yaxes(title_text="m/s", title_font={"size": 14}, row=2, col=1)
+    fig.update_yaxes(title_text="°C", title_font={"size": 14}, row=3, col=1)
+    fig.update_yaxes(title_text="cm", title_font={"size": 14}, row=4, col=1)
+    fig.update_yaxes(title_text="min", title_font={"size": 14}, row=5, col=1)
 
     return fig
 
@@ -1156,7 +1156,7 @@ def plot_critical_periods(df: pd.DataFrame, periods_df: pd.DataFrame) -> go.Figu
                 x=df.index,
                 y=df["wind_speed"],
                 name="Vindstyrke",
-                line=dict(color="blue", width=2),
+                line={"color": "blue", "width": 2},
             ),
             row=1,
             col=1,
@@ -1168,7 +1168,7 @@ def plot_critical_periods(df: pd.DataFrame, periods_df: pd.DataFrame) -> go.Figu
                     x=df.index,
                     y=df["max(wind_speed_of_gust PT1H)"],
                     name="Vindkast",
-                    line=dict(color="lightblue", width=1, dash="dash"),
+                    line={"color": "lightblue", "width": 1, "dash": "dash"},
                 ),
                 row=1,
                 col=1,
@@ -1180,7 +1180,7 @@ def plot_critical_periods(df: pd.DataFrame, periods_df: pd.DataFrame) -> go.Figu
                 x=df.index,
                 y=df["air_temperature"],
                 name="Temperatur",
-                line=dict(color="green", width=2),
+                line={"color": "green", "width": 2},
             ),
             row=2,
             col=1,
@@ -1201,7 +1201,7 @@ def plot_critical_periods(df: pd.DataFrame, periods_df: pd.DataFrame) -> go.Figu
                 x=df.index,
                 y=df["surface_snow_thickness"],
                 name="Snødybde",
-                line=dict(color="purple", width=2),
+                line={"color": "purple", "width": 2},
             ),
             row=3,
             col=1,
@@ -1212,7 +1212,7 @@ def plot_critical_periods(df: pd.DataFrame, periods_df: pd.DataFrame) -> go.Figu
                 x=df.index,
                 y=df["snow_depth_change"],
                 name="Endring i snødybde",
-                line=dict(color="magenta", width=1, dash="dot"),
+                line={"color": "magenta", "width": 1, "dash": "dot"},
             ),
             row=3,
             col=1,
@@ -1228,8 +1228,8 @@ def plot_critical_periods(df: pd.DataFrame, periods_df: pd.DataFrame) -> go.Figu
                     y=period_data["risk_score"],
                     name=f'Periode {int(period["period_id"])}',
                     mode="lines+markers",
-                    line=dict(color=colors[i % len(colors)], width=3),
-                    marker=dict(size=8),
+                    line={"color": colors[i % len(colors)], "width": 3},
+                    marker={"size": 8},
                 ),
                 row=4,
                 col=1,
@@ -1247,11 +1247,11 @@ def plot_critical_periods(df: pd.DataFrame, periods_df: pd.DataFrame) -> go.Figu
                 "x": 0.5,
                 "xanchor": "center",
                 "yanchor": "top",
-                "font": dict(size=20),
+                "font": {"size": 20},
             },
-            legend=dict(
-                orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
-            ),
+            legend={
+                "orientation": "h", "yanchor": "bottom", "y": 1.02, "xanchor": "right", "x": 1
+            },
         )
 
         # Legg til rutenett og forbedrede aksetitler
@@ -1259,10 +1259,10 @@ def plot_critical_periods(df: pd.DataFrame, periods_df: pd.DataFrame) -> go.Figu
         fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="rgba(128,128,128,0.2)")
 
         # Y-akse titler
-        fig.update_yaxes(title_text="m/s", title_font=dict(size=12), row=1, col=1)
-        fig.update_yaxes(title_text="°C", title_font=dict(size=12), row=2, col=1)
-        fig.update_yaxes(title_text="cm", title_font=dict(size=12), row=3, col=1)
-        fig.update_yaxes(title_text="Score", title_font=dict(size=12), row=4, col=1)
+        fig.update_yaxes(title_text="m/s", title_font={"size": 12}, row=1, col=1)
+        fig.update_yaxes(title_text="°C", title_font={"size": 12}, row=2, col=1)
+        fig.update_yaxes(title_text="cm", title_font={"size": 12}, row=3, col=1)
+        fig.update_yaxes(title_text="Score", title_font={"size": 12}, row=4, col=1)
 
         logger.debug("Ferdig med å legge til alle spor og markeringer")
         logger.debug(f"Antall spor i figuren: {len(fig.data)}")
@@ -1443,7 +1443,7 @@ def plot_critical_periods_overview(df: pd.DataFrame, periods_df: pd.DataFrame):
                         x=[period["start_time"], period["start_time"]],
                         y=[min_score, max_score],
                         mode="lines",
-                        line=dict(color="red", width=3),
+                        line={"color": "red", "width": 3},
                         name=f"Kritisk periode {int(period['period_id'])}",
                         hovertemplate=(
                             "<b>Kritisk periode</b><br>"
@@ -1464,10 +1464,10 @@ def plot_critical_periods_overview(df: pd.DataFrame, periods_df: pd.DataFrame):
             yaxis_title="Risikoscore (%)",
             xaxis_title="",
             hovermode="x unified",
-            margin=dict(t=30, b=20, l=50, r=20),
+            margin={"t": 30, "b": 20, "l": 50, "r": 20},
             plot_bgcolor="white",
-            yaxis=dict(gridcolor="lightgray", range=[0, 100], tickformat=",d"),
-            xaxis=dict(gridcolor="lightgray", tickformat="%d-%m-%Y\n%H:%M"),
+            yaxis={"gridcolor": "lightgray", "range": [0, 100], "tickformat": ",d"},
+            xaxis={"gridcolor": "lightgray", "tickformat": "%d-%m-%Y\n%H:%M"},
         )
 
         return fig
@@ -1541,7 +1541,7 @@ def analyze_temperature_impact(temp: float, params: dict) -> tuple[float, str]:
     """
     try:
         # Legg til validering av input
-        if not isinstance(temp, (int, float)):
+        if not isinstance(temp, int | float):
             raise TypeError("Temperatur må være et tall")
 
         cold_temp = params.get("temp_cold", -2.22)
@@ -1633,7 +1633,7 @@ def calculate_combined_risk(
     """
     try:
         # Valider input
-        if not all([isinstance(x, dict) for x in [wind_data, snow_data, params]]):
+        if not all(isinstance(x, dict) for x in [wind_data, snow_data, params]):
             raise ValueError("Ugyldig input-format")
 
         # Hent vekter med sikre standardverdier

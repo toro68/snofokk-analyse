@@ -23,7 +23,7 @@ def test_basic_imports():
 
         # Test at vi kan opprette konfigurasjon
         config_path = Path(__file__).parent.parent / "config" / "test_config.json"
-        config_manager = ConfigManager(str(config_path))
+        ConfigManager(str(config_path))
         logger.info("✓ Config manager opprettet OK")
 
         return True
@@ -47,7 +47,7 @@ def test_weather_service():
 
         if weather_service_path.exists():
             from snofokk.services.weather import WeatherService
-            weather_service = WeatherService()
+            WeatherService()
             logger.info("✓ Weather service importert OK")
             return True
         else:

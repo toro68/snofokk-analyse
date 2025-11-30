@@ -261,7 +261,7 @@ def plot_critical_periods(
                 x=df.index,
                 y=df["risk_score"],
                 name="Risikoscore",
-                line=dict(color="red", width=1),
+                line={'color': "red", 'width': 1},
             ),
             row=1,
             col=1,
@@ -282,7 +282,7 @@ def plot_critical_periods(
                     x=df.index,
                     y=df["sustained_wind"],
                     name="Vedvarende vind",
-                    line=dict(color="blue"),
+                    line={'color': "blue"},
                 ),
                 row=2,
                 col=1,
@@ -294,7 +294,7 @@ def plot_critical_periods(
                     x=df.index,
                     y=df["max(wind_speed_of_gust PT1H)"],
                     name="Vindkast",
-                    line=dict(color="lightblue", dash="dash"),
+                    line={'color': "lightblue", 'dash': "dash"},
                 ),
                 row=2,
                 col=1,
@@ -307,7 +307,7 @@ def plot_critical_periods(
                     x=df.index,
                     y=df["air_temperature"],
                     name="Temperatur",
-                    line=dict(color="green"),
+                    line={'color': "green"},
                 ),
                 row=3,
                 col=1,
@@ -318,7 +318,7 @@ def plot_critical_periods(
                 line_color="gray",
                 row=3,
                 col=1,
-                annotation=dict(text="Frysepunkt", x=0),
+                annotation={'text': "Frysepunkt", 'x': 0},
             )
 
         # Snødybde og endring
@@ -328,7 +328,7 @@ def plot_critical_periods(
                     x=df.index,
                     y=df["surface_snow_thickness"],
                     name="Snødybde",
-                    line=dict(color="purple"),
+                    line={'color': "purple"},
                 ),
                 row=4,
                 col=1,
@@ -340,7 +340,7 @@ def plot_critical_periods(
                     x=df.index,
                     y=df["snow_depth_change"],
                     name="Endring i snødybde",
-                    line=dict(color="magenta", dash="dot"),
+                    line={'color': "magenta", 'dash': "dot"},
                 ),
                 row=4,
                 col=1,
@@ -355,7 +355,7 @@ def plot_critical_periods(
                     y=period_data["risk_score"],
                     name=f"Kritisk periode {int(period['period_id'])}",
                     mode="lines+markers",
-                    line=dict(width=3),
+                    line={'width': 3},
                     marker={"size": 8},
                 ),
                 row=5,
@@ -447,7 +447,7 @@ def plot_critical_periods_overview(df: pd.DataFrame, periods_df: pd.DataFrame):
                         x=[period["start_time"], period["start_time"]],
                         y=[min_score, max_score],
                         mode="lines",
-                        line=dict(color="red", width=3),
+                        line={'color': "red", 'width': 3},
                         name=f"Kritisk periode {int(period['period_id'])}",
                         hovertemplate=(
                             "<b>Kritisk periode</b><br>"
@@ -468,10 +468,10 @@ def plot_critical_periods_overview(df: pd.DataFrame, periods_df: pd.DataFrame):
             yaxis_title="Risikoscore (%)",
             xaxis_title="",
             hovermode="x unified",
-            margin=dict(t=30, b=20, l=50, r=20),
+            margin={'t': 30, 'b': 20, 'l': 50, 'r': 20},
             plot_bgcolor="white",
-            yaxis=dict(gridcolor="lightgray", range=[0, 100], tickformat=",d"),
-            xaxis=dict(gridcolor="lightgray", tickformat="%d-%m-%Y\n%H:%M"),
+            yaxis={'gridcolor': "lightgray", 'range': [0, 100], 'tickformat': ",d"},
+            xaxis={'gridcolor': "lightgray", 'tickformat': "%d-%m-%Y\n%H:%M"},
         )
 
         return fig
@@ -571,30 +571,30 @@ def show_ml_optimization():
         with st.expander("ℹ️ Om optimaliseringsmål"):
             st.write("""
             ### Velg optimaliseringsmål
-            
+
             Det finnes tre forskjellige måter å optimalisere parametrene på:
-            
+
             #### 1. R²-score (r2_score)
             - Måler hvor godt modellen forklarer variansen i dataene
             - Verdier mellom 0 og 1, hvor 1 er perfekt tilpasning
             - **Anbefales** for de fleste tilfeller
             - Best når du vil ha en generell indikasjon på modellens ytelse
-            
+
             #### 2. Gjennomsnittlig kvadratfeil (mean_squared_error)
             - Måler gjennomsnittlig kvadrert avvik mellom prediksjoner og faktiske verdier
             - Straffer store avvik mer enn små
             - Velg denne når store avvik er spesielt problematiske
             - Verdier ≥ 0, hvor lavere er bedre
-            
+
             #### 3. Gjennomsnittlig absolutt feil (mean_absolute_error)
             - Måler gjennomsnittlig absolutt avvik mellom prediksjoner og faktiske verdier
             - Behandler alle avvik likt
             - Lettere å tolke enn kvadratfeil
             - Velg denne når du vil ha lett tolkbare resultater
             - Verdier ≥ 0, hvor lavere er bedre
-            
+
             ### Når skal jeg velge hva?
-            
+
             - **Start med R²-score** hvis du er usikker
             - Velg **kvadratfeil** hvis store feil er spesielt problematiske
             - Velg **absolutt feil** hvis du trenger lett tolkbare resultater

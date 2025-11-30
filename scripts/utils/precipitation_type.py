@@ -69,7 +69,7 @@ class PrecipitationTypeAnalyzer:
         precip = self.df[self.required_columns["precipitation"]]
 
         # Kun klassifiser når det faktisk er nedbør
-        type_series = pd.Series("none", index=self.df.index)
+        pd.Series("none", index=self.df.index)
         has_precip = precip > 0
 
         conditions = [

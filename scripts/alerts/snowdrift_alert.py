@@ -313,11 +313,11 @@ Varselet er basert på en automatisk analyse av følgende faktorer:
    - Moderat: Over {config.get('wind_moderate', 7.77)} m/s
    - Vindkast: Moderate over 10 m/s, sterke over 12 m/s
    - Vindretningsendringer over {config.get('wind_dir_change', 37.83)}° følges
-   
+
 2. TEMPERATUR (30% vekt)
    - Kald: Under {config.get('temp_cold', -2.2)}°C
    - Kjølig: Under {config.get('temp_cool', 0.0)}°C
-   
+
 3. SNØFORHOLD (30% vekt)
    - Høy endring: Over {config.get('snow_high', 1.61)} cm/t
    - Moderat endring: Over {config.get('snow_moderate', 0.84)} cm/t
@@ -339,9 +339,9 @@ Dette varselet sendes automatisk når risikoscoren overstiger {config['risk_thre
 -------------------
 Dette er et automatisk varsel med værdata fra Gullingen værstasjon.
 
-Vi jobber kontinuerlig med å forbedre varslingssystemet. Gi gjerne 
-tilbakemelding dersom du opplever situasjoner med snøfokk som ikke ble 
-varslet, eller varsler som ikke samsvarer med faktiske forhold. Dette 
+Vi jobber kontinuerlig med å forbedre varslingssystemet. Gi gjerne
+tilbakemelding dersom du opplever situasjoner med snøfokk som ikke ble
+varslet, eller varsler som ikke samsvarer med faktiske forhold. Dette
 hjelper oss å justere parameterne for mer presise varsler."""
 
         msg.attach(MIMEText(body, 'plain'))

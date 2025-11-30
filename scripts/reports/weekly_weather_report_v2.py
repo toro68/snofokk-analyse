@@ -560,7 +560,7 @@ def create_enhanced_weather_plot(
             )
 
         # Legg til oppsummeringsboks med nøkkeltall
-        props = dict(boxstyle='round', facecolor='white', alpha=0.7)
+        props = {'boxstyle': 'round', 'facecolor': 'white', 'alpha': 0.7}
 
         # Beregn nøkkeltall
         max_temp = df['air_temperature'].max()
@@ -730,10 +730,10 @@ VIND (UKE)
 SPESIELLE FORHOLD
 {snofokk_melding if snofokk_melding else 'Ingen spesielle forhold registrert'}
 -------------------
-Dette er en automatisk generert rapport basert på værdata fra 
+Dette er en automatisk generert rapport basert på værdata fra
 Gullingen værstasjon. Rapporten sendes hver fredag.
 
-Merk: Snødybdemålinger er normalisert for å fjerne feilmålinger og 
+Merk: Snødybdemålinger er normalisert for å fjerne feilmålinger og
 korte pulser. Se vedlagt graf for detaljer.
 
 Kjøres med python3 scripts/weekly_weather_report_v2.py"""

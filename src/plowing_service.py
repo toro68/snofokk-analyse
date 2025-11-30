@@ -6,13 +6,11 @@ for å justere varsler i appen.
 """
 
 import json
-import re
-import os
-from datetime import datetime, timezone, timedelta
-from pathlib import Path
-from typing import Optional
-from dataclasses import dataclass
 import logging
+import re
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from pathlib import Path
 
 from src.plowman_client import get_last_plowing_time
 
@@ -28,24 +26,24 @@ RECENT_PLOWING_HOURS = 24
 @dataclass
 class PlowingInfo:
     """Informasjon om siste brøyting."""
-    last_plowing: Optional[datetime]
-    hours_since: Optional[float]
+    last_plowing: datetime | None
+    hours_since: float | None
     is_recent: bool
     all_timestamps: list[datetime]
     source: str  # 'live', 'cache', 'none'
-    error: Optional[str] = None
-    
+    error: str | None = None
+
     @property
     def formatted_time(self) -> str:
         """Formattert tidspunkt for visning."""
         if not self.last_plowing:
             return "Ukjent"
-        
+
         # Konverter til lokal tid (Norge)
         local_time = self.last_plowing.astimezone()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         diff = now - self.last_plowing
-        
+
         if diff.days == 0:
             if diff.seconds < 3600:
                 return f"For {diff.seconds // 60} min siden"
@@ -58,13 +56,13 @@ class PlowingInfo:
             return f"{dag_navn[local_time.weekday()]} {local_time.strftime('%d.%m kl. %H:%M')}"
         else:
             return local_time.strftime("%d.%m.%Y kl. %H:%M")
-    
+
     @property
     def status_emoji(self) -> str:
         """Emoji basert på hvor lenge siden siste brøyting."""
         if not self.last_plowing:
             return "❓"
-        
+
         if self.hours_since is not None:
             if self.hours_since < 6:
                 return "✅"  # Nylig brøytet
@@ -80,11 +78,11 @@ class PlowingInfo:
 def parse_timestamps_from_html(html_content: str) -> list[datetime]:
     """Parser tidsstempler fra Plowman HTML-data."""
     timestamps = []
-    
+
     # Finn alle ISO-tidsstempler (2025-11-27T11:20:34.000Z format)
     pattern = r'(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)'
     matches = re.findall(pattern, html_content)
-    
+
     for match in matches:
         try:
             # Håndter både med og uten Z
@@ -93,28 +91,28 @@ def parse_timestamps_from_html(html_content: str) -> list[datetime]:
                 ts_str += 'Z'
             # Fjern backslash hvis det finnes
             ts_str = ts_str.replace('\\', '')
-            
+
             dt = datetime.fromisoformat(ts_str.replace('Z', '+00:00'))
             timestamps.append(dt)
         except ValueError:
             continue
-    
+
     return timestamps
 
 
 def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int = 1) -> PlowingInfo:
     """
     Henter brøytingsinformasjon.
-    
+
     Args:
         use_cache: Om cache skal brukes
         max_cache_age_hours: Maks alder på cache før ny henting
-    
+
     Returns:
         PlowingInfo med siste brøytingstidspunkt og status
     """
-    now = datetime.now(timezone.utc)
-    
+    now = datetime.now(UTC)
+
     cache_data = _load_cache()
 
     # Sjekk cache først
@@ -130,7 +128,7 @@ def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int = 1) -> Pl
                 all_timestamps=cache_data['all_timestamps'],
                 source='cache'
             )
-    
+
     # Hent live data fra Plowman
     try:
         event = get_last_plowing_time()
@@ -191,13 +189,13 @@ def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int = 1) -> Pl
     )
 
 
-def _load_cache() -> Optional[dict]:
+def _load_cache() -> dict | None:
     """Les cachefil og returner strukturert innhold."""
     if not CACHE_FILE.exists():
         return None
 
     try:
-        with open(CACHE_FILE, 'r') as f:
+        with open(CACHE_FILE) as f:
             raw = json.load(f)
 
         cached_at = datetime.fromisoformat(raw['cached_at'])
@@ -223,7 +221,7 @@ def _load_cache() -> Optional[dict]:
         return None
 
 
-def _save_cache(new_timestamps: list[datetime], existing_cache: Optional[dict] = None) -> dict:
+def _save_cache(new_timestamps: list[datetime], existing_cache: dict | None = None) -> dict:
     """Lagrer brøytingsdata til cache og returnerer ny struktur."""
     try:
         CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -235,7 +233,7 @@ def _save_cache(new_timestamps: list[datetime], existing_cache: Optional[dict] =
         cache_payload = {
             'last_plowing': merged_limited[0].isoformat() if merged_limited else None,
             'all_timestamps': [ts.isoformat() for ts in merged_limited],
-            'cached_at': datetime.now(timezone.utc).isoformat()
+            'cached_at': datetime.now(UTC).isoformat()
         }
 
         with open(CACHE_FILE, 'w') as f:
@@ -249,7 +247,7 @@ def _save_cache(new_timestamps: list[datetime], existing_cache: Optional[dict] =
     except Exception as e:
         logger.warning(f"Kunne ikke lagre cache: {e}")
         return existing_cache or {
-            'cached_at': datetime.now(timezone.utc),
+            'cached_at': datetime.now(UTC),
             'all_timestamps': [],
             'last_plowing': None,
         }
@@ -264,7 +262,7 @@ def _dedupe_and_sort(timestamps: list[datetime]) -> list[datetime]:
 def should_show_snow_warning(plowing_info: PlowingInfo, snow_cm: float) -> bool:
     """
     Vurderer om snøvarsel bør vises basert på brøyting.
-    
+
     Logikk:
     - Hvis brøytet siste 6 timer: Ignorer snømengder < 10cm
     - Hvis brøytet siste 12 timer: Ignorer snømengder < 5cm
@@ -272,7 +270,7 @@ def should_show_snow_warning(plowing_info: PlowingInfo, snow_cm: float) -> bool:
     """
     if not plowing_info.is_recent or plowing_info.hours_since is None:
         return True  # Vis alltid varsel hvis ingen brøytingsdata
-    
+
     if plowing_info.hours_since < 6:
         # Nylig brøytet - høyere terskel
         return snow_cm >= 10
@@ -287,7 +285,7 @@ def should_show_snow_warning(plowing_info: PlowingInfo, snow_cm: float) -> bool:
 def get_adjusted_risk_message(original_message: str, plowing_info: PlowingInfo) -> str:
     """
     Justerer risikomelding basert på brøyting.
-    
+
     Legger til kontekst om når det ble brøytet.
     """
     if plowing_info.is_recent and plowing_info.last_plowing:
@@ -303,7 +301,7 @@ if __name__ == "__main__":
     print(f"Er nylig: {info.is_recent}")
     print(f"Kilde: {info.source}")
     print(f"Status: {info.status_emoji}")
-    
+
     if info.all_timestamps:
         print(f"\nAlle tidsstempler ({len(info.all_timestamps)}):")
         for ts in info.all_timestamps[:5]:

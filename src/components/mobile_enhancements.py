@@ -1,77 +1,78 @@
 """
 Forbedret gesture navigation og offline-støtte
 """
+from typing import Any
+
 import streamlit as st
 import streamlit.components.v1 as components
-from typing import Dict, Any, Optional
 
 
 class GestureNavigation:
     """Implementer gesture-basert navigasjon for mobil"""
-    
+
     @staticmethod
     def setup_swipe_navigation():
         """Sett opp swipe gestures for navigasjon"""
-        
+
         swipe_js = """
         <script>
         (function() {
             'use strict';
-            
+
             let startX = 0;
             let startY = 0;
             let isSwipeTracking = false;
-            
+
             // Swipe gesture handler
             class SwipeHandler {
                 constructor() {
                     this.setupEventListeners();
                 }
-                
+
                 setupEventListeners() {
                     const app = document.querySelector('.main');
                     if (!app) return;
-                    
+
                     app.addEventListener('touchstart', this.handleStart.bind(this), { passive: true });
                     app.addEventListener('touchmove', this.handleMove.bind(this), { passive: false });
                     app.addEventListener('touchend', this.handleEnd.bind(this), { passive: true });
                 }
-                
+
                 handleStart(e) {
                     if (e.touches.length !== 1) return;
-                    
+
                     startX = e.touches[0].clientX;
                     startY = e.touches[0].clientY;
                     isSwipeTracking = true;
                 }
-                
+
                 handleMove(e) {
                     if (!isSwipeTracking || e.touches.length !== 1) return;
-                    
+
                     const currentX = e.touches[0].clientX;
                     const currentY = e.touches[0].clientY;
-                    
+
                     const diffX = startX - currentX;
                     const diffY = startY - currentY;
-                    
+
                     // Forhindre vertikal scrolling hvis horisontal swipe
                     if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 20) {
                         e.preventDefault();
                     }
                 }
-                
+
                 handleEnd(e) {
                     if (!isSwipeTracking) return;
-                    
+
                     const endX = e.changedTouches[0].clientX;
                     const endY = e.changedTouches[0].clientY;
-                    
+
                     const diffX = startX - endX;
                     const diffY = startY - endY;
-                    
+
                     // Minimum swipe distance
                     const minSwipeDistance = 80;
-                    
+
                     if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > minSwipeDistance) {
                         if (diffX > 0) {
                             this.onSwipeLeft();
@@ -79,61 +80,61 @@ class GestureNavigation:
                             this.onSwipeRight();
                         }
                     }
-                    
+
                     isSwipeTracking = false;
                 }
-                
+
                 onSwipeLeft() {
                     console.log('Swipe left detected');
                     this.navigateToNext();
                 }
-                
+
                 onSwipeRight() {
                     console.log('Swipe right detected');
                     this.navigateToPrevious();
                 }
-                
+
                 navigateToNext() {
                     // Finn aktiv tab og gå til neste
                     const tabs = ['overview', 'analysis', 'plowing', 'settings'];
                     const currentTab = this.getCurrentTab();
                     const currentIndex = tabs.indexOf(currentTab);
-                    
+
                     if (currentIndex < tabs.length - 1) {
                         this.setActiveTab(tabs[currentIndex + 1]);
                     }
                 }
-                
+
                 navigateToPrevious() {
                     // Finn aktiv tab og gå til forrige
                     const tabs = ['overview', 'analysis', 'plowing', 'settings'];
                     const currentTab = this.getCurrentTab();
                     const currentIndex = tabs.indexOf(currentTab);
-                    
+
                     if (currentIndex > 0) {
                         this.setActiveTab(tabs[currentIndex - 1]);
                     }
                 }
-                
+
                 getCurrentTab() {
                     // Hent aktiv tab fra URL eller session storage
                     return sessionStorage.getItem('activeTab') || 'overview';
                 }
-                
+
                 setActiveTab(tab) {
                     // Lagre aktiv tab og oppdater UI
                     sessionStorage.setItem('activeTab', tab);
-                    
+
                     // Trigger Streamlit rerun med ny tab
                     window.parent.postMessage({
                         type: 'streamlit:setComponentValue',
                         value: { activeTab: tab }
                     }, '*');
-                    
+
                     // Vis feedback
                     this.showSwipefeedback(tab);
                 }
-                
+
                 showSwipeeedback(tab) {
                     const feedback = document.createElement('div');
                     feedback.innerHTML = `
@@ -161,35 +162,35 @@ class GestureNavigation:
                             }
                         </style>
                     `;
-                    
+
                     document.body.appendChild(feedback);
-                    
+
                     setTimeout(() => {
                         if (feedback.parentElement) {
                             feedback.remove();
                         }
                     }, 1000);
                 }
-                
+
                 getTabDisplayName(tab) {
                     const names = {
                         'overview': '📊 Oversikt',
-                        'analysis': '📈 Analyse', 
+                        'analysis': '📈 Analyse',
                         'plowing': '🚜 Brøyting',
                         'settings': '⚙️ Innstillinger'
                     };
                     return names[tab] || tab;
                 }
             }
-            
+
             // Initialize when DOM is ready
             function initSwipeNavigation() {
                 if (window.SwipeHandler) return; // Already initialized
-                
+
                 window.SwipeHandler = new SwipeHandler();
                 console.log('✅ Swipe navigation initialized');
             }
-            
+
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', initSwipeNavigation);
             } else {
@@ -198,23 +199,23 @@ class GestureNavigation:
         })();
         </script>
         """
-        
+
         # Inject swipe navigation
         components.html(swipe_js, height=0)
 
 
 class OfflineManager:
     """Håndter offline-funksjonalitet"""
-    
+
     @staticmethod
     def setup_offline_detection():
         """Sett opp offline-deteksjon og caching"""
-        
+
         offline_js = """
         <script>
         (function() {
             'use strict';
-            
+
             class OfflineManager {
                 constructor() {
                     this.isOnline = navigator.onLine;
@@ -222,19 +223,19 @@ class OfflineManager:
                     this.setupEventListeners();
                     this.updateOnlineStatus();
                 }
-                
+
                 setupEventListeners() {
                     window.addEventListener('online', () => {
                         this.isOnline = true;
                         this.updateOnlineStatus();
                         this.syncWhenOnline();
                     });
-                    
+
                     window.addEventListener('offline', () => {
                         this.isOnline = false;
                         this.updateOnlineStatus();
                     });
-                    
+
                     // Intercept form submissions for offline storage
                     document.addEventListener('submit', (e) => {
                         if (!this.isOnline) {
@@ -242,27 +243,27 @@ class OfflineManager:
                         }
                     });
                 }
-                
+
                 updateOnlineStatus() {
                     const statusIndicator = this.getStatusIndicator();
-                    
+
                     if (!this.isOnline) {
                         this.showOfflineNotification();
                         this.loadOfflineData();
                     } else {
                         this.hideOfflineNotification();
                     }
-                    
+
                     // Oppdater Streamlit session state
                     window.parent.postMessage({
                         type: 'streamlit:setComponentValue',
                         value: { isOnline: this.isOnline }
                     }, '*');
                 }
-                
+
                 showOfflineNotification() {
                     if (document.getElementById('offline-banner')) return;
-                    
+
                     const banner = document.createElement('div');
                     banner.id = 'offline-banner';
                     banner.innerHTML = `
@@ -287,21 +288,21 @@ class OfflineManager:
                             </div>
                         </div>
                     `;
-                    
+
                     document.body.appendChild(banner);
-                    
+
                     // Legg til margin til main content
                     const main = document.querySelector('.main');
                     if (main) {
                         main.style.marginTop = '60px';
                     }
                 }
-                
+
                 hideOfflineNotification() {
                     const banner = document.getElementById('offline-banner');
                     if (banner) {
                         banner.remove();
-                        
+
                         // Fjern margin fra main content
                         const main = document.querySelector('.main');
                         if (main) {
@@ -309,20 +310,20 @@ class OfflineManager:
                         }
                     }
                 }
-                
+
                 storeOfflineData(data) {
                     try {
                         const offlineData = JSON.parse(localStorage.getItem('gullingen_offline_data') || '{}');
                         offlineData.lastUpdate = new Date().toISOString();
                         offlineData.weatherData = data;
-                        
+
                         localStorage.setItem('gullingen_offline_data', JSON.stringify(offlineData));
                         console.log('✅ Data stored offline');
                     } catch (error) {
                         console.error('❌ Failed to store offline data:', error);
                     }
                 }
-                
+
                 loadOfflineData() {
                     try {
                         const data = localStorage.getItem('gullingen_offline_data');
@@ -332,7 +333,7 @@ class OfflineManager:
                         return null;
                     }
                 }
-                
+
                 storeOfflineAction(event) {
                     try {
                         const actions = JSON.parse(localStorage.getItem('gullingen_offline_actions') || '[]');
@@ -341,16 +342,16 @@ class OfflineManager:
                             action: 'form_submit',
                             data: new FormData(event.target)
                         });
-                        
+
                         localStorage.setItem('gullingen_offline_actions', JSON.stringify(actions));
-                        
+
                         // Show user that action was stored
                         this.showOfflineActionNotification();
                     } catch (error) {
                         console.error('❌ Failed to store offline action:', error);
                     }
                 }
-                
+
                 showOfflineActionNotification() {
                     const notification = document.createElement('div');
                     notification.innerHTML = `
@@ -371,29 +372,29 @@ class OfflineManager:
                             💾 Handling lagret offline - vil synkroniseres når tilkoblingen er tilbake
                         </div>
                     `;
-                    
+
                     document.body.appendChild(notification);
-                    
+
                     setTimeout(() => {
                         if (notification.parentElement) {
                             notification.remove();
                         }
                     }, 3000);
                 }
-                
+
                 syncWhenOnline() {
                     if (!this.isOnline) return;
-                    
+
                     // Sync offline actions
                     try {
                         const actions = JSON.parse(localStorage.getItem('gullingen_offline_actions') || '[]');
-                        
+
                         if (actions.length > 0) {
                             console.log(`🔄 Syncing ${actions.length} offline actions`);
-                            
+
                             // Clear offline actions
                             localStorage.removeItem('gullingen_offline_actions');
-                            
+
                             // Show sync notification
                             this.showSyncNotification(actions.length);
                         }
@@ -401,7 +402,7 @@ class OfflineManager:
                         console.error('❌ Failed to sync offline actions:', error);
                     }
                 }
-                
+
                 showSyncNotification(actionCount) {
                     const notification = document.createElement('div');
                     notification.innerHTML = `
@@ -424,9 +425,9 @@ class OfflineManager:
                             </div>
                         </div>
                     `;
-                    
+
                     document.body.appendChild(notification);
-                    
+
                     setTimeout(() => {
                         if (notification.parentElement) {
                             notification.remove();
@@ -434,15 +435,15 @@ class OfflineManager:
                     }, 4000);
                 }
             }
-            
+
             // Initialize offline manager
             function initOfflineManager() {
                 if (window.GullingenOfflineManager) return;
-                
+
                 window.GullingenOfflineManager = new OfflineManager();
                 console.log('✅ Offline manager initialized');
             }
-            
+
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', initOfflineManager);
             } else {
@@ -451,22 +452,22 @@ class OfflineManager:
         })();
         </script>
         """
-        
+
         # Inject offline manager
         components.html(offline_js, height=0)
-    
+
     @staticmethod
-    def get_offline_data() -> Optional[Dict[str, Any]]:
+    def get_offline_data() -> dict[str, Any] | None:
         """Hent offline data fra localStorage"""
         # Vi kan ikke direkte få tilgang til localStorage fra Python i Streamlit
         # Dette må håndteres via JavaScript callback eller session state
-        
+
         if 'offline_data' in st.session_state:
             return st.session_state.offline_data
-        
+
         return None
-    
-    @staticmethod 
+
+    @staticmethod
     def is_online() -> bool:
         """Sjekk om vi er online"""
         # Dette kan settes via JavaScript callback
@@ -475,45 +476,45 @@ class OfflineManager:
 
 class GeolocationService:
     """Geolocation-baserte features"""
-    
+
     @staticmethod
     def setup_geolocation():
         """Sett opp geolocation for kontekst-bevisste varsler"""
-        
+
         geo_js = """
         <script>
         (function() {
             'use strict';
-            
+
             class GeolocationService {
                 constructor() {
                     this.gullingenLat = 60.7;  // Estimert
                     this.gullingenLon = 11.0;   // Estimert
                     this.userLocation = null;
                     this.watchId = null;
-                    
+
                     this.requestLocation();
                 }
-                
+
                 requestLocation() {
                     if (!navigator.geolocation) {
                         console.log('❌ Geolocation not supported');
                         return;
                     }
-                    
+
                     const options = {
                         enableHighAccuracy: false,  // Spare battery
                         timeout: 10000,
                         maximumAge: 600000  // 10 minutes cache
                     };
-                    
+
                     navigator.geolocation.getCurrentPosition(
                         (position) => this.onLocationSuccess(position),
                         (error) => this.onLocationError(error),
                         options
                     );
                 }
-                
+
                 onLocationSuccess(position) {
                     this.userLocation = {
                         lat: position.coords.latitude,
@@ -521,16 +522,16 @@ class GeolocationService:
                         accuracy: position.coords.accuracy,
                         timestamp: new Date().toISOString()
                     };
-                    
+
                     const distance = this.calculateDistance(
                         this.userLocation.lat,
                         this.userLocation.lon,
                         this.gullingenLat,
                         this.gullingenLon
                     );
-                    
+
                     console.log(`📍 Location: ${distance.toFixed(1)}km from Gullingen`);
-                    
+
                     // Send til Streamlit
                     window.parent.postMessage({
                         type: 'streamlit:setComponentValue',
@@ -539,13 +540,13 @@ class GeolocationService:
                             distanceToGullingen: distance
                         }
                     }, '*');
-                    
+
                     this.updateLocationContext(distance);
                 }
-                
+
                 onLocationError(error) {
                     console.log('📍 Location error:', error.message);
-                    
+
                     // Send feil til Streamlit
                     window.parent.postMessage({
                         type: 'streamlit:setComponentValue',
@@ -555,7 +556,7 @@ class GeolocationService:
                         }
                     }, '*');
                 }
-                
+
                 calculateDistance(lat1, lon1, lat2, lon2) {
                     const R = 6371; // Earth's radius in km
                     const dLat = this.toRad(lat2 - lat1);
@@ -566,16 +567,16 @@ class GeolocationService:
                     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
                     return R * c;
                 }
-                
+
                 toRad(value) {
                     return value * Math.PI / 180;
                 }
-                
+
                 updateLocationContext(distance) {
                     let priority = 'low';
                     let refreshInterval = 1800; // 30 min
                     let showDetailed = false;
-                    
+
                     if (distance < 5) {
                         priority = 'high';
                         refreshInterval = 60; // 1 min
@@ -586,7 +587,7 @@ class GeolocationService:
                         refreshInterval = 300; // 5 min
                         showDetailed = false;
                     }
-                    
+
                     // Send context til Streamlit
                     window.parent.postMessage({
                         type: 'streamlit:setComponentValue',
@@ -600,7 +601,7 @@ class GeolocationService:
                         }
                     }, '*');
                 }
-                
+
                 showLocationNotification(message, icon = '📍') {
                     const notification = document.createElement('div');
                     notification.innerHTML = `
@@ -626,9 +627,9 @@ class GeolocationService:
                             </div>
                         </div>
                     `;
-                    
+
                     document.body.appendChild(notification);
-                    
+
                     setTimeout(() => {
                         if (notification.parentElement) {
                             notification.remove();
@@ -636,15 +637,15 @@ class GeolocationService:
                     }, 5000);
                 }
             }
-            
+
             // Initialize geolocation
             function initGeolocation() {
                 if (window.GullingenGeolocation) return;
-                
+
                 window.GullingenGeolocation = new GeolocationService();
                 console.log('✅ Geolocation service initialized');
             }
-            
+
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', initGeolocation);
             } else {
@@ -653,7 +654,7 @@ class GeolocationService:
         })();
         </script>
         """
-        
+
         # Inject geolocation service
         components.html(geo_js, height=0)
 
@@ -665,7 +666,7 @@ def setup_mobile_enhancements():
     GeolocationService.setup_geolocation()
 
 
-def get_location_context() -> Dict[str, Any]:
+def get_location_context() -> dict[str, Any]:
     """Hent location context fra session state"""
     return st.session_state.get('location_context', {
         'priority': 'medium',

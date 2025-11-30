@@ -127,10 +127,10 @@ class AnalysisService:
 
         # Find period boundaries using a more robust approach
         risk_changes = df['is_high_risk'].astype(int).diff()
-        
+
         # Find start indices (where risk becomes True)
         period_starts = df.index[risk_changes == 1].tolist()
-        # Find end indices (where risk becomes False) 
+        # Find end indices (where risk becomes False)
         period_ends = df.index[risk_changes == -1].tolist()
 
         # Handle edge cases more robustly
@@ -147,7 +147,7 @@ class AnalysisService:
             period_ends = period_ends[:min_len]
 
         periods = []
-        for start_idx, end_idx in zip(period_starts, period_ends):
+        for start_idx, end_idx in zip(period_starts, period_ends, strict=False):
             period_df = df.loc[start_idx:end_idx]
             duration = len(period_df)
 

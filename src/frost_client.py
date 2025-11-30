@@ -4,12 +4,11 @@ Frost API-klient med caching og robust feilhåndtering.
 Håndterer all kommunikasjon med Meteorologisk institutts Frost API.
 """
 
-from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
-from functools import lru_cache
-from typing import Optional
-import logging
 import json
+import logging
+from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
+from functools import lru_cache
 
 import pandas as pd
 import requests
@@ -32,22 +31,22 @@ class WeatherData:
     start_time: datetime
     end_time: datetime
     elements_fetched: list[str]
-    
+
     @property
     def is_empty(self) -> bool:
         """Sjekk om data er tom."""
         return self.df is None or len(self.df) == 0
-    
+
     @property
     def record_count(self) -> int:
         """Antall målinger."""
         return len(self.df) if self.df is not None else 0
-    
+
     def to_json(self, filepath: str) -> None:
         """Lagre data til JSON-fil."""
         if self.is_empty:
             return
-        
+
         data = {
             "metadata": {
                 "station_id": self.station_id,
@@ -55,16 +54,16 @@ class WeatherData:
                 "end_time": self.end_time.isoformat(),
                 "record_count": self.record_count,
                 "elements": self.elements_fetched,
-                "exported_at": datetime.now(timezone.utc).isoformat()
+                "exported_at": datetime.now(UTC).isoformat()
             },
             "observations": self.df.to_dict(orient='records')
         }
-        
+
         # Konverter datetime til strings for JSON
         for obs in data["observations"]:
             if 'reference_time' in obs and isinstance(obs['reference_time'], pd.Timestamp):
                 obs['reference_time'] = obs['reference_time'].isoformat()
-        
+
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False, default=str)
 
@@ -72,34 +71,34 @@ class WeatherData:
 class FrostClient:
     """
     Håndterer all kommunikasjon med Frost API.
-    
+
     Eksempel:
         client = FrostClient()
         data = client.fetch_recent(hours_back=24)
         print(f"Hentet {data.record_count} målinger")
     """
-    
+
     # Kolonnenavn-normalisering
     COLUMN_MAPPING = {
         'sum(precipitation_amount PT1H)': 'precipitation_1h',
         'sum(precipitation_amount PT10M)': 'precipitation_10m',
-        'max(wind_speed_of_gust PT1H)': 'wind_gust',
+        'max(wind_speed_of_gust PT1H)': 'max_wind_gust',
         'min(air_temperature PT1H)': 'temp_min_1h',
         'max(air_temperature PT1H)': 'temp_max_1h',
         'dew_point_temperature': 'dew_point_temperature',
         'surface_temperature': 'surface_temperature',
     }
-    
-    def __init__(self, station_id: Optional[str] = None):
+
+    def __init__(self, station_id: str | None = None):
         """
         Initialiser klient.
-        
+
         Args:
             station_id: Overstyr standard stasjon
         """
         self.station_id = station_id or settings.station.station_id
         self._validate_config()
-    
+
     def _validate_config(self) -> None:
         """Valider at nødvendig konfigurasjon er på plass."""
         if not settings.api.client_id:
@@ -108,52 +107,52 @@ class FrostClient:
                 "Lokal utvikling: Legg til i .env fil\n"
                 "Streamlit Cloud: Legg til i secrets"
             )
-    
+
     def fetch_recent(self, hours_back: int = 24) -> WeatherData:
         """
         Hent data for siste N timer.
-        
+
         Args:
             hours_back: Antall timer tilbake i tid
-            
+
         Returns:
             WeatherData med målinger
         """
-        end_time = datetime.now(timezone.utc)
+        end_time = datetime.now(UTC)
         start_time = end_time - timedelta(hours=hours_back)
         return self.fetch_period(start_time, end_time)
-    
+
     def fetch_period(
         self,
         start_time: datetime,
         end_time: datetime,
-        elements: Optional[list[str]] = None
+        elements: list[str] | None = None
     ) -> WeatherData:
         """
         Hent data for spesifikk periode.
-        
+
         Args:
             start_time: Start av periode
             end_time: Slutt av periode
             elements: Spesifikke elementer å hente (default: alle)
-            
+
         Returns:
             WeatherData med målinger
         """
         # Sikre UTC timezone
         if start_time.tzinfo is None:
-            start_time = start_time.replace(tzinfo=timezone.utc)
+            start_time = start_time.replace(tzinfo=UTC)
         if end_time.tzinfo is None:
-            end_time = end_time.replace(tzinfo=timezone.utc)
-        
+            end_time = end_time.replace(tzinfo=UTC)
+
         elements = elements or settings.station.all_elements()
-        
+
         df = self._fetch_observations(
             start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
             end_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
             tuple(elements)
         )
-        
+
         return WeatherData(
             df=df,
             station_id=self.station_id,
@@ -161,11 +160,11 @@ class FrostClient:
             end_time=end_time,
             elements_fetched=elements
         )
-    
+
     def fetch_available_elements(self) -> list[str]:
         """
         Hent liste over tilgjengelige elementer for stasjonen.
-        
+
         Returns:
             Liste med element-IDer
         """
@@ -177,16 +176,16 @@ class FrostClient:
                 timeout=settings.api.timeout
             )
             response.raise_for_status()
-            
+
             data = response.json()
             if data.get('data'):
                 return data['data'][0].get('validElements', [])
             return []
-            
+
         except Exception as e:
             logger.warning(f"Kunne ikke hente elementer: {e}")
             return []
-    
+
     @lru_cache(maxsize=100)
     def _fetch_observations(
         self,
@@ -196,12 +195,12 @@ class FrostClient:
     ) -> pd.DataFrame:
         """
         Hent observasjoner fra API (cached).
-        
+
         Args:
             start_iso: ISO-format start
             end_iso: ISO-format slutt
             elements: Tuple av elementer
-            
+
         Returns:
             DataFrame med observasjoner
         """
@@ -211,9 +210,9 @@ class FrostClient:
             'referencetime': f"{start_iso}/{end_iso}",
             'timeresolutions': 'PT1H'
         }
-        
+
         logger.info(f"Henter data: {self.station_id}, {start_iso} til {end_iso}")
-        
+
         try:
             response = requests.get(
                 settings.api.base_url,
@@ -221,7 +220,7 @@ class FrostClient:
                 auth=(settings.api.client_id, ''),
                 timeout=settings.api.timeout
             )
-            
+
             # Håndter spesifikke feilkoder
             if response.status_code == 401:
                 raise FrostAPIError("Ugyldig API-nøkkel (401)")
@@ -233,58 +232,58 @@ class FrostClient:
                 # Ingen data for perioden - ikke en feil
                 logger.warning(f"Ingen data for perioden {start_iso} til {end_iso}")
                 return pd.DataFrame()
-            
+
             response.raise_for_status()
-            
+
         except requests.exceptions.Timeout:
             raise FrostAPIError("Tidsavbrudd mot Frost API (30s)")
         except requests.exceptions.ConnectionError:
             raise FrostAPIError("Kunne ikke koble til Frost API. Sjekk internettforbindelse.")
         except requests.exceptions.HTTPError as e:
             raise FrostAPIError(f"HTTP-feil: {e}")
-        
+
         return self._parse_response(response.json())
-    
+
     def _parse_response(self, data: dict) -> pd.DataFrame:
         """
         Parse API-respons til DataFrame.
-        
+
         Args:
             data: JSON-respons fra API
-            
+
         Returns:
             DataFrame med normaliserte kolonnenavn
         """
         if not data.get('data'):
             logger.warning("Ingen data i API-respons")
             return pd.DataFrame()
-        
+
         records = []
         for obs in data['data']:
             record = {'reference_time': pd.to_datetime(obs['referenceTime'])}
-            
+
             for observation in obs['observations']:
                 element_id = observation['elementId']
                 value = observation['value']
-                
+
                 # Normaliser kolonnenavn
                 col_name = self.COLUMN_MAPPING.get(element_id, element_id)
                 record[col_name] = value
-            
+
             records.append(record)
-        
+
         if not records:
             return pd.DataFrame()
-        
+
         df = pd.DataFrame(records)
         df = df.sort_values('reference_time')
         df = df.drop_duplicates('reference_time')
         df = df.reset_index(drop=True)
-        
+
         logger.info(f"Parset {len(df)} observasjoner med {len(df.columns)} kolonner")
-        
+
         return df
-    
+
     def clear_cache(self) -> None:
         """Tøm API-cache."""
         self._fetch_observations.cache_clear()

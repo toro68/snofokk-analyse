@@ -148,7 +148,7 @@ class NetatmoPublicClient:
     ):
         """
         Henter offentlige data fra Netatmo-stasjoner i et definert område.
-        
+
         Args:
             lat_ne: Nordøst breddegrad
             lon_ne: Nordøst lengdegrad

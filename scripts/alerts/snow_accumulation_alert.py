@@ -305,7 +305,7 @@ ANALYSEPERIODE:
 
 -------------------
 Dette er et automatisk varsel basert på værdata fra Gullingen værstasjon.
-Varselet sendes når snødybden på værstasjonen øker med mer enn 7.0 cm 
+Varselet sendes når snødybden på værstasjonen øker med mer enn 7.0 cm
 og det ikke er registrert GPS-aktivitet i området."""
 
         msg.attach(MIMEText(body, 'plain'))

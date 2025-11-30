@@ -7,7 +7,7 @@ Oppstår når snø smelter (varmegrader) eller regn faller på snø.
 VIKTIG: Slaps er IKKE is. Hvis slaps fryser, blir det is (→ glatte veier).
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pandas as pd
 
@@ -18,26 +18,26 @@ from src.config import settings
 class SlapsAnalyzer(BaseAnalyzer):
     """
     Analyserer slaps-risiko.
-    
+
     Hovedscenarier:
     1. Regn på snø ved temp 0-4°C
     2. Snøsmelting ved temp 0-4°C
     3. Overgang fra snø til regn
-    
+
     Validert mot 42 bekreftet slaps-episoder:
     - Gjennomsnittstemperatur: 1.2°C
     - Gjennomsnittlig nedbør: 29.9mm
     """
-    
+
     REQUIRED_COLUMNS = ['air_temperature']
-    
+
     def analyze(self, df: pd.DataFrame) -> AnalysisResult:
         """
         Analyser slaps-risiko.
-        
+
         Args:
             df: DataFrame med værdata
-            
+
         Returns:
             AnalysisResult med risikovurdering
         """
@@ -47,13 +47,13 @@ class SlapsAnalyzer(BaseAnalyzer):
                 message="Mangler temperaturdata",
                 scenario="Data mangler"
             )
-        
+
         # Sommersesong = ingen slaps (ikke snø på bakken)
         if not self.is_winter_season():
             return self._summer_result()
-        
+
         return self._winter_analysis(df)
-    
+
     def _summer_result(self) -> AnalysisResult:
         """Returner lav risiko for sommersesong."""
         return AnalysisResult(
@@ -62,31 +62,31 @@ class SlapsAnalyzer(BaseAnalyzer):
             scenario="Sommer",
             factors=["☀️ Utenfor vintersesong"]
         )
-    
+
     def _winter_analysis(self, df: pd.DataFrame) -> AnalysisResult:
         """Full vinteranalyse for slaps."""
         thresholds = settings.slaps
-        
+
         # Hent verdier
         latest = self._get_latest(df)
         temp = self._safe_get(latest, 'air_temperature')
         snow = self._safe_get(latest, 'surface_snow_thickness', 0)
         precip = self._safe_get(latest, 'precipitation_1h', 0)
         dew_point = self._safe_get(latest, 'dew_point_temperature')
-        
+
         if temp is None:
             return AnalysisResult(
                 risk_level=RiskLevel.UNKNOWN,
                 message="Mangler temperaturdata",
                 scenario="Data mangler"
             )
-        
+
         # Beregn snøendring (synkende = smelting = slaps)
         snow_change = self._calculate_snow_change(df)
-        
+
         # Sjekk om nedbør er regn (ikke snø)
         is_rain = self._is_precipitation_rain(temp, dew_point)
-        
+
         factors = []
         details = {
             "temperature": round(temp, 1),
@@ -96,11 +96,11 @@ class SlapsAnalyzer(BaseAnalyzer):
             "dew_point": round(dew_point, 1) if dew_point else None,
             "is_rain": is_rain,
         }
-        
+
         # Sjekk grunnleggende forutsetninger
         in_slaps_temp_range = thresholds.temp_min <= temp <= thresholds.temp_max
         has_snow = snow >= thresholds.snow_depth_min
-        
+
         # Ingen snø = ingen slaps
         if not has_snow:
             return AnalysisResult(
@@ -110,7 +110,7 @@ class SlapsAnalyzer(BaseAnalyzer):
                 factors=[f"❄️ Snødybde: {snow:.0f} cm (krever ≥ {thresholds.snow_depth_min:.0f} cm)"],
                 details=details
             )
-        
+
         # Utenfor temperaturområde for slaps
         if not in_slaps_temp_range:
             if temp < thresholds.temp_min:
@@ -129,27 +129,25 @@ class SlapsAnalyzer(BaseAnalyzer):
                     factors=[f"🌡️ {temp:.1f}°C > {thresholds.temp_max}°C → rask smelting"],
                     details=details
                 )
-        
+
         # SLAPS-scenario: Riktig temperatur + snø
         factors.append(f"🌡️ Temperatur: {temp:.1f}°C (slaps-området)")
         factors.append(f"❄️ Snødybde: {snow:.0f} cm")
-        
+
         # Sjekk tegn på aktiv slaps
         slaps_indicators = []
-        
-        # Regn på snø?
-        if is_rain and precip >= thresholds.precipitation_min:
+
+        rain_on_snow = is_rain and precip >= thresholds.precipitation_min
+
+        if rain_on_snow:
             slaps_indicators.append("rain_on_snow")
             factors.append(f"🌧️ Regn på snø: {precip:.1f} mm/t")
-        
-        # Smelting pågår?
+
         if snow_change < -2:
             slaps_indicators.append("melting")
             factors.append(f"📉 Snø smelter: {abs(snow_change):.1f} cm siste 6t")
-        
-        # Klassifiser risiko
+
         if len(slaps_indicators) >= 2:
-            # Både regn og smelting = kritisk
             return AnalysisResult(
                 risk_level=RiskLevel.HIGH,
                 message=f"Slaps! Regn ({precip:.1f} mm/t) på smeltende snø ved {temp:.1f}°C",
@@ -157,7 +155,7 @@ class SlapsAnalyzer(BaseAnalyzer):
                 factors=factors,
                 details=details
             )
-        
+
         if "rain_on_snow" in slaps_indicators:
             if precip >= thresholds.precipitation_heavy:
                 return AnalysisResult(
@@ -174,21 +172,21 @@ class SlapsAnalyzer(BaseAnalyzer):
                 factors=factors,
                 details=details
             )
-        
+
         if "melting" in slaps_indicators:
             return AnalysisResult(
                 risk_level=RiskLevel.MEDIUM,
-                message=f"Snøsmelting pågår - slaps på veien",
+                message="Snøsmelting pågår - slaps på veien",
                 scenario="Smelting",
                 factors=factors,
                 details=details
             )
-        
+
         # Slaps-temperatur men ingen aktiv nedbør/smelting
         # Sjekk for frysefare (slaps som kan fryse)
         is_cooling = self._is_temperature_falling(df)
-        
-        if is_cooling and temp <= 1.0:
+
+        if is_cooling and temp <= thresholds.temp_max:
             factors.append("⚠️ Temperatur synker - frysefare")
             return AnalysisResult(
                 risk_level=RiskLevel.MEDIUM,
@@ -197,73 +195,73 @@ class SlapsAnalyzer(BaseAnalyzer):
                 factors=factors,
                 details=details
             )
-        
+
         return AnalysisResult(
             risk_level=RiskLevel.LOW,
             message=f"Slaps-temperatur ({temp:.1f}°C) men ingen aktiv nedbør",
             scenario="Potensielt slaps",
-            factors=factors,
+            factors=factors + ["ℹ️ Krever både nedbør/smelting"],
             details=details
         )
-    
+
     def _calculate_snow_change(self, df: pd.DataFrame, hours: int = 6) -> float:
         """Beregn snøendring over tid."""
         if 'surface_snow_thickness' not in df.columns:
             return 0.0
-        
-        now = datetime.now(timezone.utc)
+
+        now = datetime.now(UTC)
         cutoff = now - timedelta(hours=hours)
-        
+
         recent = df[df['reference_time'] >= cutoff].copy()
         if len(recent) < 2:
             return 0.0
-        
+
         snow_values = recent['surface_snow_thickness'].dropna()
         if len(snow_values) < 2:
             return 0.0
-        
+
         return snow_values.iloc[-1] - snow_values.iloc[0]
-    
+
     def _is_precipitation_rain(
-        self, 
-        temp: float | None, 
+        self,
+        temp: float | None,
         dew_point: float | None
     ) -> bool:
         """
         Klassifiser om nedbør er regn (ikke snø).
-        
+
         Args:
             temp: Lufttemperatur
             dew_point: Duggpunkt
-            
+
         Returns:
             True hvis nedbør sannsynligvis er regn
         """
         # Primær metode: duggpunkt
         if dew_point is not None:
             return dew_point >= 0.0  # Duggpunkt >= 0 = regn
-        
+
         # Sekundær metode: lufttemperatur
         if temp is not None:
             return temp >= 1.0  # Temp >= 1°C = sannsynligvis regn
-        
+
         return False
-    
+
     def _is_temperature_falling(self, df: pd.DataFrame, hours: int = 3) -> bool:
         """Sjekk om temperatur synker."""
         if 'air_temperature' not in df.columns:
             return False
-        
-        now = datetime.now(timezone.utc)
+
+        now = datetime.now(UTC)
         cutoff = now - timedelta(hours=hours)
-        
+
         recent = df[df['reference_time'] >= cutoff].copy()
         if len(recent) < 2:
             return False
-        
+
         temps = recent['air_temperature'].dropna()
         if len(temps) < 2:
             return False
-        
+
         # Synkende hvis siste temp er lavere enn snitt
         return temps.iloc[-1] < temps.mean()

@@ -328,7 +328,7 @@ VIND (UKE)
 - Gjennomsnittlig vind: {analysis['vind']['snitt']:.1f} m/s
 
 -------------------
-Dette er en automatisk generert rapport basert på værdata fra 
+Dette er en automatisk generert rapport basert på værdata fra
 Gullingen værstasjon. Rapporten sendes hver fredag.
 
 Se vedlagt graf for visuell fremstilling av værdata."""

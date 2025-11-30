@@ -1,10 +1,10 @@
 """Væranalyse-moduler."""
 
-from src.analyzers.base import AnalysisResult, RiskLevel, BaseAnalyzer
-from src.analyzers.snowdrift import SnowdriftAnalyzer
-from src.analyzers.slippery_road import SlipperyRoadAnalyzer
+from src.analyzers.base import AnalysisResult, BaseAnalyzer, RiskLevel
 from src.analyzers.fresh_snow import FreshSnowAnalyzer
 from src.analyzers.slaps import SlapsAnalyzer
+from src.analyzers.slippery_road import SlipperyRoadAnalyzer
+from src.analyzers.snowdrift import SnowdriftAnalyzer
 
 __all__ = [
     'AnalysisResult',

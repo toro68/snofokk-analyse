@@ -235,7 +235,7 @@ def create_plow_map(plow_list, target_date):
         var stableCount = 0;
         var tileLoadAttempts = {};
         var loadingStartTime = Date.now();
-        
+
         // Forhåndslast fliser
         function preloadTile(url) {
             return new Promise((resolve, reject) => {
@@ -245,7 +245,7 @@ def create_plow_map(plow_list, target_date):
                 img.src = url;
             });
         }
-        
+
         function checkMapRendering() {
             return new Promise((resolve) => {
                 var map = document.querySelector('#map');
@@ -256,7 +256,7 @@ def create_plow_map(plow_list, target_date):
                     var rect = tile.getBoundingClientRect();
                     return rect.width > 0 && rect.height > 0;
                 });
-                
+
                 // Forhåndslast nærliggende fliser
                 tiles.forEach(tile => {
                     if (!tileLoadAttempts[tile.src]) {
@@ -265,15 +265,15 @@ def create_plow_map(plow_list, target_date):
                             if (tileLoadAttempts[tile.src] < 3) {
                                 tileLoadAttempts[tile.src]++;
                                 // Legg til timestamp og cache-buster
-                                var newUrl = tile.src.split('?')[0] + 
-                                    '?t=' + Date.now() + 
+                                var newUrl = tile.src.split('?')[0] +
+                                    '?t=' + Date.now() +
                                     '&cb=' + Math.random();
                                 tile.src = newUrl;
                             }
                         });
                     }
                 });
-                
+
                 var greyTiles = Array.from(tiles).filter(tile => {
                     var style = getComputedStyle(tile);
                     var rect = tile.getBoundingClientRect();
@@ -283,21 +283,21 @@ def create_plow_map(plow_list, target_date):
                     var hasNoWidth = !tile.naturalWidth;
                     var isHidden = style.visibility === 'hidden' || style.display === 'none';
                     var isTransparent = parseFloat(style.opacity) === 0;
-                    
+
                     // Prøv å laste på nytt med cache-busting
                     if (isVisible && (isGrey || isIncomplete || hasNoWidth)) {
                         if (tileLoadAttempts[tile.src] < 3) {
                             tileLoadAttempts[tile.src]++;
-                            var newUrl = tile.src.split('?')[0] + 
-                                '?t=' + Date.now() + 
+                            var newUrl = tile.src.split('?')[0] +
+                                '?t=' + Date.now() +
                                 '&cb=' + Math.random();
                             tile.src = newUrl;
                         }
                     }
-                    
+
                     return isVisible && (isGrey || isIncomplete || hasNoWidth || isHidden || isTransparent);
                 });
-                
+
                 var elapsedTime = (Date.now() - loadingStartTime) / 1000;
                 console.log(`
                     ===== KARTLASTING STATUS =====
@@ -310,19 +310,19 @@ def create_plow_map(plow_list, target_date):
                     Forsøk gjenstår: ${maxAttempts - attempts}
                     ============================
                 `);
-                
+
                 if (greyTiles.length === lastGreyTiles) {
                     stableCount++;
                 } else {
                     stableCount = 0;
                 }
                 lastGreyTiles = greyTiles.length;
-                
-                var isMapReady = tiles.length > 0 && 
-                                loadedTiles.length === tiles.length && 
+
+                var isMapReady = tiles.length > 0 &&
+                                loadedTiles.length === tiles.length &&
                                 visibleTiles.length > 0 &&
                                 (greyTiles.length === 0 || stableCount >= 10);  // Økt til 10 sekunder
-                
+
                 if (isMapReady) {
                     allTilesLoaded = true;
                     console.log('SUKSESS: Kartet er klart for skjermbilde');
@@ -333,7 +333,7 @@ def create_plow_map(plow_list, target_date):
                 }
             });
         }
-        
+
         function waitForMap() {
             return new Promise((resolve) => {
                 var map = document.querySelector('#map');
@@ -341,14 +341,14 @@ def create_plow_map(plow_list, target_date):
                     map.style.width = '100%';
                     map.style.height = '100vh';
                 }
-                
+
                 var attempts = 0;
                 var maxAttempts = 150;  // Økt til 150 sekunder
-                
+
                 var checkInterval = setInterval(async () => {
                     attempts++;
                     var isReady = await checkMapRendering();
-                    
+
                     if (isReady) {
                         clearInterval(checkInterval);
                         console.log('Kart er ferdig rendret');

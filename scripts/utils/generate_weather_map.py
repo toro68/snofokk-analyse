@@ -52,7 +52,7 @@ def create_weather_map(data):
         pressure = None
         wind = None
 
-        for module_id, module_data in measures.items():
+        for _module_id, module_data in measures.items():
             # Sjekk temperatur og luftfuktighet
             if 'type' in module_data and 'temperature' in module_data['type']:
                 res = module_data['res']
@@ -126,7 +126,7 @@ def create_weather_map(data):
 
     # Legg til fargeforklaring
     legend_html = """
-    <div style="position: fixed; bottom: 50px; left: 50px; z-index: 1000; background-color: white; 
+    <div style="position: fixed; bottom: 50px; left: 50px; z-index: 1000; background-color: white;
     padding: 10px; border: 2px solid grey; border-radius: 5px;">
     <p><strong>Temperatur</strong></p>
     <p><span style="color:#0000FF">■</span> Under -5°C</p>

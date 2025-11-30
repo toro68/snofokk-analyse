@@ -64,7 +64,7 @@ def get_risk_level(risk_score: float) -> str:
     """
     try:
         # Valider input
-        if not isinstance(risk_score, (int, float)):
+        if not isinstance(risk_score, int | float):
             logger.error(f"Ugyldig risikoscore type: {type(risk_score)}")
             return "Ukjent"
 

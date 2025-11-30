@@ -94,11 +94,11 @@ class SnowDriftOptimizer:
     def optimize_parameters(self, df: pd.DataFrame, target: str = 'r2_score') -> dict[str, Any]:
         """
         Optimaliserer modellparametre med forbedret søkestrategi og validering
-        
+
         Args:
             df: DataFrame med værdata
             target: Målemetrikk ('r2_score', 'mean_squared_error', eller 'mean_absolute_error')
-            
+
         Returns:
             Dict med optimaliseringsresultater
         """
@@ -179,10 +179,10 @@ class SnowDriftOptimizer:
     def calculate_parameter_importance(self, study) -> dict[str, float]:
         """
         Beregner parameter importance basert på korrelasjon mellom parameterverdi og score
-        
+
         Args:
             study: Optuna study objekt
-        
+
         Returns:
             Dict med parameter importance scores
         """

@@ -3,14 +3,14 @@ Tester for værhendelse-deteksjon.
 
 Verifiserer at alle fire analysatorer korrekt fanger opp værhendelser:
 - FreshSnowAnalyzer: Nysnø-deteksjon
-- SnowdriftAnalyzer: Snøfokk-deteksjon  
+- SnowdriftAnalyzer: Snøfokk-deteksjon
 - SlapsAnalyzer: Slaps-deteksjon
 - SlipperyRoadAnalyzer: Glattføre-deteksjon
 
 Testene bruker syntetiske værdata for å validere terskelverdier.
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
 
 import pandas as pd
@@ -38,7 +38,7 @@ def create_weather_dataframe(
 ) -> pd.DataFrame:
     """
     Lag en syntetisk værdata-DataFrame.
-    
+
     Args:
         air_temperature: Lufttemperatur i °C
         wind_speed: Vindstyrke i m/s
@@ -51,21 +51,21 @@ def create_weather_dataframe(
         surface_temperature: Bakketemperatur i °C
         relative_humidity: Relativ fuktighet i %
         hours: Antall timer med data
-        
+
     Returns:
         DataFrame med værdata
     """
-    now = datetime.now(timezone.utc)
-    
+    now = datetime.now(UTC)
+
     # Generer tidsstempler
     timestamps = [now - timedelta(hours=i) for i in range(hours, 0, -1)]
-    
+
     # Beregn snødybde-serie
     if surface_snow_thickness_6h_ago is not None:
         # Gradvis endring fra 6h_ago til nå
         snow_diff = surface_snow_thickness - surface_snow_thickness_6h_ago
         snow_values = []
-        for i, ts in enumerate(timestamps):
+        for _i, ts in enumerate(timestamps):
             hours_ago = (now - ts).total_seconds() / 3600
             if hours_ago >= 6:
                 snow_values.append(surface_snow_thickness_6h_ago)
@@ -75,12 +75,12 @@ def create_weather_dataframe(
                 snow_values.append(surface_snow_thickness_6h_ago + snow_diff * progress)
     else:
         snow_values = [surface_snow_thickness] * hours
-    
+
     data = {
         'reference_time': timestamps,
         'air_temperature': [air_temperature] * hours,
         'wind_speed': [wind_speed] * hours,
-        'wind_gust': [wind_gust] * hours if wind_gust else [None] * hours,
+        'max_wind_gust': [wind_gust] * hours if wind_gust else [None] * hours,
         'wind_from_direction': [wind_from_direction] * hours if wind_from_direction else [None] * hours,
         'surface_snow_thickness': snow_values,
         'precipitation_1h': [precipitation_1h] * hours,
@@ -88,7 +88,7 @@ def create_weather_dataframe(
         'surface_temperature': [surface_temperature] * hours if surface_temperature else [None] * hours,
         'relative_humidity': [relative_humidity] * hours,
     }
-    
+
     return pd.DataFrame(data)
 
 
@@ -98,11 +98,11 @@ def create_weather_dataframe(
 
 class TestFreshSnowAnalyzer:
     """Tester for nysnø-deteksjon."""
-    
+
     @pytest.fixture
     def analyzer(self):
         return FreshSnowAnalyzer()
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_no_snow_change_returns_low(self, mock_winter, analyzer):
         """Stabil snødybde gir LAV risiko."""
@@ -114,7 +114,7 @@ class TestFreshSnowAnalyzer:
         result = analyzer.analyze(df)
         assert result.risk_level == RiskLevel.LOW
         assert "Stabil" in result.message or "snødybde" in result.message.lower()
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_moderate_snow_increase_returns_medium(self, mock_winter, analyzer):
         """7+ cm snøøkning på 6 timer gir MODERAT risiko."""
@@ -128,7 +128,7 @@ class TestFreshSnowAnalyzer:
         result = analyzer.analyze(df)
         assert result.risk_level == RiskLevel.MEDIUM
         assert "Nysnø" in result.message
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_heavy_snow_increase_returns_high(self, mock_winter, analyzer):
         """15+ cm snøøkning på 6 timer gir HØY risiko."""
@@ -142,7 +142,7 @@ class TestFreshSnowAnalyzer:
         result = analyzer.analyze(df)
         assert result.risk_level == RiskLevel.HIGH
         assert "Kraftig" in result.message
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_active_snowfall_detected(self, mock_winter, analyzer):
         """Aktivt snøfall med nedbør gir MODERAT risiko."""
@@ -154,7 +154,7 @@ class TestFreshSnowAnalyzer:
         )
         result = analyzer.analyze(df)
         assert result.risk_level in (RiskLevel.MEDIUM, RiskLevel.LOW)
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_rain_not_counted_as_snow(self, mock_winter, analyzer):
         """Regn (duggpunkt > 0) skal ikke gi snøvarsel."""
@@ -167,7 +167,7 @@ class TestFreshSnowAnalyzer:
         result = analyzer.analyze(df)
         # Skal ikke klassifiseres som nysnø
         assert "snøfall" not in result.message.lower() or result.risk_level == RiskLevel.LOW
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=False)
     def test_summer_returns_low(self, mock_winter, analyzer):
         """Sommersesong gir alltid LAV risiko."""
@@ -187,11 +187,11 @@ class TestFreshSnowAnalyzer:
 
 class TestSnowdriftAnalyzer:
     """Tester for snøfokk-deteksjon."""
-    
+
     @pytest.fixture
     def analyzer(self):
         return SnowdriftAnalyzer()
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_calm_conditions_returns_low(self, mock_winter, analyzer):
         """Rolige forhold uten vind gir LAV risiko."""
@@ -203,7 +203,7 @@ class TestSnowdriftAnalyzer:
         )
         result = analyzer.analyze(df)
         assert result.risk_level == RiskLevel.LOW
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_moderate_wind_with_snow_returns_medium(self, mock_winter, analyzer):
         """Moderat vind med snø på bakken gir MODERAT risiko."""
@@ -215,7 +215,7 @@ class TestSnowdriftAnalyzer:
         )
         result = analyzer.analyze(df)
         assert result.risk_level in (RiskLevel.MEDIUM, RiskLevel.HIGH)
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_strong_wind_gust_returns_high(self, mock_winter, analyzer):
         """Kraftige vindkast (>20 m/s) gir HØY risiko."""
@@ -227,7 +227,7 @@ class TestSnowdriftAnalyzer:
         )
         result = analyzer.analyze(df)
         assert result.risk_level == RiskLevel.HIGH
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_critical_wind_direction_increases_risk(self, mock_winter, analyzer):
         """Kritisk vindretning (SE-S: 135-225°) øker risiko."""
@@ -242,9 +242,9 @@ class TestSnowdriftAnalyzer:
         # Kritisk retning skal gi minimum MEDIUM
         assert result.risk_level in (RiskLevel.MEDIUM, RiskLevel.HIGH)
         # Sjekk at vindretning er nevnt
-        assert any("retning" in f.lower() or "sør" in f.lower() or "SE" in f or "S" in f 
+        assert any("retning" in f.lower() or "sør" in f.lower() or "SE" in f or "S" in f
                    for f in result.factors)
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_no_snow_reduces_risk(self, mock_winter, analyzer):
         """Ingen snø på bakken reduserer snøfokk-risiko."""
@@ -257,7 +257,7 @@ class TestSnowdriftAnalyzer:
         result = analyzer.analyze(df)
         # Selv med sterk vind, ingen snø = lavere risiko
         assert result.risk_level in (RiskLevel.LOW, RiskLevel.MEDIUM)
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_wind_chill_factor_considered(self, mock_winter, analyzer):
         """Vindkjøling påvirker risikovurdering."""
@@ -271,9 +271,9 @@ class TestSnowdriftAnalyzer:
         result = analyzer.analyze(df)
         assert result.risk_level in (RiskLevel.MEDIUM, RiskLevel.HIGH)
         # Vindkjøling skal være nevnt i faktorer
-        assert any("vindkjøling" in f.lower() or "chill" in f.lower() 
+        assert any("vindkjøling" in f.lower() or "chill" in f.lower()
                    for f in result.factors) or result.risk_level == RiskLevel.HIGH
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=False)
     def test_summer_with_snow_returns_medium(self, mock_winter, analyzer):
         """Uvanlig snø om sommeren gir MEDIUM risiko."""
@@ -293,11 +293,11 @@ class TestSnowdriftAnalyzer:
 
 class TestSlapsAnalyzer:
     """Tester for slaps-deteksjon."""
-    
+
     @pytest.fixture
     def analyzer(self):
         return SlapsAnalyzer()
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_cold_dry_returns_low(self, mock_winter, analyzer):
         """Kalde, tørre forhold gir LAV risiko."""
@@ -308,7 +308,7 @@ class TestSlapsAnalyzer:
         )
         result = analyzer.analyze(df)
         assert result.risk_level == RiskLevel.LOW
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_rain_on_snow_returns_medium_or_high(self, mock_winter, analyzer):
         """Regn på snø ved 0-4°C gir MODERAT eller HØY risiko."""
@@ -320,7 +320,7 @@ class TestSlapsAnalyzer:
         )
         result = analyzer.analyze(df)
         assert result.risk_level in (RiskLevel.MEDIUM, RiskLevel.HIGH)
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_heavy_rain_on_snow_returns_high(self, mock_winter, analyzer):
         """Kraftig regn (>5mm/t) på snø gir HØY risiko."""
@@ -332,7 +332,7 @@ class TestSlapsAnalyzer:
         )
         result = analyzer.analyze(df)
         assert result.risk_level == RiskLevel.HIGH
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_no_snow_returns_low(self, mock_winter, analyzer):
         """Uten snø på bakken ingen slaps-risiko."""
@@ -345,7 +345,7 @@ class TestSlapsAnalyzer:
         result = analyzer.analyze(df)
         # Ingen snø = lav slaps-risiko
         assert result.risk_level in (RiskLevel.LOW, RiskLevel.MEDIUM)
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_too_cold_returns_low(self, mock_winter, analyzer):
         """For kaldt (<-1°C) gir snø, ikke slaps."""
@@ -357,7 +357,7 @@ class TestSlapsAnalyzer:
         )
         result = analyzer.analyze(df)
         assert result.risk_level == RiskLevel.LOW
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_too_warm_returns_low(self, mock_winter, analyzer):
         """For varmt (>4°C) gir bare regn, ikke slaps."""
@@ -370,7 +370,7 @@ class TestSlapsAnalyzer:
         result = analyzer.analyze(df)
         # Høy temp = regn, ikke slaps
         assert result.risk_level in (RiskLevel.LOW, RiskLevel.MEDIUM)
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=False)
     def test_summer_returns_low(self, mock_winter, analyzer):
         """Sommersesong gir LAV risiko."""
@@ -388,15 +388,15 @@ class TestSlapsAnalyzer:
 
 class TestSlipperyRoadAnalyzer:
     """Tester for glattføre-deteksjon."""
-    
+
     @pytest.fixture
     def analyzer(self):
         return SlipperyRoadAnalyzer()
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_dry_cold_returns_low_or_medium(self, mock_winter, analyzer):
         """Tørre, kalde forhold gir LAV eller MODERAT risiko.
-        
+
         NB: Analysatoren kan gi MEDIUM hvis bakken er kald under snø,
         selv uten aktiv nedbør - dette er korrekt oppførsel da det
         indikerer fare for is under snølaget.
@@ -409,7 +409,7 @@ class TestSlipperyRoadAnalyzer:
         )
         result = analyzer.analyze(df)
         assert result.risk_level in (RiskLevel.LOW, RiskLevel.MEDIUM)
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_surface_freeze_with_rain_returns_high(self, mock_winter, analyzer):
         """Bakketemperatur < 0 med regn gir HØY risiko (is)."""
@@ -422,7 +422,7 @@ class TestSlipperyRoadAnalyzer:
         )
         result = analyzer.analyze(df)
         assert result.risk_level in (RiskLevel.MEDIUM, RiskLevel.HIGH)
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_hidden_ice_scenario(self, mock_winter, analyzer):
         """'Skjult is' - luft > 0°C men bakke < 0°C."""
@@ -434,7 +434,7 @@ class TestSlipperyRoadAnalyzer:
         )
         result = analyzer.analyze(df)
         assert result.risk_level in (RiskLevel.MEDIUM, RiskLevel.HIGH)
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_frost_risk_with_humidity(self, mock_winter, analyzer):
         """Rimfrost - duggpunkt nær lufttemp ved frost."""
@@ -448,7 +448,7 @@ class TestSlipperyRoadAnalyzer:
         result = analyzer.analyze(df)
         # Rimfrost-risiko bør gi minimum LAV til MEDIUM
         assert result.risk_level in (RiskLevel.LOW, RiskLevel.MEDIUM, RiskLevel.HIGH)
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_rain_on_snow_returns_warning(self, mock_winter, analyzer):
         """Regn på snø gir glattføre-varsel."""
@@ -460,17 +460,17 @@ class TestSlipperyRoadAnalyzer:
         )
         result = analyzer.analyze(df)
         assert result.risk_level in (RiskLevel.MEDIUM, RiskLevel.HIGH)
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_temperature_rise_detected(self, mock_winter, analyzer):
         """Rask temperaturstigning (mildvær) øker risiko."""
         # Simuler temperaturstigning
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         timestamps = [now - timedelta(hours=i) for i in range(12, 0, -1)]
-        
+
         # Temperatur fra -5 til +2 over 12 timer
         temps = [-5 + (7 * i / 11) for i in range(12)]
-        
+
         df = pd.DataFrame({
             'reference_time': timestamps,
             'air_temperature': temps,
@@ -481,11 +481,11 @@ class TestSlipperyRoadAnalyzer:
             'surface_temperature': [t - 2 for t in temps],
             'relative_humidity': [80.0] * 12,
         })
-        
+
         result = analyzer.analyze(df)
         # Temperaturstigning med nedbør bør gi varsel
         assert result.risk_level in (RiskLevel.MEDIUM, RiskLevel.HIGH)
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=False)
     def test_summer_frost_risk(self, mock_winter, analyzer):
         """Rimfrost kan forekomme på kalde sommernetter."""
@@ -506,7 +506,7 @@ class TestSlipperyRoadAnalyzer:
 
 class TestEdgeCases:
     """Tester for kanttilfeller og feilhåndtering."""
-    
+
     @pytest.fixture
     def analyzers(self):
         return {
@@ -515,28 +515,28 @@ class TestEdgeCases:
             'slaps': SlapsAnalyzer(),
             'slippery': SlipperyRoadAnalyzer(),
         }
-    
+
     def test_empty_dataframe(self, analyzers):
         """Tom DataFrame gir UNKNOWN risiko."""
         df = pd.DataFrame()
         for name, analyzer in analyzers.items():
             result = analyzer.analyze(df)
             assert result.risk_level == RiskLevel.UNKNOWN, f"{name} failed"
-    
+
     def test_missing_required_columns(self, analyzers):
         """Manglende kolonner gir UNKNOWN risiko."""
         df = pd.DataFrame({
-            'reference_time': [datetime.now(timezone.utc)],
+            'reference_time': [datetime.now(UTC)],
             'some_column': [1.0],
         })
         for name, analyzer in analyzers.items():
             result = analyzer.analyze(df)
             assert result.risk_level == RiskLevel.UNKNOWN, f"{name} failed"
-    
+
     def test_nan_values_handled(self, analyzers):
         """NaN-verdier håndteres gracefully."""
         df = pd.DataFrame({
-            'reference_time': [datetime.now(timezone.utc)],
+            'reference_time': [datetime.now(UTC)],
             'air_temperature': [float('nan')],
             'wind_speed': [float('nan')],
             'surface_snow_thickness': [float('nan')],
@@ -546,7 +546,7 @@ class TestEdgeCases:
             # Skal ikke kaste exception
             result = analyzer.analyze(df)
             assert result.risk_level in (RiskLevel.UNKNOWN, RiskLevel.LOW), f"{name} failed"
-    
+
     def test_single_row_dataframe(self, analyzers):
         """DataFrame med én rad håndteres."""
         df = create_weather_dataframe(hours=1)
@@ -562,12 +562,12 @@ class TestEdgeCases:
 
 class TestIntegration:
     """Integrasjonstester for kombinerte scenarier."""
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_blizzard_scenario(self, mock_winter):
         """
         Snøstorm-scenario: Alle analysatorer skal gi varsel.
-        
+
         - Kraftig snøfall
         - Sterk vind med kast
         - Kald temperatur
@@ -583,22 +583,22 @@ class TestIntegration:
             precipitation_1h=5.0,
             surface_temperature=-10.0,
         )
-        
+
         fresh_snow = FreshSnowAnalyzer()
         snowdrift = SnowdriftAnalyzer()
         slippery = SlipperyRoadAnalyzer()
-        
+
         # Alle skal gi høy risiko
         assert fresh_snow.analyze(df).risk_level == RiskLevel.HIGH
         assert snowdrift.analyze(df).risk_level == RiskLevel.HIGH
         # Glattføre kan være lavere pga kald temperatur
         assert slippery.analyze(df).risk_level in (RiskLevel.MEDIUM, RiskLevel.HIGH, RiskLevel.LOW)
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_thaw_scenario(self, mock_winter):
         """
         Mildvær-scenario: Regn på snø = slaps og glattføre.
-        
+
         - Temperatur 0-4°C
         - Regn (ikke snø)
         - Snø på bakken
@@ -611,22 +611,22 @@ class TestIntegration:
             precipitation_1h=4.0,
             surface_temperature=-0.5,  # Bakke under frysepunkt
         )
-        
+
         slaps = SlapsAnalyzer()
         slippery = SlipperyRoadAnalyzer()
         fresh_snow = FreshSnowAnalyzer()
-        
+
         # Slaps og glattføre skal gi varsel
         assert slaps.analyze(df).risk_level in (RiskLevel.MEDIUM, RiskLevel.HIGH)
         assert slippery.analyze(df).risk_level in (RiskLevel.MEDIUM, RiskLevel.HIGH)
         # Nysnø skal IKKE varsle (det er regn, ikke snø)
         assert fresh_snow.analyze(df).risk_level == RiskLevel.LOW
-    
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_stable_winter_conditions(self, mock_winter):
         """
         Stabile vinterforhold: Ingen varsler.
-        
+
         - Kald og tørr
         - Lite vind
         - Stabil snødybde
@@ -641,12 +641,12 @@ class TestIntegration:
             precipitation_1h=0.0,
             surface_temperature=-7.0,
         )
-        
+
         fresh_snow = FreshSnowAnalyzer()
         snowdrift = SnowdriftAnalyzer()
         slaps = SlapsAnalyzer()
         slippery = SlipperyRoadAnalyzer()
-        
+
         # Alle skal gi lav risiko
         assert fresh_snow.analyze(df).risk_level == RiskLevel.LOW
         assert snowdrift.analyze(df).risk_level == RiskLevel.LOW

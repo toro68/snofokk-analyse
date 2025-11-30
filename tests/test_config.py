@@ -67,7 +67,7 @@ class TestConfigurationLoading:
         """Test loading configuration from file if it exists"""
         # This is more of a smoke test since we don't know if config files exist
         try:
-            settings = Settings()
+            Settings()
             # If we get here without exception, basic loading works
             assert True
         except Exception as e:

@@ -10,18 +10,19 @@ Provides Progressive Web App functionality including:
 import streamlit as st
 import streamlit.components.v1 as components
 
+
 def inject_pwa_code():
     """Inject PWA JavaScript code into Streamlit app"""
-    
+
     pwa_js = """
     <script>
     // PWA Registration and Management
     (function() {
         'use strict';
-        
+
         let deferredPrompt;
         let isInstalled = false;
-        
+
         // Check if app is already installed
         function checkInstallStatus() {
             // Check for standalone mode (iOS)
@@ -29,23 +30,23 @@ def inject_pwa_code():
                 isInstalled = true;
                 return true;
             }
-            
+
             // Check for display-mode (Android/Desktop)
             if (window.matchMedia('(display-mode: standalone)').matches) {
                 isInstalled = true;
                 return true;
             }
-            
+
             // Check for minimal-ui or fullscreen
             if (window.matchMedia('(display-mode: minimal-ui)').matches ||
                 window.matchMedia('(display-mode: fullscreen)').matches) {
                 isInstalled = true;
                 return true;
             }
-            
+
             return false;
         }
-        
+
         // Register service worker
         function registerServiceWorker() {
             if ('serviceWorker' in navigator) {
@@ -54,12 +55,12 @@ def inject_pwa_code():
                 })
                 .then(registration => {
                     console.log('🔧 Service Worker registered:', registration.scope);
-                    
+
                     // Check for updates
                     registration.addEventListener('updatefound', () => {
                         console.log('🔄 Service Worker update found');
                         const newWorker = registration.installing;
-                        
+
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                                 console.log('✅ Service Worker updated - new content available');
@@ -73,7 +74,7 @@ def inject_pwa_code():
                 });
             }
         }
-        
+
         // Show update notification
         function showUpdateNotification() {
             const notification = document.createElement('div');
@@ -123,7 +124,7 @@ def inject_pwa_code():
                 </div>
             `;
             document.body.appendChild(notification);
-            
+
             // Auto-remove after 10 seconds
             setTimeout(() => {
                 if (notification.parentElement) {
@@ -131,7 +132,7 @@ def inject_pwa_code():
                 }
             }, 10000);
         }
-        
+
         // Handle install prompt
         function handleInstallPrompt() {
             // Listen for beforeinstallprompt event
@@ -141,7 +142,7 @@ def inject_pwa_code():
                 deferredPrompt = e;
                 showInstallButton();
             });
-            
+
             // Listen for app installed event
             window.addEventListener('appinstalled', (e) => {
                 console.log('✅ PWA installed successfully');
@@ -150,13 +151,13 @@ def inject_pwa_code():
                 showInstalledNotification();
             });
         }
-        
+
         // Show install button
         function showInstallButton() {
             if (isInstalled || checkInstallStatus()) {
                 return;
             }
-            
+
             const installBtn = document.createElement('div');
             installBtn.id = 'pwa-install-btn';
             installBtn.innerHTML = `
@@ -190,7 +191,7 @@ def inject_pwa_code():
                     }
                 </style>
             `;
-            
+
             // Add install function to window
             window.installPWA = function() {
                 if (deferredPrompt) {
@@ -206,10 +207,10 @@ def inject_pwa_code():
                     });
                 }
             };
-            
+
             document.body.appendChild(installBtn);
         }
-        
+
         // Hide install button
         function hideInstallButton() {
             const installBtn = document.getElementById('pwa-install-btn');
@@ -217,7 +218,7 @@ def inject_pwa_code():
                 installBtn.remove();
             }
         }
-        
+
         // Show installed notification
         function showInstalledNotification() {
             const notification = document.createElement('div');
@@ -244,7 +245,7 @@ def inject_pwa_code():
                 </div>
             `;
             document.body.appendChild(notification);
-            
+
             // Auto-remove after 5 seconds
             setTimeout(() => {
                 if (notification.parentElement) {
@@ -252,13 +253,13 @@ def inject_pwa_code():
                 }
             }, 5000);
         }
-        
+
         // Online/Offline status
         function handleOnlineStatus() {
             function updateOnlineStatus() {
                 const status = navigator.onLine ? 'online' : 'offline';
                 console.log('🌐 Connection status:', status);
-                
+
                 if (!navigator.onLine) {
                     showOfflineNotification();
                 } else {
@@ -271,16 +272,16 @@ def inject_pwa_code():
                     }
                 }
             }
-            
+
             window.addEventListener('online', updateOnlineStatus);
             window.addEventListener('offline', updateOnlineStatus);
             updateOnlineStatus(); // Check initial status
         }
-        
+
         // Show offline notification
         function showOfflineNotification() {
             if (document.getElementById('offline-notification')) return;
-            
+
             const notification = document.createElement('div');
             notification.id = 'offline-notification';
             notification.innerHTML = `
@@ -303,7 +304,7 @@ def inject_pwa_code():
             `;
             document.body.appendChild(notification);
         }
-        
+
         // Hide offline notification
         function hideOfflineNotification() {
             const notification = document.getElementById('offline-notification');
@@ -311,31 +312,31 @@ def inject_pwa_code():
                 notification.remove();
             }
         }
-        
+
         // Initialize PWA features
         function initPWA() {
             console.log('🚀 Initializing PWA features...');
-            
+
             // Check if already installed
             isInstalled = checkInstallStatus();
             if (isInstalled) {
                 console.log('✅ PWA is already installed');
             }
-            
+
             registerServiceWorker();
             handleInstallPrompt();
             handleOnlineStatus();
-            
+
             // Add PWA metadata to head if not present
             addPWAMetadata();
-            
+
             console.log('✅ PWA initialization complete');
         }
-        
+
         // Add PWA metadata
         function addPWAMetadata() {
             const head = document.head;
-            
+
             // Manifest link
             if (!document.querySelector('link[rel="manifest"]')) {
                 const manifestLink = document.createElement('link');
@@ -343,7 +344,7 @@ def inject_pwa_code():
                 manifestLink.href = '/static/manifest.json';
                 head.appendChild(manifestLink);
             }
-            
+
             // Theme color
             if (!document.querySelector('meta[name="theme-color"]')) {
                 const themeColor = document.createElement('meta');
@@ -351,7 +352,7 @@ def inject_pwa_code():
                 themeColor.content = '#667eea';
                 head.appendChild(themeColor);
             }
-            
+
             // Apple touch icon
             if (!document.querySelector('link[rel="apple-touch-icon"]')) {
                 const appleIcon = document.createElement('link');
@@ -359,7 +360,7 @@ def inject_pwa_code():
                 appleIcon.href = '/static/icon-192.png';
                 head.appendChild(appleIcon);
             }
-            
+
             // Apple mobile web app capable
             if (!document.querySelector('meta[name="apple-mobile-web-app-capable"]')) {
                 const appleCapable = document.createElement('meta');
@@ -367,7 +368,7 @@ def inject_pwa_code():
                 appleCapable.content = 'yes';
                 head.appendChild(appleCapable);
             }
-            
+
             // Apple status bar style
             if (!document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')) {
                 const appleStatusBar = document.createElement('meta');
@@ -376,7 +377,7 @@ def inject_pwa_code():
                 head.appendChild(appleStatusBar);
             }
         }
-        
+
         // Start initialization when DOM is ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initPWA);
@@ -386,13 +387,13 @@ def inject_pwa_code():
     })();
     </script>
     """
-    
+
     # Inject the JavaScript
     components.html(pwa_js, height=0)
 
 def add_pwa_meta_tags():
     """Add PWA meta tags to Streamlit page"""
-    
+
     # Set page config with PWA-friendly settings
     if 'pwa_meta_added' not in st.session_state:
         st.markdown("""
@@ -409,7 +410,7 @@ def setup_pwa():
     """Complete PWA setup for Streamlit app"""
     add_pwa_meta_tags()
     inject_pwa_code()
-    
+
     # Serve static files through Streamlit
     serve_static_files()
 

@@ -199,9 +199,9 @@ KRITERIER OPPFYLT:
 -------------------
 Dette er et automatisk varsel med værdata fra Gullingen værstasjon.
 
-Vi jobber kontinuerlig med å forbedre varslingssystemet. Gi gjerne 
-tilbakemelding dersom du opplever glatte veier som ikke ble varslet, 
-eller varsler som ikke samsvarer med faktiske forhold. Dette hjelper 
+Vi jobber kontinuerlig med å forbedre varslingssystemet. Gi gjerne
+tilbakemelding dersom du opplever glatte veier som ikke ble varslet,
+eller varsler som ikke samsvarer med faktiske forhold. Dette hjelper
 oss å justere parameterne for mer presise varsler."""
 
         msg.attach(MIMEText(body, 'plain'))
