@@ -157,20 +157,42 @@ HVIS nedbør > 0 OG (duggpunkt < 0°C ELLER lufttemp < 1°C):
 
 **Konsekvens**: Vi kan IKKE stole på snødybdeendring for snøfokk-varsling!
 
+### ⚠️ Krav om fersk løssnø
+
+**Kritisk forutsetning**: Snøfokk krever FERSK, LØS SNØ som kan transporteres av vind.
+
+**Når snø IKKE kan blåse:**
+- Gammel, pakket snø (sintrert/sammenbundet)
+- Snø med isskorpe på toppen
+- Våt snø (temp > 0°C)
+- Snø eldre enn 24-48 timer uten ny nedbør
+
+**Fersk snø-kriterium:**
+| Faktor | Krav | Forklaring |
+|--------|------|------------|
+| Nysnø siste 24t | ≥ 2 cm | Tilgjengelig løs snø |
+| ELLER aktiv nedbør | > 0.1 mm/t | Snø faller nå |
+| OG temperatur | < -1°C | Snøen forblir tørr og løs |
+
+> **Fysisk forklaring**: Snøkrystaller binder seg sammen (sintrer) over tid. 
+> Etter 24-48 timer er overflaten ofte for hard til å blåse, selv i sterk vind.
+> Vind uten fersk snø = ingen snøfokk, bare kald vind.
+
 **Løsning i kode**: Snøfokk varsles basert på:
 1. Vindkast ≥ 15 m/s (primær trigger)
 2. Vindkjøling ≤ -12°C
 3. Eksisterende snødekke ≥ 3 cm (et sted i området)
 4. Temperatur < -1°C (løssnø bevares)
+5. **NY: Fersk snø** - nysnø siste 96t ≥ 2 cm ELLER aktiv nedbør
 
 **IKKE brukt**: Snødybdeendring - denne er upålitelig ved vind.
 
 **Validerte kriterier (sesong 2023-2024):**
 
-| Nivå | Vindkjøling | Vind | Vindkast | Snødybde | Vindretning |
-|------|-------------|------|----------|----------|-------------|
-| Advarsel | ≤ -12°C | ≥ 8 m/s | ≥ 15 m/s | ≥ 3 cm | Alle |
-| Kritisk | ≤ -15°C | ≥ 10 m/s | ≥ 20 m/s | ≥ 3 cm | SE-S (135-225°) |
+| Nivå | Vindkjøling | Vind | Vindkast | Snødybde | Fersk snø | Vindretning |
+|------|-------------|------|----------|----------|-----------|-------------|
+| Advarsel | ≤ -12°C | ≥ 8 m/s | ≥ 15 m/s | ≥ 3 cm | ≥ 2 cm/24t | Alle |
+| Kritisk | ≤ -15°C | ≥ 10 m/s | ≥ 20 m/s | ≥ 3 cm | ≥ 2 cm/24t | SE-S (135-225°) |
 
 **Ny innsikt: Vindkast er bedre trigger enn snittwind!**
 - Snøfokk-episoder: snittwind 10.3 m/s, vindkast **21.9 m/s**
@@ -184,8 +206,8 @@ HVIS nedbør > 0 OG (duggpunkt < 0°C ELLER lufttemp < 1°C):
 - Mest aktive måneder: Desember (27%), Februar (26%), Januar (20%)
 
 **Varsel til:**
-- Brøytemannskaper: "Snøfokk - veier kan blokkeres raskt"
-- Hytteeiere: "Snøfokk - vurder å utsette reisen"
+- Brøytemannskaper: "Snøfokk"
+- Hytteeiere: "Snøfokk"
 
 ---
 

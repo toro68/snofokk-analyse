@@ -31,6 +31,7 @@ from src.analyzers import (
     SlapsAnalyzer,
     RiskLevel
 )
+from src.plowing_service import PlowingInfo, get_plowing_info
 
 logger = logging.getLogger(__name__)
 
@@ -140,11 +141,11 @@ def render_compact_risk_card(icon: str, title: str, result, key: str):
                 st.caption(f"Scenario: {result.scenario}")
 
 
-def render_key_metrics(df):
+def render_key_metrics(df, plowing_info: PlowingInfo):
     """Render current weather metrics."""
     latest = df.iloc[-1]
     
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
     
     with col1:
         temp = latest.get('air_temperature')
@@ -175,6 +176,14 @@ def render_key_metrics(df):
     with col4:
         precip = latest.get('precipitation_1h', 0)
         st.metric("Nedbør", f"{precip:.1f} mm/h")
+    
+    with col5:
+        if plowing_info.last_plowing:
+            st.metric(f"{plowing_info.status_emoji} Siste brøyting", plowing_info.formatted_time)
+        elif plowing_info.error:
+            st.metric("🚜 Siste brøyting", "N/A", help=plowing_info.error)
+        else:
+            st.metric("🚜 Siste brøyting", "Ingen data")
 
 
 def get_overall_status(results: dict) -> tuple[str, str, RiskLevel]:
@@ -328,7 +337,15 @@ def main():
     
     # Current metrics
     st.subheader("Nåværende forhold")
-    render_key_metrics(df)
+    
+    # Fetch plowing info
+    try:
+        plowing_info = get_cached_plowing_info()
+    except Exception as e:
+        logger.error(f"Error fetching plowing info: {e}")
+        plowing_info = PlowingInfo(last_plowing=None, is_recent=False, hours_since=None, error=f"Klarte ikke hente brøyting: {e}")
+
+    render_key_metrics(df, plowing_info)
     
     st.divider()
     
@@ -551,6 +568,12 @@ def render_netatmo_map():
             use_container_width=True,
             hide_index=True
         )
+
+
+@st.cache_data(ttl=3600)  # Cache plowing info for 1 hour
+def get_cached_plowing_info() -> PlowingInfo:
+    """Henter brøyteinformasjon fra service (cached)."""
+    return get_plowing_info()
 
 
 def estimate_snow_limit(stations) -> dict:
