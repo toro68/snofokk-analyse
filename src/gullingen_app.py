@@ -676,7 +676,7 @@ def render_netatmo_map():
         )
 
 
-@st.cache_data(ttl=3600)  # Cache plowing info for 1 hour
+@st.cache_data(ttl=900)  # Cache plowing info for 15 minutter
 def get_cached_plowing_info() -> PlowingInfo:
     """Henter brøyteinformasjon fra service (cached)."""
     return get_plowing_info()
