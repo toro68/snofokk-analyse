@@ -524,7 +524,7 @@ def display_critical_alerts(df: pd.DataFrame, periods_df: pd.DataFrame):
         st.header("🚨 Kritiske perioder")
         fig = plot_critical_periods_overview(df, periods_df)
         if fig is not None:
-            st.plotly_chart(fig, width='stretch')
+            st.plotly_chart(fig, use_container_width=True)
 
         # Vis detaljert liste under grafen
         st.subheader("Detaljer for kritiske perioder")
@@ -765,12 +765,12 @@ def show_main_analysis():
                 # Vis hovedplot
                 fig = plot_risk_analysis(df_risk)
                 if fig is not None:
-                    st.plotly_chart(fig, width='stretch')
+                    st.plotly_chart(fig, use_container_width=True)
             else:
                 # Midlertidig: vis bare standardvisning
                 fig = plot_risk_analysis(df_risk)
                 if fig is not None:
-                    st.plotly_chart(fig, width='stretch')
+                    st.plotly_chart(fig, use_container_width=True)
 
             # Vis kritiske varsler
             display_critical_alerts(df_risk, critical_periods)
