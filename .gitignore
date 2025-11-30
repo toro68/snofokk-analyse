@@ -53,3 +53,5 @@ data/*.json
 
 # Arkiverte filer
 archive/legacy_root_files/
+archive/old_src/
+archive/old_scripts/
