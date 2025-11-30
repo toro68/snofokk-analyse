@@ -7,15 +7,14 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-# Add scripts to path
+# Add scripts to path - må gjøres før lokale imports
 scripts_path = Path(__file__).parent.parent
 sys.path.insert(0, str(scripts_path))
 
-# Import våre moduler
-from analysis.slippery_road_pattern_analyzer import SlipperyRoadAnalyzer
-from analysis.snow_drift_pattern_analyzer import SnowDriftAnalyzer
-from analysis.weather_pattern_optimizer import WeatherPatternOptimizer
-from utils.weather_config import ConfigManager
+from analysis.slippery_road_pattern_analyzer import SlipperyRoadAnalyzer  # noqa: E402
+from analysis.snow_drift_pattern_analyzer import SnowDriftAnalyzer  # noqa: E402
+from analysis.weather_pattern_optimizer import WeatherPatternOptimizer  # noqa: E402
+from utils.weather_config import ConfigManager  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

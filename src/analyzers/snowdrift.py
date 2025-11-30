@@ -1,11 +1,10 @@
-from __future__ import annotations
-
 """
 Snøfokk-risikoanalyse.
 
 Bruker ML-baserte terskler validert mot 149 historiske episoder.
 Vindkjøling har 73.1% viktighet i modellen.
 """
+from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 

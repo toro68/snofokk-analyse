@@ -186,7 +186,7 @@ class FrostClient:
             logger.warning(f"Kunne ikke hente elementer: {e}")
             return []
 
-    @lru_cache(maxsize=100)
+    @lru_cache(maxsize=100)  # noqa: B019 - bevisst caching
     def _fetch_observations(
         self,
         start_iso: str,

@@ -68,7 +68,7 @@ class HistoricalWeatherService:
             st.error(f"Feil ved lasting av februar-data: {e}")
             return pd.DataFrame()
 
-    @lru_cache(maxsize=20)
+    @lru_cache(maxsize=20)  # noqa: B019 - bevisst caching
     def fetch_historical_data(self, start_date: str, end_date: str) -> pd.DataFrame:
         """Hent historisk data fra API med caching"""
 

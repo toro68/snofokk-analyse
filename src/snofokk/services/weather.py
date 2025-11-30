@@ -27,7 +27,7 @@ class WeatherService:
         })
         return session
 
-    @lru_cache(maxsize=32)
+    @lru_cache(maxsize=32)  # noqa: B019 - bevisst caching
     def fetch_weather_data(
         self,
         station: str,

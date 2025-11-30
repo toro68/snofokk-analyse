@@ -1,6 +1,6 @@
 # Standard biblioteker
 import logging
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar
 
 # Tredjeparts biblioteker
 import numpy as np
@@ -26,9 +26,7 @@ except ImportError:
 
 # Type aliases
 T = TypeVar("T")
-ModelType = Union[
-    RandomForestRegressor, GradientBoostingRegressor, XGBRegressor, VotingRegressor
-]
+ModelType = RandomForestRegressor | GradientBoostingRegressor | XGBRegressor | VotingRegressor
 
 # Logging oppsett
 logger = logging.getLogger(__name__)
