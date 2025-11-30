@@ -1,24 +1,20 @@
 """
 Test for brøytedata-integrasjon.
 
-MANGLENDE FUNKSJONALITET:
-Appen har IKKE integrert brøytedata. Dette betyr at:
+Tester for:
+1. PlowmanClient - Henting av brøytedata fra Plowman livekart
+2. PlowingService - Tjeneste for brøytedata med caching
+3. Integrasjon med analysatorer (dokumenterer manglende funksjonalitet)
+
+MANGLENDE FUNKSJONALITET I ANALYSATORER:
 - Nysnø-varsel nullstilles ikke etter brøyting
 - Snøfokk-risiko tar ikke hensyn til brøytet vei
 - Slaps-varsel forblir selv etter at veien er ryddet
 - Glattføre-varsel tar ikke hensyn til strøing
-
-FORESLÅTT LØSNING:
-1. Legg til "Registrer brøyting" i appen
-2. Lagre brøytehendelser med tidspunkt
-3. Nullstill/reduser risiko for periode etter brøyting
-4. Vis "Sist brøytet" og "Snø siden brøyting" i UI
-
-Se historical_service.py for eksisterende (men ubrukt) brøyte-tracking.
 """
 
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 import pandas as pd
 import pytest
 
@@ -27,6 +23,173 @@ from src.analyzers.fresh_snow import FreshSnowAnalyzer
 from src.analyzers.snowdrift import SnowdriftAnalyzer
 from src.analyzers.slaps import SlapsAnalyzer
 from src.analyzers.slippery_road import SlipperyRoadAnalyzer
+from src.plowman_client import PlowmanClient, PlowingEvent, get_last_plowing_time
+from src.plowing_service import PlowingInfo, get_plowing_info
+
+
+class TestPlowmanClient:
+    """Tester for PlowmanClient som henter data fra Plowman livekart."""
+    
+    def test_decode_customer_id(self):
+        """Tester dekoding av base64-encoded customer ID."""
+        client = PlowmanClient()
+        # "Y3VzdG9tZXItMTM=" dekoder til "customer-13"
+        assert client.customer_id == 13
+    
+    def test_plowing_event_hours_since(self):
+        """Tester beregning av timer siden brøyting."""
+        # 2 timer siden
+        two_hours_ago = datetime.now(timezone.utc) - timedelta(hours=2)
+        event = PlowingEvent(timestamp=two_hours_ago)
+        
+        hours = event.hours_since()
+        assert 1.9 < hours < 2.1  # Tillat litt margin
+    
+    def test_plowing_event_with_naive_datetime(self):
+        """Tester håndtering av naive datetime (uten tidssone)."""
+        # PlowingEvent.hours_since() konverterer naive datetime til UTC
+        # og sammenligner med nåtid i UTC
+        # Bruk datetime.now(timezone.utc) uten tzinfo for å simulere naive time
+        naive_time = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=1)
+        event = PlowingEvent(timestamp=naive_time)
+        
+        hours = event.hours_since()
+        assert 0.9 < hours < 1.1
+    
+    @patch('src.plowman_client.requests.Session.get')
+    def test_scrape_from_page_parses_timestamps(self, mock_get):
+        """Tester at scraping finner lastUpdated-tidspunkter i HTML."""
+        # Simuler HTML-respons med Next.js encoded timestamps
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.text = '''
+            <script>self.__next_f.push([1,"geojson":{"features":[
+            {"properties":{"lastUpdated":"$D2025-11-27T11:20:34.000Z"}}
+            ]}])</script>
+        '''
+        mock_get.return_value = mock_response
+        
+        client = PlowmanClient()
+        event = client.scrape_from_page()
+        
+        assert event is not None
+        assert event.timestamp.year == 2025
+        assert event.timestamp.month == 11
+        assert event.timestamp.day == 27
+    
+    @patch('src.plowman_client.requests.Session.get')
+    def test_scrape_finds_newest_timestamp(self, mock_get):
+        """Tester at scraping finner det nyeste tidspunktet."""
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.text = '''
+            $D2025-11-20T10:00:00.000Z
+            $D2025-11-27T11:20:34.000Z
+            $D2025-11-25T08:30:00.000Z
+        '''
+        mock_get.return_value = mock_response
+        
+        client = PlowmanClient()
+        event = client.scrape_from_page()
+        
+        assert event is not None
+        # Skal finne den nyeste: 27. november
+        assert event.timestamp.day == 27
+        assert event.timestamp.hour == 11
+
+
+class TestPlowingService:
+    """Tester for PlowingService som håndterer brøytedata med caching."""
+    
+    def test_plowing_info_formatted_time_today(self):
+        """Tester formattering av tidspunkt i dag."""
+        now = datetime.now(timezone.utc)
+        info = PlowingInfo(
+            last_plowing=now - timedelta(hours=2),
+            hours_since=2.0,
+            is_recent=True,
+            all_timestamps=[now],
+            source='test'
+        )
+        
+        formatted = info.formatted_time
+        assert "kl." in formatted or "min siden" in formatted
+    
+    def test_plowing_info_formatted_time_yesterday(self):
+        """Tester formattering av tidspunkt i går."""
+        yesterday = datetime.now(timezone.utc) - timedelta(days=1, hours=2)
+        info = PlowingInfo(
+            last_plowing=yesterday,
+            hours_since=26.0,
+            is_recent=False,
+            all_timestamps=[yesterday],
+            source='test'
+        )
+        
+        formatted = info.formatted_time
+        assert "I går" in formatted
+    
+    def test_plowing_info_status_emoji(self):
+        """Tester status-emoji basert på tid siden brøyting."""
+        # Nylig brøytet (< 6 timer)
+        info_recent = PlowingInfo(
+            last_plowing=datetime.now(timezone.utc),
+            hours_since=2.0,
+            is_recent=True,
+            all_timestamps=[],
+            source='test'
+        )
+        assert info_recent.status_emoji == "✅"
+        
+        # Brøytet siste døgn
+        info_day = PlowingInfo(
+            last_plowing=datetime.now(timezone.utc) - timedelta(hours=12),
+            hours_since=12.0,
+            is_recent=True,
+            all_timestamps=[],
+            source='test'
+        )
+        assert info_day.status_emoji == "🟢"
+        
+        # Mer enn 2 dager
+        info_old = PlowingInfo(
+            last_plowing=datetime.now(timezone.utc) - timedelta(days=3),
+            hours_since=72.0,
+            is_recent=False,
+            all_timestamps=[],
+            source='test'
+        )
+        assert info_old.status_emoji == "🟠"
+    
+    def test_plowing_info_no_data(self):
+        """Tester PlowingInfo uten data."""
+        info = PlowingInfo(
+            last_plowing=None,
+            hours_since=None,
+            is_recent=False,
+            all_timestamps=[],
+            source='none',
+            error="Ingen data"
+        )
+        
+        assert info.formatted_time == "Ukjent"
+        assert info.status_emoji == "❓"
+    
+    @patch('src.plowing_service.get_last_plowing_time')
+    def test_get_plowing_info_uses_plowman_client(self, mock_get_last):
+        """Tester at get_plowing_info bruker PlowmanClient."""
+        mock_event = PlowingEvent(
+            timestamp=datetime.now(timezone.utc) - timedelta(hours=5)
+        )
+        mock_get_last.return_value = mock_event
+        
+        # Hent uten cache
+        info = get_plowing_info(use_cache=False)
+        
+        mock_get_last.assert_called_once()
+        assert info.source == 'live'
+        assert info.hours_since is not None
+        assert 4.9 < info.hours_since < 5.1
 
 
 class TestPlowingIntegrationMissing:

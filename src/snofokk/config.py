@@ -54,7 +54,8 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
-        env_prefix="SNOFOKK_"
+        env_prefix="SNOFOKK_",
+        extra="ignore"  # Ignorer ekstra felter fra .env (f.eks. netatmo_*)
     )
 
     @property
