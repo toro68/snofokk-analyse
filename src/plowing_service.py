@@ -115,50 +115,72 @@ def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int = 1) -> Pl
     """
     now = datetime.now(timezone.utc)
     
+    cache_data = _load_cache()
+
     # Sjekk cache først
-    if use_cache and CACHE_FILE.exists():
-        try:
-            with open(CACHE_FILE, 'r') as f:
-                cache = json.load(f)
-            
-            cache_time = datetime.fromisoformat(cache['cached_at'])
-            cache_age = (now - cache_time).total_seconds() / 3600
-            
-            if cache_age < max_cache_age_hours and cache.get('last_plowing'):
-                last_plowing = datetime.fromisoformat(cache['last_plowing'])
-                hours_since = (now - last_plowing).total_seconds() / 3600
-                
-                return PlowingInfo(
-                    last_plowing=last_plowing,
-                    hours_since=hours_since,
-                    is_recent=hours_since < RECENT_PLOWING_HOURS,
-                    all_timestamps=[datetime.fromisoformat(ts) for ts in cache.get('all_timestamps', [])],
-                    source='cache'
-                )
-        except (json.JSONDecodeError, KeyError, ValueError) as e:
-            logger.warning(f"Cache-lesefeil: {e}")
+    if use_cache and cache_data:
+        cache_age = (now - cache_data['cached_at']).total_seconds() / 3600
+        if cache_age < max_cache_age_hours and cache_data['last_plowing']:
+            last_plowing = cache_data['last_plowing']
+            hours_since = (now - last_plowing).total_seconds() / 3600
+            return PlowingInfo(
+                last_plowing=last_plowing,
+                hours_since=hours_since,
+                is_recent=hours_since < RECENT_PLOWING_HOURS,
+                all_timestamps=cache_data['all_timestamps'],
+                source='cache'
+            )
     
     # Hent live data fra Plowman
     try:
         event = get_last_plowing_time()
-        
+
         if event and event.timestamp:
-            hours_since = (now - event.timestamp).total_seconds() / 3600
-            
-            # Lagre til cache
-            _save_cache(event.timestamp, [event.timestamp])
-            
+            newest_cached = cache_data['last_plowing'] if cache_data else None
+            new_timestamp = event.timestamp
+
+            if newest_cached and new_timestamp < newest_cached:
+                logger.warning(
+                    "Plowman returnerte eldre brøyting (%s) enn cache (%s) – beholder cache",
+                    new_timestamp.isoformat(),
+                    newest_cached.isoformat()
+                )
+                hours_since = (now - newest_cached).total_seconds() / 3600
+                return PlowingInfo(
+                    last_plowing=newest_cached,
+                    hours_since=hours_since,
+                    is_recent=hours_since < RECENT_PLOWING_HOURS,
+                    all_timestamps=cache_data['all_timestamps'] if cache_data else [newest_cached],
+                    source='cache'
+                )
+
+            # Lagre til cache og returner live-data
+            updated_cache = _save_cache([new_timestamp], existing_cache=cache_data)
+            hours_since = (now - new_timestamp).total_seconds() / 3600
+
             return PlowingInfo(
-                last_plowing=event.timestamp,
+                last_plowing=new_timestamp,
                 hours_since=hours_since,
                 is_recent=hours_since < RECENT_PLOWING_HOURS,
-                all_timestamps=[event.timestamp],
+                all_timestamps=updated_cache['all_timestamps'],
                 source='live'
             )
     except Exception as e:
         logger.warning(f"Feil ved henting fra Plowman: {e}")
-    
+
     # Ingen data tilgjengelig
+    if cache_data and cache_data['last_plowing']:
+        last_plowing = cache_data['last_plowing']
+        hours_since = (now - last_plowing).total_seconds() / 3600
+        return PlowingInfo(
+            last_plowing=last_plowing,
+            hours_since=hours_since,
+            is_recent=hours_since < RECENT_PLOWING_HOURS,
+            all_timestamps=cache_data['all_timestamps'],
+            source='stale-cache',
+            error="Live Plowman utilgjengelig – viser cache"
+        )
+
     return PlowingInfo(
         last_plowing=None,
         hours_since=None,
@@ -169,21 +191,74 @@ def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int = 1) -> Pl
     )
 
 
-def _save_cache(last_plowing: datetime, all_timestamps: list[datetime]) -> None:
-    """Lagrer brøytingsdata til cache."""
+def _load_cache() -> Optional[dict]:
+    """Les cachefil og returner strukturert innhold."""
+    if not CACHE_FILE.exists():
+        return None
+
+    try:
+        with open(CACHE_FILE, 'r') as f:
+            raw = json.load(f)
+
+        cached_at = datetime.fromisoformat(raw['cached_at'])
+        stored_timestamps = [
+            datetime.fromisoformat(ts)
+            for ts in raw.get('all_timestamps', [])
+            if ts
+        ]
+
+        if raw.get('last_plowing'):
+            stored_timestamps.append(datetime.fromisoformat(raw['last_plowing']))
+
+        unique_sorted = _dedupe_and_sort(stored_timestamps)
+        last_plowing = unique_sorted[0] if unique_sorted else None
+
+        return {
+            'cached_at': cached_at,
+            'all_timestamps': unique_sorted,
+            'last_plowing': last_plowing,
+        }
+    except (json.JSONDecodeError, KeyError, ValueError) as e:
+        logger.warning(f"Cache-lesefeil: {e}")
+        return None
+
+
+def _save_cache(new_timestamps: list[datetime], existing_cache: Optional[dict] = None) -> dict:
+    """Lagrer brøytingsdata til cache og returnerer ny struktur."""
     try:
         CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
-        
-        cache_data = {
-            'last_plowing': last_plowing.isoformat(),
-            'all_timestamps': [ts.isoformat() for ts in sorted(set(all_timestamps), reverse=True)[:20]],
+
+        existing = existing_cache['all_timestamps'] if existing_cache else []
+        merged = _dedupe_and_sort(existing + new_timestamps)
+        merged_limited = merged[:20]
+
+        cache_payload = {
+            'last_plowing': merged_limited[0].isoformat() if merged_limited else None,
+            'all_timestamps': [ts.isoformat() for ts in merged_limited],
             'cached_at': datetime.now(timezone.utc).isoformat()
         }
-        
+
         with open(CACHE_FILE, 'w') as f:
-            json.dump(cache_data, f, indent=2)
+            json.dump(cache_payload, f, indent=2)
+
+        return {
+            'cached_at': datetime.fromisoformat(cache_payload['cached_at']),
+            'all_timestamps': merged_limited,
+            'last_plowing': merged_limited[0] if merged_limited else None,
+        }
     except Exception as e:
         logger.warning(f"Kunne ikke lagre cache: {e}")
+        return existing_cache or {
+            'cached_at': datetime.now(timezone.utc),
+            'all_timestamps': [],
+            'last_plowing': None,
+        }
+
+
+def _dedupe_and_sort(timestamps: list[datetime]) -> list[datetime]:
+    """Dedupliserer og sorterer tidsstempler synkende."""
+    unique = {ts.isoformat(): ts for ts in timestamps if isinstance(ts, datetime)}
+    return sorted(unique.values(), reverse=True)
 
 
 def should_show_snow_warning(plowing_info: PlowingInfo, snow_cm: float) -> bool:
