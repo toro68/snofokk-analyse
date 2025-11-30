@@ -96,6 +96,7 @@ class SnowdriftThresholds:
     
     Basert på analyse av 166 episoder.
     Vindkast er bedre trigger enn snittwind!
+    Historisk snitt vindkast ved snøfokk: 21.9 m/s
     """
     # Vindkjøling-baserte terskler
     wind_chill_critical: float = -15.0  # Høy risiko
@@ -107,7 +108,8 @@ class SnowdriftThresholds:
     wind_speed_median: float = 12.2     # Empirisk median for snøtransport
     
     # Vindkast-terskler (NY - bedre trigger!)
-    wind_gust_critical: float = 22.0    # Kritisk risiko
+    # Historisk snitt: 21.9 m/s - justert terskel til 20.0 for å fange typiske episoder
+    wind_gust_critical: float = 20.0    # Kritisk risiko (tidligere 22.0)
     wind_gust_warning: float = 15.0     # Moderat risiko
     
     # Kritiske vindretninger (SE-S)
