@@ -50,3 +50,6 @@ Thumbs.db
 # Data (store lokalt)
 data/*.json
 !data/.gitkeep
+
+# Arkiverte filer
+archive/legacy_root_files/
