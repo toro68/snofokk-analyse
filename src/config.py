@@ -143,6 +143,8 @@ class SlipperyRoadThresholds:
     snow_depth_min_cm: float = 5.0
     rain_threshold_mm: float = 0.3
     temp_rise_threshold: float = 1.0    # °C stigning siste 6t
+    recent_snow_relief_hours: int = 6   # Tidsrom for "fersk snø"-effekt
+    recent_snow_relief_cm: float = 2.0  # Økning som gir naturlig strøing
 
 
 @dataclass(frozen=True)

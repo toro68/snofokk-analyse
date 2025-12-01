@@ -146,10 +146,10 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
         }
 
         # SCENARIO 0: Nysnø = naturlig strøing (lav risiko) - men kun ved kaldt vær
-        if self._check_snow_increase(df) and temp <= settings.fresh_snow.air_temp_max:
+        if self._check_recent_snow(df):
             return AnalysisResult(
                 risk_level=RiskLevel.LOW,
-                message="Snøfall pågår - nysnø fungerer som naturlig strøing",
+                message="Fersk nysnø - naturlig strøing",
                 scenario="Snøfall",
                 factors=["🌨️ Økende snødybde - gir friksjon"],
                 details=details
@@ -209,6 +209,14 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
 
         # SCENARIO 1: Regn på snø (KRITISK)
         if mild_weather and existing_snow and rain_now:
+            if not self._recent_snow_absent(df):
+                return AnalysisResult(
+                    risk_level=RiskLevel.MEDIUM,
+                    message=f"Regn ({precip:.1f} mm/h) på fersk snø - slaps, ikke is",
+                    scenario="Regn på snø",
+                    factors=factors + ["❄️ Fersk snø modererer glattføre"],
+                    details=details
+                )
             return AnalysisResult(
                 risk_level=RiskLevel.HIGH,
                 message=f"Høy glattføre-risiko! Regn ({precip:.1f} mm/h) på {snow:.0f} cm snø ved {temp:.1f}°C",
@@ -275,23 +283,27 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
             details=details
         )
 
-    def _check_snow_increase(self, df: pd.DataFrame) -> bool:
-        """Sjekk om snødybden øker (nysnø)."""
+    def _check_recent_snow(self, df: pd.DataFrame) -> bool:
+        """Sjekk om snødybden har økt nylig (naturlig strøing)."""
         if 'surface_snow_thickness' not in df.columns:
             return False
 
         now = datetime.now(UTC)
-        last_6h = df[df['reference_time'] >= (now - timedelta(hours=6))]
+        window = settings.slippery.recent_snow_relief_hours
+        sample = df[df['reference_time'] >= (now - timedelta(hours=window))]
 
-        if len(last_6h) < 2:
+        if len(sample) < 2:
             return False
 
-        snow = last_6h['surface_snow_thickness'].dropna()
+        snow = sample['surface_snow_thickness'].dropna()
         if len(snow) < 2:
             return False
 
-        # Økning på minst 1 cm siste 6 timer
-        return (snow.iloc[-1] - snow.iloc[0]) >= 1.0
+        return (snow.iloc[-1] - snow.iloc[0]) >= settings.slippery.recent_snow_relief_cm
+
+    def _recent_snow_absent(self, df: pd.DataFrame) -> bool:
+        """True hvis ingen fersk snø (øker sensitivitet for regn på snø)."""
+        return not self._check_recent_snow(df)
 
     def _check_temp_rise(self, df: pd.DataFrame) -> bool:
         """Sjekk om temperaturen stiger markant."""
