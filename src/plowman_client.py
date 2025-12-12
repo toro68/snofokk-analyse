@@ -13,8 +13,9 @@ drop-in erstatning for resten av appen.
 """
 
 import logging
+import re
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import requests
 
@@ -109,6 +110,10 @@ class MaintenanceApiClient:
         """Hent siste vedlikeholdstidspunkt som PlowingEvent."""
         payload = self.get_latest()
         if not payload:
+            # Lokal dev / fallback: hvis vedlikeholds-API ikke er konfigurert,
+            # prøv å hente tidspunkt fra Plowman share-siden.
+            if not self.base_url:
+                return self._get_last_from_plowman_share()
             return None
 
         ts_str = payload.get("timestamp_utc")
@@ -133,6 +138,44 @@ class MaintenanceApiClient:
             operator_id=payload.get("operator_id"),
         )
 
+    def _get_last_from_plowman_share(self) -> PlowingEvent | None:
+        """Fallback: Hent siste brøytingstidspunkt ved å lese share-siden.
+
+        Merk: Dette er en best-effort fallback for utvikling / drift hvis
+        vedlikeholds-API ikke er konfigurert. For full funksjonalitet
+        (type/arbeid) må vedlikeholds-API brukes.
+        """
+        share_url = _get_plowman_share_url()
+        if not share_url:
+            return None
+
+        try:
+            r = self.session.get(share_url, timeout=10)
+        except requests.RequestException as e:
+            logger.warning("Plowman share utilgjengelig: %s", e)
+            return None
+
+        if not r.ok:
+            logger.warning("Plowman share HTTP-feil (%s)", r.status_code)
+            return None
+
+        latest_ts = _extract_latest_timestamp_from_share_html(r.text)
+        if not latest_ts:
+            return None
+
+        return PlowingEvent(
+            timestamp=latest_ts,
+            vehicle_id=None,
+            vehicle_name=None,
+            sector_name=None,
+            distance_km=None,
+            event_id=None,
+            event_type=None,
+            status=None,
+            work_types=None,
+            operator_id=None,
+        )
+
 
 def _parse_iso_utc(value: str | None) -> datetime | None:
     if not value or not isinstance(value, str):
@@ -144,6 +187,49 @@ def _parse_iso_utc(value: str | None) -> datetime | None:
         return dt
     except ValueError:
         return None
+
+
+def _get_plowman_share_url() -> str:
+    """URL til Plowman share-side (fallback).
+
+    Kan overstyres via secrets/env: PLOWMAN_SHARE_URL
+    """
+    default_url = "https://plowman-new.xn--snbryting-m8ac.net/nb/share/Y3VzdG9tZXItMTM="
+    return (get_secret("PLOWMAN_SHARE_URL", default_url) or "").strip()
+
+
+def _extract_latest_timestamp_from_share_html(html: str) -> datetime | None:
+    """Ekstraher siste relevante `$D...Z` timestamp fra Plowman share HTML.
+
+    Share-siden inneholder typisk timestamps i formen `$D2025-11-27T10:55:38.911Z`.
+    Vi plukker siste tidsstempel som ikke ligger urimelig i fremtiden.
+    """
+    if not html:
+        return None
+
+    # Match $D-prefiks som brukes i Next.js-serialisering, også hvis det er escaped.
+    matches = re.findall(
+        r"\$D(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z)",
+        html,
+    )
+
+    timestamps: list[datetime] = []
+    for ts in matches:
+        dt = _parse_iso_utc(ts)
+        if dt:
+            timestamps.append(dt)
+
+    if not timestamps:
+        return None
+
+    now = datetime.now(UTC)
+    future_tolerance = timedelta(minutes=5)
+
+    valid = [t for t in timestamps if t <= now + future_tolerance]
+    if not valid:
+        return None
+
+    return max(valid)
 
 
 def get_last_plowing_time(sector_name: str = None) -> PlowingEvent | None:
