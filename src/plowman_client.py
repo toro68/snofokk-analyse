@@ -59,7 +59,8 @@ class MaintenanceApiClient:
         token: str | None = None,
         session: requests.Session | None = None,
     ):
-        self.base_url = (base_url or get_secret("MAINTENANCE_API_BASE_URL", "")).rstrip("/")
+        raw_base_url = base_url or get_secret("MAINTENANCE_API_BASE_URL", "")
+        self.base_url = _sanitize_base_url(raw_base_url)
         self.token = token or get_secret("MAINTENANCE_API_TOKEN", "")
         self.session = session or requests.Session()
         self.session.headers.update(
@@ -185,6 +186,35 @@ def _parse_iso_utc(value: str | None) -> datetime | None:
         return dt
     except ValueError:
         return None
+
+
+def _sanitize_base_url(value: str | None) -> str:
+    """Normaliser/valider MAINTENANCE_API_BASE_URL.
+
+    Hensikt: unngå at copy/paste-placeholders som "<din-host>" (eller verdier med
+    quotes/whitespace) ender opp som en "ekte" hostname og gir forvirrende DNS-feil.
+
+    Returnerer en tom streng hvis verdien ikke ser ut som en URL.
+    """
+    if not value or not isinstance(value, str):
+        return ""
+
+    cleaned = value.strip()
+    # Fjern enkle quotes rundt verdien (vanlig i .env / secrets-copy)
+    if (cleaned.startswith('"') and cleaned.endswith('"')) or (cleaned.startswith("'") and cleaned.endswith("'")):
+        cleaned = cleaned[1:-1].strip()
+
+    # Typiske placeholders som ikke skal forsøkes brukt
+    lowered = cleaned.lower()
+    if "<" in cleaned or ">" in cleaned:
+        return ""
+    if lowered in {"din-host", "<din-host>", "<hosting-domene>", "<host>", "<base_url>"}:
+        return ""
+
+    if not (cleaned.startswith("http://") or cleaned.startswith("https://")):
+        return ""
+
+    return cleaned.rstrip("/")
 
 
 def _get_plowman_share_url() -> str:

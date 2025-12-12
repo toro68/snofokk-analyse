@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from src.plowman_client import _extract_latest_timestamp_from_share_html
+from src.plowman_client import _extract_latest_timestamp_from_share_html, _sanitize_base_url
 
 
 def test_fallback_used_when_maintenance_api_returns_no_payload(monkeypatch):
@@ -64,3 +64,16 @@ def test_extract_latest_timestamp_from_share_html_returns_none_when_missing():
     html = "<html><body><script>no timestamps here</script></body></html>"
     ts = _extract_latest_timestamp_from_share_html(html)
     assert ts is None
+
+
+def test_sanitize_base_url_rejects_placeholders_and_non_urls():
+  assert _sanitize_base_url(None) == ""
+  assert _sanitize_base_url("") == ""
+  assert _sanitize_base_url("<din-host>") == ""
+  assert _sanitize_base_url(" https://<din-host> ") == ""
+  assert _sanitize_base_url("din-host") == ""
+  assert _sanitize_base_url("example.web.app") == ""  # missing scheme
+
+
+def test_sanitize_base_url_strips_quotes_and_trailing_slash():
+  assert _sanitize_base_url('"https://fjellbs-app-ny.web.app/"') == "https://fjellbs-app-ny.web.app"
