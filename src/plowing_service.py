@@ -1,7 +1,7 @@
 """
 Brøytingsdata-tjeneste.
 
-Henter data fra Plowman livekart og gir informasjon om siste brøyting
+Henter data fra vedlikeholds-API og gir informasjon om siste brøyting
 for å justere varsler i appen.
 """
 
@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from src.config import get_secret
 from src.plowman_client import get_last_plowing_time
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,75 @@ CACHE_FILE = Path(__file__).parent.parent / "data" / "cache" / "plowing_cache.js
 RECENT_PLOWING_HOURS = 24
 
 
+def _maintenance_keywords() -> set[str]:
+    # Norsk + engelsk (API kan variere mellom systemer)
+    return {
+        "brøyting",
+        "brøyte",
+        "snøbrøyting",
+        "plow",
+        "plowing",
+        "snowplow",
+        "snow_plow",
+        "strø",
+        "strøing",
+        "salt",
+        "salting",
+        "grit",
+        "gritting",
+        "sanding",
+    }
+
+
+def is_maintenance_action(plowing_info: "PlowingInfo") -> bool:
+    """True hvis siste vedlikehold ser ut som brøyting/strøing.
+
+Brukes for å kunne stoppe farevarsel når vedlikehold pågår / nettopp har skjedd.
+"""
+
+    haystacks: list[str] = []
+    if plowing_info.last_event_type:
+        haystacks.append(plowing_info.last_event_type)
+    if plowing_info.last_work_types:
+        haystacks.extend([str(x) for x in plowing_info.last_work_types])
+
+    if not haystacks:
+        return False
+
+    keywords = _maintenance_keywords()
+    for raw in haystacks:
+        text = raw.lower()
+        if any(k in text for k in keywords):
+            return True
+    return False
+
+
+def should_suppress_alerts(plowing_info: "PlowingInfo") -> bool:
+    """True hvis vi bør stanse farevarsler pga nylig vedlikehold.
+
+Vinduet styres via env/secrets:
+- MAINTENANCE_SUPPRESS_HOURS (default: 3.0)
+"""
+
+    if not plowing_info.last_plowing or plowing_info.hours_since is None:
+        return False
+
+    suppress_hours = get_maintenance_suppress_hours()
+
+    if plowing_info.hours_since > suppress_hours:
+        return False
+
+    return is_maintenance_action(plowing_info)
+
+
+def get_maintenance_suppress_hours() -> float:
+    """Returnerer hvor lenge farevarsel skal stanses etter vedlikehold."""
+    try:
+        return float(get_secret("MAINTENANCE_SUPPRESS_HOURS", "3.0"))
+    except ValueError:
+        return 3.0
+
+
 @dataclass
 class PlowingInfo:
     """Informasjon om siste brøyting."""
@@ -32,6 +102,9 @@ class PlowingInfo:
     all_timestamps: list[datetime]
     source: str  # 'live', 'cache', 'none'
     error: str | None = None
+    last_event_type: str | None = None
+    last_work_types: list[str] | None = None
+    last_operator_id: str | None = None
 
     @property
     def formatted_time(self) -> str:
@@ -126,10 +199,13 @@ def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int = 1) -> Pl
                 hours_since=hours_since,
                 is_recent=hours_since < RECENT_PLOWING_HOURS,
                 all_timestamps=cache_data['all_timestamps'],
-                source='cache'
+                source='cache',
+                last_event_type=cache_data.get('last_event_type'),
+                last_work_types=cache_data.get('last_work_types'),
+                last_operator_id=cache_data.get('last_operator_id'),
             )
 
-    # Hent live data fra Plowman
+    # Hent live data fra vedlikeholds-API
     try:
         event = get_last_plowing_time()
 
@@ -149,11 +225,20 @@ def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int = 1) -> Pl
                     hours_since=hours_since,
                     is_recent=hours_since < RECENT_PLOWING_HOURS,
                     all_timestamps=cache_data['all_timestamps'] if cache_data else [newest_cached],
-                    source='cache'
+                    source='cache',
+                    last_event_type=cache_data.get('last_event_type') if cache_data else None,
+                    last_work_types=cache_data.get('last_work_types') if cache_data else None,
+                    last_operator_id=cache_data.get('last_operator_id') if cache_data else None,
                 )
 
             # Lagre til cache og returner live-data
-            updated_cache = _save_cache([new_timestamp], existing_cache=cache_data)
+            updated_cache = _save_cache(
+                [new_timestamp],
+                existing_cache=cache_data,
+                last_event_type=event.event_type or event.sector_name,
+                last_work_types=event.work_types,
+                last_operator_id=event.operator_id or event.vehicle_name,
+            )
             hours_since = (now - new_timestamp).total_seconds() / 3600
 
             return PlowingInfo(
@@ -161,10 +246,13 @@ def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int = 1) -> Pl
                 hours_since=hours_since,
                 is_recent=hours_since < RECENT_PLOWING_HOURS,
                 all_timestamps=updated_cache['all_timestamps'],
-                source='live'
+                source='live',
+                last_event_type=updated_cache.get('last_event_type'),
+                last_work_types=updated_cache.get('last_work_types'),
+                last_operator_id=updated_cache.get('last_operator_id'),
             )
     except Exception as e:
-        logger.warning(f"Feil ved henting fra Plowman: {e}")
+        logger.warning(f"Feil ved henting fra vedlikeholds-API: {e}")
 
     # Ingen data tilgjengelig
     if cache_data and cache_data['last_plowing']:
@@ -176,7 +264,10 @@ def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int = 1) -> Pl
             is_recent=hours_since < RECENT_PLOWING_HOURS,
             all_timestamps=cache_data['all_timestamps'],
             source='stale-cache',
-            error="Live Plowman utilgjengelig – viser cache"
+            error="Live vedlikeholds-API utilgjengelig – viser cache",
+            last_event_type=cache_data.get('last_event_type'),
+            last_work_types=cache_data.get('last_work_types'),
+            last_operator_id=cache_data.get('last_operator_id'),
         )
 
     return PlowingInfo(
@@ -215,13 +306,22 @@ def _load_cache() -> dict | None:
             'cached_at': cached_at,
             'all_timestamps': unique_sorted,
             'last_plowing': last_plowing,
+            'last_event_type': raw.get('last_event_type'),
+            'last_work_types': raw.get('last_work_types'),
+            'last_operator_id': raw.get('last_operator_id'),
         }
     except (json.JSONDecodeError, KeyError, ValueError) as e:
         logger.warning(f"Cache-lesefeil: {e}")
         return None
 
 
-def _save_cache(new_timestamps: list[datetime], existing_cache: dict | None = None) -> dict:
+def _save_cache(
+    new_timestamps: list[datetime],
+    existing_cache: dict | None = None,
+    last_event_type: str | None = None,
+    last_work_types: list[str] | None = None,
+    last_operator_id: str | None = None,
+) -> dict:
     """Lagrer brøytingsdata til cache og returnerer ny struktur."""
     try:
         CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -233,7 +333,10 @@ def _save_cache(new_timestamps: list[datetime], existing_cache: dict | None = No
         cache_payload = {
             'last_plowing': merged_limited[0].isoformat() if merged_limited else None,
             'all_timestamps': [ts.isoformat() for ts in merged_limited],
-            'cached_at': datetime.now(UTC).isoformat()
+            'cached_at': datetime.now(UTC).isoformat(),
+            'last_event_type': last_event_type,
+            'last_work_types': last_work_types,
+            'last_operator_id': last_operator_id,
         }
 
         with open(CACHE_FILE, 'w') as f:
@@ -243,6 +346,9 @@ def _save_cache(new_timestamps: list[datetime], existing_cache: dict | None = No
             'cached_at': datetime.fromisoformat(cache_payload['cached_at']),
             'all_timestamps': merged_limited,
             'last_plowing': merged_limited[0] if merged_limited else None,
+            'last_event_type': last_event_type,
+            'last_work_types': last_work_types,
+            'last_operator_id': last_operator_id,
         }
     except Exception as e:
         logger.warning(f"Kunne ikke lagre cache: {e}")

@@ -84,6 +84,8 @@ class SlapsAnalyzer(BaseAnalyzer):
         # Beregn snøendring (synkende = smelting = slaps)
         snow_change = self._calculate_snow_change(df)
 
+        precip_12h = self._calculate_precip_total(df, hours=12)
+
         # Sjekk om nedbør er regn (ikke snø)
         is_rain = self._is_precipitation_rain(temp, dew_point)
 
@@ -93,6 +95,7 @@ class SlapsAnalyzer(BaseAnalyzer):
             "snow_depth_cm": round(snow, 1),
             "snow_change_6h": round(snow_change, 1),
             "precipitation_mm": round(precip, 2),
+            "precipitation_12h_mm": round(precip_12h, 2),
             "dew_point": round(dew_point, 1) if dew_point else None,
             "is_rain": is_rain,
         }
@@ -122,11 +125,20 @@ class SlapsAnalyzer(BaseAnalyzer):
                     details=details
                 )
             else:  # temp > thresholds.temp_max
+                # Ikke varsle på varmegrader alene – krever tegn på aktiv smelting.
+                if snow_change < -2:
+                    return AnalysisResult(
+                        risk_level=RiskLevel.MEDIUM,
+                        message=f"Varm ({temp:.1f}°C) - snøsmelting pågår",
+                        scenario="Smelting",
+                        factors=[f"🌡️ {temp:.1f}°C > {thresholds.temp_max}°C → snø smelter"],
+                        details=details
+                    )
                 return AnalysisResult(
-                    risk_level=RiskLevel.MEDIUM,
-                    message=f"Varm ({temp:.1f}°C) - rask snøsmelting",
-                    scenario="Smelting",
-                    factors=[f"🌡️ {temp:.1f}°C > {thresholds.temp_max}°C → rask smelting"],
+                    risk_level=RiskLevel.LOW,
+                    message=f"Varmt ({temp:.1f}°C) men ingen tydelig smelting",
+                    scenario="Varmt",
+                    factors=[f"🌡️ {temp:.1f}°C > {thresholds.temp_max}°C"],
                     details=details
                 )
 
@@ -137,7 +149,8 @@ class SlapsAnalyzer(BaseAnalyzer):
         # Sjekk tegn på aktiv slaps
         slaps_indicators = []
 
-        rain_on_snow = is_rain and precip >= thresholds.precipitation_min
+        # Bruk 12t akkumulert nedbør for å unngå varsling på små drypp.
+        rain_on_snow = is_rain and precip_12h >= thresholds.precipitation_12h_min
 
         if rain_on_snow:
             slaps_indicators.append("rain_on_snow")
@@ -157,7 +170,7 @@ class SlapsAnalyzer(BaseAnalyzer):
             )
 
         if "rain_on_snow" in slaps_indicators:
-            if precip >= thresholds.precipitation_heavy:
+            if precip_12h >= thresholds.precipitation_12h_heavy:
                 return AnalysisResult(
                     risk_level=RiskLevel.HIGH,
                     message=f"Kraftig regn på snø ({precip:.1f} mm/t) - vanskelig fremkommelighet",
@@ -203,6 +216,20 @@ class SlapsAnalyzer(BaseAnalyzer):
             factors=factors + ["ℹ️ Krever både nedbør/smelting"],
             details=details
         )
+
+    def _calculate_precip_total(self, df: pd.DataFrame, hours: int = 12) -> float:
+        """Akkumuler nedbør siste N timer (mm)."""
+        if 'reference_time' not in df.columns or 'precipitation_1h' not in df.columns or df.empty:
+            return 0.0
+
+        now = datetime.now(UTC)
+        cutoff = now - timedelta(hours=hours)
+        recent = df[df['reference_time'] >= cutoff].copy()
+        if recent.empty:
+            return 0.0
+
+        vals = pd.to_numeric(recent['precipitation_1h'], errors='coerce').fillna(0.0)
+        return float(vals.sum())
 
     def _calculate_snow_change(self, df: pd.DataFrame, hours: int = 6) -> float:
         """Beregn snøendring over tid."""

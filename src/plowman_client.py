@@ -1,18 +1,24 @@
+"""src.plowman_client
+
+Klient for å hente «siste brøyting/vedlikehold»-tidspunkt.
+
+Tidligere ble dette hentet ved å scrape Plowman share-siden. Det er nå byttet ut
+med Vintervakt vedlikeholds-API:
+
+- GET {MAINTENANCE_API_BASE_URL}/v1/maintenance/latest
+- Auth: Authorization: Bearer {MAINTENANCE_API_TOKEN}
+
+Dette modulen beholder hjelpefunksjonen `get_last_plowing_time()` for å være en
+drop-in erstatning for resten av appen.
 """
-Plowman API-klient for å hente brøytedata.
 
-Henter siste brøytetidspunkt fra Plowman-kartet:
-https://plowman-new.snøbrøyting.net/nb/share/Y3VzdG9tZXItMTM=
-
-Customer ID: 13 (dekoded fra base64 "Y3VzdG9tZXItMTM=")
-"""
-
-import base64
 import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
 import requests
+
+from src.config import get_secret
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +31,12 @@ class PlowingEvent:
     vehicle_name: str | None = None
     sector_name: str | None = None
     distance_km: float | None = None
+    # Vedlikeholds-API metadata (valgfritt)
+    event_id: str | None = None
+    event_type: str | None = None
+    status: str | None = None
+    work_types: list[str] | None = None
+    operator_id: str | None = None
 
     def hours_since(self) -> float:
         """Beregn timer siden brøyting."""
@@ -37,238 +49,101 @@ class PlowingEvent:
         return (now - ts).total_seconds() / 3600
 
 
-class PlowmanClient:
-    """
-    Klient for Plowman brøytekart API.
+class MaintenanceApiClient:
+    """Klient for Vintervakt vedlikeholds-API."""
 
-    Henter brøytedata fra det offentlige delekartet.
-    """
+    def __init__(
+        self,
+        base_url: str | None = None,
+        token: str | None = None,
+        session: requests.Session | None = None,
+    ):
+        self.base_url = (base_url or get_secret("MAINTENANCE_API_BASE_URL", "")).rstrip("/")
+        self.token = token or get_secret("MAINTENANCE_API_TOKEN", "")
+        self.session = session or requests.Session()
+        self.session.headers.update(
+            {
+                "User-Agent": "gullingen-eu/maintenance-client",
+                "Accept": "application/json",
+            }
+        )
 
-    # Base URL for Plowman API
-    BASE_URL = "https://plowman-new.xn--snbryting-m8ac.net"
-
-    # Share ID for Fjellbergsskardet (base64 encoded "customer-13")
-    SHARE_ID = "Y3VzdG9tZXItMTM="
-
-    def __init__(self, share_id: str = None):
-        """
-        Initialiser Plowman-klienten.
-
-        Args:
-            share_id: Base64-encoded share ID (default: Fjellbergsskardet)
-        """
-        self.share_id = share_id or self.SHARE_ID
-        self.customer_id = self._decode_customer_id(self.share_id)
-        self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-            'Accept': 'application/json',
-            'Referer': f'{self.BASE_URL}/nb/share/{self.share_id}',
-        })
-
-    def _decode_customer_id(self, share_id: str) -> int:
-        """Dekod customer ID fra base64 share ID."""
-        try:
-            decoded = base64.b64decode(share_id).decode('utf-8')
-            # Format: "customer-13"
-            if decoded.startswith('customer-'):
-                return int(decoded.split('-')[1])
-        except Exception as e:
-            logger.warning(f"Kunne ikke dekode share_id: {e}")
-        return 13  # Default
-
-    def get_last_plowing(self, sector_name: str = None) -> PlowingEvent | None:
-        """
-        Hent siste brøytetidspunkt.
-
-        Args:
-            sector_name: Filtrer på spesifikk rode/sektor (optional)
-
-        Returns:
-            PlowingEvent eller None hvis ingen data
-        """
-        try:
-            # Prøv ulike API-endepunkter
-            endpoints = [
-                f'/api/public/activity/{self.customer_id}',
-                f'/api/public/sectors/{self.customer_id}',
-                f'/api/activity/{self.customer_id}',
-                f'/api/sectors/{self.customer_id}/last-activity',
-            ]
-
-            for endpoint in endpoints:
-                try:
-                    response = self.session.get(
-                        f'{self.BASE_URL}{endpoint}',
-                        timeout=10
-                    )
-                    if response.status_code == 200:
-                        data = response.json()
-                        return self._parse_activity_data(data, sector_name)
-                except requests.RequestException:
-                    continue
-
-            logger.warning("Ingen API-endepunkter svarte")
+    def get_latest(self) -> dict | None:
+        """Returner rå JSON fra `/v1/maintenance/latest`, eller None hvis ikke funnet."""
+        if not self.base_url:
+            logger.info("MAINTENANCE_API_BASE_URL er ikke satt")
             return None
 
-        except Exception as e:
-            logger.error(f"Feil ved henting av brøytedata: {e}")
-            return None
+        url = f"{self.base_url}/v1/maintenance/latest"
 
-    def get_sectors(self) -> list[dict]:
-        """
-        Hent liste over roder/sektorer.
+        headers: dict[str, str] = {}
+        if self.token:
+            headers["Authorization"] = f"Bearer {self.token}"
 
-        Returns:
-            Liste med sektorer og deres siste aktivitet
-        """
         try:
-            response = self.session.get(
-                f'{self.BASE_URL}/api/public/sectors/{self.customer_id}',
-                timeout=10
-            )
-            if response.status_code == 200:
-                return response.json()
-        except Exception as e:
-            logger.error(f"Feil ved henting av sektorer: {e}")
-        return []
+            r = self.session.get(url, headers=headers, timeout=10)
+        except requests.RequestException as e:
+            logger.warning("Vedlikeholds-API utilgjengelig: %s", e)
+            return None
 
-    def get_vehicles(self) -> list[dict]:
-        """
-        Hent liste over kjøretøy.
+        if r.status_code == 404:
+            return None
 
-        Returns:
-            Liste med kjøretøy og deres status
-        """
+        if r.status_code in (401, 403):
+            logger.warning("Vedlikeholds-API auth-feil (%s)", r.status_code)
+            return None
+
         try:
-            response = self.session.get(
-                f'{self.BASE_URL}/api/public/units/{self.customer_id}',
-                timeout=10
-            )
-            if response.status_code == 200:
-                return response.json()
-        except Exception as e:
-            logger.error(f"Feil ved henting av kjøretøy: {e}")
-        return []
+            r.raise_for_status()
+        except requests.HTTPError as e:
+            logger.warning("Vedlikeholds-API HTTP-feil: %s", e)
+            return None
 
-    def _parse_activity_data(self, data: dict | list, sector_name: str = None) -> PlowingEvent | None:
-        """Parse aktivitetsdata og finn siste brøyting."""
         try:
-            activities = []
-
-            if isinstance(data, list):
-                activities = data
-            elif isinstance(data, dict):
-                activities = data.get('activities', data.get('data', []))
-
-            if not activities:
-                return None
-
-            # Filtrer på sektor hvis spesifisert
-            if sector_name:
-                activities = [
-                    a for a in activities
-                    if sector_name.lower() in str(a.get('sector', a.get('sectorName', ''))).lower()
-                ]
-
-            # Finn nyeste aktivitet
-            latest = None
-            latest_time = None
-
-            for activity in activities:
-                # Prøv ulike timestamp-felt
-                timestamp_str = (
-                    activity.get('lastActivity') or
-                    activity.get('timestamp') or
-                    activity.get('endTime') or
-                    activity.get('created_at')
-                )
-
-                if timestamp_str:
-                    try:
-                        if isinstance(timestamp_str, str):
-                            # Håndter ulike datoformater
-                            for fmt in [
-                                '%Y-%m-%dT%H:%M:%S.%fZ',
-                                '%Y-%m-%dT%H:%M:%SZ',
-                                '%Y-%m-%dT%H:%M:%S%z',
-                                '%Y-%m-%d %H:%M:%S',
-                            ]:
-                                try:
-                                    ts = datetime.strptime(timestamp_str, fmt)
-                                    if ts.tzinfo is None:
-                                        ts = ts.replace(tzinfo=UTC)
-                                    break
-                                except ValueError:
-                                    continue
-                            else:
-                                continue
-                        elif isinstance(timestamp_str, int | float):
-                            # Unix timestamp
-                            ts = datetime.fromtimestamp(timestamp_str, tz=UTC)
-                        else:
-                            continue
-
-                        if latest_time is None or ts > latest_time:
-                            latest_time = ts
-                            latest = activity
-                    except Exception:
-                        continue
-
-            if latest and latest_time:
-                return PlowingEvent(
-                    timestamp=latest_time,
-                    vehicle_id=str(latest.get('unitId', latest.get('vehicleId', ''))),
-                    vehicle_name=latest.get('unitName', latest.get('vehicleName')),
-                    sector_name=latest.get('sectorName', latest.get('sector')),
-                    distance_km=latest.get('distance', latest.get('totalDistance')),
-                )
-
+            return r.json()
+        except ValueError as e:
+            logger.warning("Vedlikeholds-API returnerte ikke gyldig JSON: %s", e)
             return None
 
-        except Exception as e:
-            logger.error(f"Feil ved parsing av aktivitetsdata: {e}")
+    def get_last_maintenance_time(self) -> PlowingEvent | None:
+        """Hent siste vedlikeholdstidspunkt som PlowingEvent."""
+        payload = self.get_latest()
+        if not payload:
             return None
 
-    def scrape_from_page(self) -> PlowingEvent | None:
-        """
-        Scrape brøytedata direkte fra HTML-siden.
-
-        Henter GeoJSON-data fra Next.js-applikasjonen.
-        Finner lastUpdated-tidspunkter som er encoded som "$D2025-11-27T11:20:34.000Z".
-        """
-        try:
-            import re
-
-            response = self.session.get(
-                f'{self.BASE_URL}/nb/share/{self.share_id}',
-                timeout=15
-            )
-
-            if response.status_code != 200:
-                logger.warning(f"Plowman share-side returnerte {response.status_code}")
-                return None
-
-            html = response.text
-
-            # Next.js encoder datoer som "$D<ISO-timestamp>"
-            # Finn alle lastUpdated-tidspunkter i GeoJSON-dataene
-            pattern = r'\$D(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z)'
-            matches = re.findall(pattern, html)
-
-            if matches:
-                # Finn nyeste tidspunkt
-                latest_date = max(matches)
-                ts = datetime.fromisoformat(latest_date.replace('Z', '+00:00'))
-                logger.info(f"Fant siste brøyting: {ts}")
-                return PlowingEvent(timestamp=ts)
-
-            logger.warning("Ingen lastUpdated-tidspunkter funnet i HTML")
+        ts_str = payload.get("timestamp_utc")
+        ts = _parse_iso_utc(ts_str)
+        if not ts:
             return None
 
-        except Exception as e:
-            logger.error(f"Feil ved scraping: {e}")
-            return None
+        work_types = payload.get("work_types")
+        if not isinstance(work_types, list):
+            work_types = None
+
+        return PlowingEvent(
+            timestamp=ts,
+            vehicle_id=str(payload.get("session_id") or payload.get("event_id") or "") or None,
+            vehicle_name=payload.get("operator_id"),
+            sector_name=payload.get("event_type"),
+            distance_km=None,
+            event_id=str(payload.get("event_id") or payload.get("session_id") or "") or None,
+            event_type=payload.get("event_type"),
+            status=payload.get("status"),
+            work_types=work_types,
+            operator_id=payload.get("operator_id"),
+        )
+
+
+def _parse_iso_utc(value: str | None) -> datetime | None:
+    if not value or not isinstance(value, str):
+        return None
+    try:
+        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=UTC)
+        return dt
+    except ValueError:
+        return None
 
 
 def get_last_plowing_time(sector_name: str = None) -> PlowingEvent | None:
@@ -281,31 +156,24 @@ def get_last_plowing_time(sector_name: str = None) -> PlowingEvent | None:
     Returns:
         PlowingEvent eller None
     """
-    client = PlowmanClient()
+    if sector_name:
+        logger.info("sector_name er ignorert for vedlikeholds-API (%s)", sector_name)
 
-    # Prøv API først
-    event = client.get_last_plowing(sector_name)
-
-    # Fallback til scraping
-    if event is None:
-        event = client.scrape_from_page()
-
-    return event
+    client = MaintenanceApiClient()
+    return client.get_last_maintenance_time()
 
 
 if __name__ == "__main__":
     # Test
     logging.basicConfig(level=logging.DEBUG)
 
-    print("Tester Plowman API...")
-    print(f"Customer ID: {PlowmanClient().customer_id}")
-
+    print("Tester vedlikeholds-API...")
     event = get_last_plowing_time()
     if event:
         print("\nSiste brøyting:")
         print(f"  Tidspunkt: {event.timestamp}")
         print(f"  Timer siden: {event.hours_since():.1f}")
-        print(f"  Kjøretøy: {event.vehicle_name or 'Ukjent'}")
-        print(f"  Rode: {event.sector_name or 'Ukjent'}")
+        print(f"  Operatør: {event.vehicle_name or 'Ukjent'}")
+        print(f"  Type: {event.sector_name or 'Ukjent'}")
     else:
         print("\nKunne ikke hente brøytedata")

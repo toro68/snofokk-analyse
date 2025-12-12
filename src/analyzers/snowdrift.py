@@ -345,7 +345,14 @@ class SnowdriftAnalyzer(BaseAnalyzer):
 
         # NY: Vindkast-basert trigger (høyeste prioritet!)
         if wind_gust is not None:
-            if wind_gust >= thresholds.wind_gust_critical and temp <= thresholds.temperature_max:
+            gust_gate_critical_ok = wind >= thresholds.wind_speed_warning
+            gust_gate_warning_ok = wind >= thresholds.wind_speed_median
+
+            if (
+                gust_gate_critical_ok
+                and wind_gust >= thresholds.wind_gust_critical
+                and temp <= thresholds.temperature_max
+            ):
                 severity = "KRITISK" if is_critical_direction else "Høy"
                 return AnalysisResult(
                     risk_level=RiskLevel.HIGH,
@@ -355,7 +362,11 @@ class SnowdriftAnalyzer(BaseAnalyzer):
                     details={**details, "method": "Vindkast"}
                 )
 
-            if wind_gust >= thresholds.wind_gust_warning and temp <= thresholds.temperature_max:
+            if (
+                gust_gate_warning_ok
+                and wind_gust >= thresholds.wind_gust_warning
+                and temp <= thresholds.temperature_max
+            ):
                 return AnalysisResult(
                     risk_level=RiskLevel.MEDIUM,
                     message=f"Snøfokk-fare. Vindkast {wind_gust:.1f} m/s ved {temp:.1f}°C",

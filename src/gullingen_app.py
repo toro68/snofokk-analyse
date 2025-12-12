@@ -23,6 +23,7 @@ import pydeck as pdk
 import streamlit as st
 
 from src.analyzers import (
+    AnalysisResult,
     FreshSnowAnalyzer,
     RiskLevel,
     SlapsAnalyzer,
@@ -32,7 +33,13 @@ from src.analyzers import (
 from src.config import settings
 from src.frost_client import FrostAPIError, FrostClient
 from src.netatmo_client import NetatmoClient
-from src.plowing_service import PlowingInfo, get_plowing_info
+from src.plowing_service import (
+    PlowingInfo,
+    get_maintenance_suppress_hours,
+    get_plowing_info,
+    should_suppress_alerts,
+)
+from src.operational_logger import log_medium_high_alerts
 from src.visualizations import WeatherPlots
 
 logger = logging.getLogger(__name__)
@@ -52,34 +59,6 @@ st.markdown("""
     /* Mobile-first responsive design */
     .stApp {
         max-width: 100%;
-    }
-
-    /* Risk cards */
-    .risk-card {
-        padding: 1rem;
-        border-radius: 12px;
-        margin-bottom: 0.5rem;
-    }
-
-    .risk-high {
-        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
-        color: white;
-    }
-
-    .risk-medium {
-        background: linear-gradient(135deg, #ffa726 0%, #ff9800 100%);
-        color: white;
-    }
-
-    .risk-low {
-        background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);
-        color: white;
-    }
-
-    /* Compact header */
-    .compact-header {
-        font-size: 1.5rem;
-        margin-bottom: 0.5rem;
     }
 
     /* Metric styling */
@@ -112,35 +91,27 @@ def get_risk_emoji(level: RiskLevel) -> str:
     }.get(level, "⚪")
 
 
-def get_risk_color(level: RiskLevel) -> str:
-    """Get color class for risk level."""
-    return {
-        RiskLevel.HIGH: "risk-high",
-        RiskLevel.MEDIUM: "risk-medium",
-        RiskLevel.LOW: "risk-low",
-        RiskLevel.UNKNOWN: "risk-low"
-    }.get(level, "risk-low")
-
-
-def render_compact_risk_card(icon: str, title: str, result, key: str):
-    """Render a compact risk card."""
-    get_risk_emoji(result.risk_level)
-
-    # Status bar
+def render_compact_risk_card(icon: str, title: str, result: AnalysisResult) -> None:
+    """Render a compact risk card (Streamlit-native styling)."""
     if result.risk_level == RiskLevel.HIGH:
         st.error(f"{icon} **{title}**: {result.message}")
     elif result.risk_level == RiskLevel.MEDIUM:
         st.warning(f"{icon} **{title}**: {result.message}")
+    elif result.risk_level == RiskLevel.UNKNOWN:
+        st.info(f"{icon} **{title}**: {result.message}")
     else:
         st.success(f"{icon} **{title}**: {result.message}")
 
-    # Expand for details
+    # Keep it compact: optionally show scenario + up to 2 factors as a caption
+    caption_parts: list[str] = []
+    if result.scenario:
+        caption_parts.append(f"Scenario: {result.scenario}")
     if result.factors:
-        with st.expander("Se detaljer", expanded=False):
-            for factor in result.factors:
-                st.write(f"• {factor}")
-            if result.scenario:
-                st.caption(f"Scenario: {result.scenario}")
+        top_factors = [str(x) for x in result.factors[:2]]
+        if top_factors:
+            caption_parts.append(" | ".join(top_factors))
+    if caption_parts:
+        st.caption(" • ".join(caption_parts))
 
 
 def render_risk_details(result):
@@ -195,9 +166,20 @@ def render_key_metrics(df, plowing_info: PlowingInfo):
 
     with col5:
         if plowing_info.last_plowing:
-            st.metric(f"{plowing_info.status_emoji} Siste brøyting", plowing_info.formatted_time)
+            st.metric(f"{plowing_info.status_emoji} Siste vedlikehold", plowing_info.formatted_time)
+
+            details_parts: list[str] = []
+            if plowing_info.last_event_type:
+                details_parts.append(f"Type: {plowing_info.last_event_type}")
+            if plowing_info.last_work_types:
+                details_parts.append(f"Arbeid: {', '.join(plowing_info.last_work_types)}")
+            if plowing_info.last_operator_id:
+                details_parts.append(f"Operatør: {plowing_info.last_operator_id}")
+
+            if details_parts:
+                st.caption(" | ".join(details_parts))
         else:
-            st.metric("🚜 Siste brøyting", "Ingen registrert")
+            st.metric("🚜 Siste vedlikehold", "Ingen registrert")
             if plowing_info.error:
                 st.caption(plowing_info.error)
 
@@ -372,6 +354,20 @@ def main():
 
     df = weather_data.df
 
+    # Fetch plowing/maintenance info (available via vedlikeholds-endepunkt)
+    try:
+        plowing_info = get_cached_plowing_info()
+    except Exception as e:
+        logger.error("Error fetching plowing info: %s", e)
+        plowing_info = PlowingInfo(
+            last_plowing=None,
+            hours_since=None,
+            is_recent=False,
+            all_timestamps=[],
+            source="error",
+            error=f"Klarte ikke hente brøyting: {e}",
+        )
+
     # Run all analyzers
     analyzers = {
         "Nysnø": FreshSnowAnalyzer(),
@@ -384,6 +380,29 @@ def main():
     for name, analyzer in analyzers.items():
         results[name] = analyzer.analyze(df)
 
+    suppress_alerts = should_suppress_alerts(plowing_info)
+
+    # Stans farevarsel ved nylig vedlikehold (brøyting/strøing)
+    if suppress_alerts:
+        suppressed = {}
+        for name, r in results.items():
+            if r.risk_level != RiskLevel.LOW:
+                suppressed[name] = AnalysisResult(
+                    risk_level=RiskLevel.LOW,
+                    message="Nylig vedlikehold (brøyting/strøing) – farevarsel stanset",
+                    scenario=r.scenario,
+                    factors=(r.factors or []) + ["Nylig vedlikehold"],
+                    details={
+                        **(r.details or {}),
+                        "suppressed_by_maintenance": True,
+                        "maintenance_hours_since": plowing_info.hours_since,
+                    },
+                    timestamp=r.timestamp,
+                )
+            else:
+                suppressed[name] = r
+        results = suppressed
+
     # Overall status banner
     status_title, status_msg, overall_risk = get_overall_status(results)
 
@@ -394,17 +413,44 @@ def main():
     else:
         st.success(f"## {status_title}\n{status_msg}")
 
+    if suppress_alerts:
+        suppress_hours = get_maintenance_suppress_hours()
+        if plowing_info.hours_since is not None:
+            remaining = max(0.0, suppress_hours - float(plowing_info.hours_since))
+            st.info(
+                "🚜 Vedlikehold registrert – farevarsler stanset "
+                f"({plowing_info.hours_since:.1f}t siden, {remaining:.1f}t igjen av {suppress_hours:.1f}t)"
+            )
+        else:
+            st.info(
+                "🚜 Vedlikehold registrert – farevarsler stanset "
+                f"(vinduslengde {suppress_hours:.1f}t)"
+            )
+
     st.divider()
+
+    # Compact status summary
+    st.subheader("Varsler nå")
+    col1, col2 = st.columns(2)
+    with col1:
+        render_compact_risk_card("❄️", "Nysnø", results["Nysnø"])
+    with col2:
+        render_compact_risk_card("🌬️", "Snøfokk", results["Snøfokk"])
+
+    col3, col4 = st.columns(2)
+    with col3:
+        render_compact_risk_card("❄️", "Slaps", results["Slaps"])
+    with col4:
+        render_compact_risk_card("🧊", "Glatte veier", results["Glatte veier"])
 
     # Current metrics
     st.subheader("Nåværende forhold")
 
-    # Fetch plowing info
+    # Operational logging: MEDIUM/HIGH only (deduped)
     try:
-        plowing_info = get_cached_plowing_info()
+        log_medium_high_alerts(results=results, df=df, plowing_info=plowing_info)
     except Exception as e:
-        logger.error(f"Error fetching plowing info: {e}")
-        plowing_info = PlowingInfo(last_plowing=None, is_recent=False, hours_since=None, error=f"Klarte ikke hente brøyting: {e}")
+        logger.warning("Operational logger failed: %s", e)
 
     render_key_metrics(df, plowing_info)
 
@@ -451,25 +497,6 @@ def main():
         st.pyplot(fig)
         st.caption("⚠️ SE-S (135-225°) er kritisk retning for snøfokk på Gullingen")
         plt.close(fig)
-
-    # Risiko og detaljer – linjert visning
-    st.subheader("Varslingsstatus")
-    st.markdown("### ❄️ Nysnø")
-    render_risk_details(results["Nysnø"])
-
-    st.divider()
-    st.markdown("### ❄️ Slaps")
-    render_risk_details(results["Slaps"])
-
-    st.divider()
-    st.markdown("### 🌬️ Snøfokk")
-    render_risk_details(results["Snøfokk"])
-
-    st.divider()
-    st.markdown("### 🧊 Glatte veier")
-    render_risk_details(results["Glatte veier"])
-
-    st.divider()
 
     # Detailed data (collapsed by default)
     with st.expander("Værhistorikk og detaljer", expanded=False):

@@ -94,6 +94,32 @@ source venv/bin/activate
 streamlit run src/live_conditions_app.py
 ```
 
+### Operasjonell logging (MEDIUM/HIGH)
+
+Når du vil kjøre appen i flere dager og samle «treff» (kun `MEDIUM/HIGH`) sammen med hva vedlikehold faktisk var (brøyting/strøing), logger appen dette til CSV.
+
+- Standard loggfil: `data/logs/operational_alerts.csv`
+- Dedupe-state: `data/logs/operational_alerts_state.json` (hindrer duplikater ved Streamlit-reruns)
+
+Styring via env/secrets:
+- `OPERATIONAL_LOG_ENABLED` (default: `true`)
+- `OPERATIONAL_LOG_PATH` (default: `data/logs/operational_alerts.csv`)
+- `OPERATIONAL_LOG_STATE_PATH` (default: `data/logs/operational_alerts_state.json`)
+
+Stans farevarsel ved nylig vedlikehold (via vedlikeholds-endepunktet):
+- `MAINTENANCE_SUPPRESS_HOURS` (default: `3.0`) – hvis siste vedlikehold ser ut som brøyting/strøing og er nyere enn dette vinduet, settes alle kategorier til `LOW` (situasjonen «nullstilles» mens det brøytes/nylig er gjort).
+
+Tips for «kjør i bakgrunnen» lokalt (macOS/Linux):
+```bash
+nohup streamlit run app.py --server.headless true --server.port 8501 > data/logs/streamlit.out 2>&1 &
+tail -f data/logs/streamlit.out
+```
+
+## 🔗 Integrasjon: Vedlikeholds-API (Vintervakt)
+
+For å nedjustere glattføre når veier er strødd/brøytet nylig:
+- Se [docs/vintervakt_vedlikeholds_api.md](docs/vintervakt_vedlikeholds_api.md)
+
 **Windows (PowerShell):**
 ```powershell
 # Automatisk venv-aktivering og oppdatering

@@ -63,8 +63,19 @@ archive/analysis_docs/
 archive/analysis_py/
 archive/root_misc/
 .coverage
+coverage.xml
+.coverage.*
 htmlcov/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 data/cache/
+
+# Generated analysis outputs (reproducible)
+data/analyzed/calibration_top_*.csv
+data/analyzed/threshold_validation_*.csv
+data/analyzed/weather_vs_broyting_*.csv
+data/analyzed/window_comparison_*.csv
+
+# Jupyter
+.ipynb_checkpoints/

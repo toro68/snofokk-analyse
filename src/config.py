@@ -105,12 +105,12 @@ class SnowdriftThresholds:
     # Vindstyrke-terskler (snitt)
     wind_speed_critical: float = 10.0   # Høy risiko
     wind_speed_warning: float = 8.0     # Moderat risiko
-    wind_speed_median: float = 12.2     # Empirisk median for snøtransport
+    wind_speed_median: float = 12.0     # Gate for vindkast-trigger (kalibrert event-nivå)
 
     # Vindkast-terskler (NY - bedre trigger!)
     # Historisk snitt: 21.9 m/s - justert terskel til 20.0 for å fange typiske episoder
     wind_gust_critical: float = 20.0    # Kritisk risiko (tidligere 22.0)
-    wind_gust_warning: float = 15.0     # Moderat risiko
+    wind_gust_warning: float = 13.0     # Moderat risiko (kalibrert event-nivå)
 
     # Kritiske vindretninger (SE-S)
     critical_wind_dir_min: float = 135.0  # SE
@@ -141,7 +141,30 @@ class SlipperyRoadThresholds:
 
     # Andre terskler
     snow_depth_min_cm: float = 5.0
-    rain_threshold_mm: float = 0.3
+    # Nedbørterskler
+    # Hevet for å redusere falske positiver ("hysteriske" varsler) ved svært lett nedbør.
+    rain_threshold_mm: float = 1.0
+    # Underkjølt regn / frysing på kald bakke.
+    # Skill mellom "warning" og "critical" for å unngå høy-alarm ved små drypp.
+    freezing_precip_warning_mm: float = 0.1
+    freezing_precip_critical_mm: float = 0.3
+
+    # Skjult frysefare (luft > 0 men kald bakke) - strengere gating for å redusere støy.
+    hidden_freeze_surface_max: float = -1.5
+    hidden_freeze_air_min: float = 0.0
+    hidden_freeze_air_max: float = 1.0
+    hidden_freeze_precip_12h_min: float = 0.5
+
+    # Temperaturvindu for typiske "glatt føre"-situasjoner nær frysepunktet.
+    near_freezing_temp_min: float = -1.0
+    near_freezing_temp_max: float = 0.5
+
+    # Rimfrost er vanligvis kun relevant ved høy fuktighet og lite vind.
+    rimfrost_humidity_min: float = 90.0
+    rimfrost_wind_max: float = 2.0
+
+    # Smelting (negativ snøendring) som kan gi slaps/is ved etterfølgende kulde.
+    melt_snow_change_6h_cm: float = -2.0
     temp_rise_threshold: float = 1.0    # °C stigning siste 6t
     recent_snow_relief_hours: int = 6   # Tidsrom for "fersk snø"-effekt
     recent_snow_relief_cm: float = 2.0  # Økning som gir naturlig strøing
@@ -155,7 +178,7 @@ class FreshSnowThresholds:
     Validert mot 166 brøyteepisoder.
     """
     # Snøøkning
-    snow_increase_warning: float = 5.0   # cm over 6 timer
+    snow_increase_warning: float = 7.0   # cm over 6 timer (mer konservativ)
     snow_increase_critical: float = 10.0 # cm over 6 timer
 
     # Temperatur for snø (ikke regn)
@@ -176,12 +199,15 @@ class SlapsThresholds:
     """
     # Temperatur (kritisk område for slaps)
     temp_min: float = -1.0              # Under dette: snø
-    temp_max: float = 4.0               # Over dette: bare regn
+    temp_max: float = 2.0               # Over dette: mest regn/mer sjelden slaps (kalibrert)
     temp_optimal: float = 1.2           # Historisk snitt for slaps
 
     # Nedbør
-    precipitation_min: float = 1.0      # mm/t for slaps
-    precipitation_heavy: float = 5.0    # mm/t for kraftig slaps
+    precipitation_min: float = 1.0      # mm/t (øyeblikksindikator)
+    precipitation_heavy: float = 5.0    # mm/t (øyeblikksindikator)
+    # 12t akkumulert nedbør (for å fange "regn på snø" uten å trigge på små drypp)
+    precipitation_12h_min: float = 6.0
+    precipitation_12h_heavy: float = 12.0
 
     # Snødekke
     snow_depth_min: float = 5.0         # cm - må ha snø

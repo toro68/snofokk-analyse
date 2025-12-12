@@ -26,11 +26,10 @@ Viser:
 
 **Siste brøyting - teknisk implementasjon:**
 - **Klient**: `src/plowman_client.py`
-- **Metode**: HTML-scraping fra share-siden (API krever autentisering)
-- **Datakilde**: Next.js GeoJSON embedded i HTML
-- **Format**: Datoer er encoded som `$D2025-11-27T11:20:34.000Z` i script-tagger
-- **Parsing**: Regex `\$D(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z)` finner alle lastUpdated-tidspunkter
-- **Resultat**: Nyeste tidspunkt brukes som "siste brøyting"
+- **Metode**: Hent JSON fra vedlikeholds-API (Vintervakt)
+- **Endepunkt**: `GET {MAINTENANCE_API_BASE_URL}/v1/maintenance/latest`
+- **Auth**: `Authorization: Bearer {MAINTENANCE_API_TOKEN}`
+- **Tolkning**: `timestamp_utc` brukes som "siste brøyting/vedlikehold" (UTC)
 
 ### Værstasjoner
 | Stasjon | Type | Koordinat | Høyde |

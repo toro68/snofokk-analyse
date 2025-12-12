@@ -122,8 +122,8 @@ class TestFreshSnowAnalyzer:
         df = create_weather_dataframe(
             air_temperature=-5.0,
             dew_point_temperature=-6.0,  # < 0 = snø
-            surface_snow_thickness=40.0,
-            surface_snow_thickness_6h_ago=30.0,  # +10 cm, gir ca 6.7cm målt endring
+            surface_snow_thickness=42.0,
+            surface_snow_thickness_6h_ago=30.0,  # ~8 cm beregnet økning → medium
         )
         result = analyzer.analyze(df)
         assert result.risk_level == RiskLevel.MEDIUM
@@ -427,7 +427,7 @@ class TestSlipperyRoadAnalyzer:
     def test_hidden_ice_scenario(self, mock_winter, analyzer):
         """'Skjult is' - luft > 0°C men bakke < 0°C."""
         df = create_weather_dataframe(
-            air_temperature=2.0,   # Føles varmt
+            air_temperature=1.0,   # Nær frysepunkt (kalibrert gating)
             surface_temperature=-2.0,  # Men bakken er iskald!
             precipitation_1h=0.5,
             surface_snow_thickness=5.0,

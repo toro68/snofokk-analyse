@@ -2,7 +2,7 @@
 Test for brøytedata-integrasjon.
 
 Tester for:
-1. PlowmanClient - Henting av brøytedata fra Plowman livekart
+1. MaintenanceApiClient - Henting av brøytedata fra vedlikeholds-API
 2. PlowingService - Tjeneste for brøytedata med caching
 3. Integrasjon med analysatorer (dokumenterer manglende funksjonalitet)
 
@@ -24,17 +24,11 @@ from src.analyzers.fresh_snow import FreshSnowAnalyzer
 from src.analyzers.slippery_road import SlipperyRoadAnalyzer
 from src.analyzers.snowdrift import SnowdriftAnalyzer
 from src.plowing_service import PlowingInfo, get_plowing_info
-from src.plowman_client import PlowingEvent, PlowmanClient
+from src.plowman_client import MaintenanceApiClient, PlowingEvent
 
 
-class TestPlowmanClient:
-    """Tester for PlowmanClient som henter data fra Plowman livekart."""
-
-    def test_decode_customer_id(self):
-        """Tester dekoding av base64-encoded customer ID."""
-        client = PlowmanClient()
-        # "Y3VzdG9tZXItMTM=" dekoder til "customer-13"
-        assert client.customer_id == 13
+class TestMaintenanceApiClient:
+    """Tester for klienten som henter data fra vedlikeholds-API."""
 
     def test_plowing_event_hours_since(self):
         """Tester beregning av timer siden brøyting."""
@@ -57,45 +51,30 @@ class TestPlowmanClient:
         assert 0.9 < hours < 1.1
 
     @patch('src.plowman_client.requests.Session.get')
-    def test_scrape_from_page_parses_timestamps(self, mock_get):
-        """Tester at scraping finner lastUpdated-tidspunkter i HTML."""
-        # Simuler HTML-respons med Next.js encoded timestamps
+    def test_get_latest_parses_timestamp(self, mock_get):
+        """Tester at vedlikeholds-API parsing gir korrekt timestamp."""
         mock_response = MagicMock()
         mock_response.status_code = 200
-        mock_response.text = '''
-            <script>self.__next_f.push([1,"geojson":{"features":[
-            {"properties":{"lastUpdated":"$D2025-11-27T11:20:34.000Z"}}
-            ]}])</script>
-        '''
+        mock_response.json.return_value = {
+            "event_id": "abc123",
+            "session_id": "abc123",
+            "operator_id": "operator_42",
+            "timestamp_utc": "2025-11-27T10:55:38.911Z",
+            "event_type": "SCRAPE",
+            "status": "COMPLETED",
+            "work_types": ["skraping"],
+        }
         mock_get.return_value = mock_response
 
-        client = PlowmanClient()
-        event = client.scrape_from_page()
+        client = MaintenanceApiClient(base_url="https://example.web.app", token="token")
+        event = client.get_last_maintenance_time()
 
         assert event is not None
         assert event.timestamp.year == 2025
         assert event.timestamp.month == 11
         assert event.timestamp.day == 27
-
-    @patch('src.plowman_client.requests.Session.get')
-    def test_scrape_finds_newest_timestamp(self, mock_get):
-        """Tester at scraping finner det nyeste tidspunktet."""
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.text = '''
-            $D2025-11-20T10:00:00.000Z
-            $D2025-11-27T11:20:34.000Z
-            $D2025-11-25T08:30:00.000Z
-        '''
-        mock_get.return_value = mock_response
-
-        client = PlowmanClient()
-        event = client.scrape_from_page()
-
-        assert event is not None
-        # Skal finne den nyeste: 27. november
-        assert event.timestamp.day == 27
-        assert event.timestamp.hour == 11
+        assert event.event_type == "SCRAPE"
+        assert event.work_types == ["skraping"]
 
 
 class TestPlowingService:
