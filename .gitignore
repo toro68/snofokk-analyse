@@ -47,6 +47,10 @@ Thumbs.db
 # Logs
 *.log
 
+# Runtime logs (do not commit)
+data/logs/*
+!data/logs/.gitkeep
+
 # Data (store lokalt)
 data/*.json
 !data/.gitkeep

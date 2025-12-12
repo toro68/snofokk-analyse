@@ -5,10 +5,12 @@ Modulære plotting-funksjoner for Streamlit-appen.
 """
 
 import warnings
+from datetime import datetime
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
 from src.config import settings
 
@@ -36,23 +38,23 @@ class WeatherPlots:
         Returns:
             Matplotlib Figure
         """
-        if df is None or df.empty:
+        df_prepared, times = cls._prepare_time_series(df)
+        if df_prepared is None or df_prepared.empty:
             return cls._empty_figure("Ingen data tilgjengelig")
 
         fig, axes = plt.subplots(3, 1, figsize=(12, 8), sharex=True)
         fig.suptitle(title, fontsize=14, fontweight='bold')
 
-        times = df['reference_time']
         viz = settings.viz
 
         # 1. Temperatur
-        cls._plot_temperature(axes[0], times, df, viz)
+        cls._plot_temperature(axes[0], times, df_prepared, viz)
 
         # 2. Vind
-        cls._plot_wind(axes[1], times, df, viz)
+        cls._plot_wind(axes[1], times, df_prepared, viz)
 
         # 3. Snødybde + nedbør
-        cls._plot_snow_precip(axes[2], times, df, viz)
+        cls._plot_snow_precip(axes[2], times, df_prepared, viz)
 
         # Formatering
         cls._format_time_axis(axes[-1])
@@ -76,20 +78,20 @@ class WeatherPlots:
         Returns:
             Matplotlib Figure
         """
-        if df is None or df.empty:
+        df_prepared, times = cls._prepare_time_series(df)
+        if df_prepared is None or df_prepared.empty:
             return cls._empty_figure("Ingen data tilgjengelig")
 
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 5), sharex=True)
         fig.suptitle(title, fontsize=12, fontweight='bold')
 
-        times = df['reference_time']
         viz = settings.viz
 
         # Temperatur + vind
-        cls._plot_temp_wind_combined(ax1, times, df, viz)
+        cls._plot_temp_wind_combined(ax1, times, df_prepared, viz)
 
         # Snø + nedbør
-        cls._plot_snow_precip(ax2, times, df, viz)
+        cls._plot_snow_precip(ax2, times, df_prepared, viz)
 
         cls._format_time_axis(ax2)
         cls._safe_layout(fig)
@@ -103,16 +105,16 @@ class WeatherPlots:
         title: str = "Snødybde og nedbør"
     ) -> plt.Figure:
         """Lag enkeltplot med snødybde og nedbør."""
-        if df is None or df.empty:
+        df_prepared, times = cls._prepare_time_series(df)
+        if df_prepared is None or df_prepared.empty:
             return cls._empty_figure("Ingen data tilgjengelig")
 
         fig, ax = plt.subplots(figsize=(12, 4))
         fig.suptitle(title, fontsize=13, fontweight='bold')
 
-        times = df['reference_time']
         viz = settings.viz
 
-        cls._plot_snow_precip(ax, times, df, viz)
+        cls._plot_snow_precip(ax, times, df_prepared, viz)
         cls._format_time_axis(ax)
         cls._safe_layout(fig)
 
@@ -125,15 +127,15 @@ class WeatherPlots:
         title: str = "Snødybde"
     ) -> plt.Figure:
         """Lag enkel visualisering av snødybde."""
-        if df is None or df.empty:
+        df_prepared, times = cls._prepare_time_series(df)
+        if df_prepared is None or df_prepared.empty:
             return cls._empty_figure("Ingen data tilgjengelig")
 
         fig, ax = plt.subplots(figsize=(6, 4))
         fig.suptitle(title, fontsize=12, fontweight='bold')
 
-        times = df['reference_time']
         viz = settings.viz
-        cls._plot_snow_only(ax, times, df, viz)
+        cls._plot_snow_only(ax, times, df_prepared, viz)
         cls._format_time_axis(ax)
         cls._safe_layout(fig)
         return fig
@@ -145,15 +147,15 @@ class WeatherPlots:
         title: str = "Nedbør"
     ) -> plt.Figure:
         """Lag enkel visualisering av nedbør."""
-        if df is None or df.empty:
+        df_prepared, times = cls._prepare_time_series(df)
+        if df_prepared is None or df_prepared.empty:
             return cls._empty_figure("Ingen data tilgjengelig")
 
         fig, ax = plt.subplots(figsize=(6, 4))
         fig.suptitle(title, fontsize=12, fontweight='bold')
 
-        times = df['reference_time']
         viz = settings.viz
-        cls._plot_precip_only(ax, times, df, viz)
+        cls._plot_precip_only(ax, times, df_prepared, viz)
         cls._format_time_axis(ax)
         cls._safe_layout(fig)
         return fig
@@ -164,14 +166,14 @@ class WeatherPlots:
         df: pd.DataFrame,
         title: str = "Temperatur"
     ) -> plt.Figure:
-        if df is None or df.empty:
+        df_prepared, times = cls._prepare_time_series(df)
+        if df_prepared is None or df_prepared.empty:
             return cls._empty_figure("Ingen data tilgjengelig")
 
         fig, ax = plt.subplots(figsize=(6, 4))
         fig.suptitle(title, fontsize=12, fontweight='bold')
-        times = df['reference_time']
         viz = settings.viz
-        cls._plot_temperature(ax, times, df, viz)
+        cls._plot_temperature(ax, times, df_prepared, viz)
         cls._format_time_axis(ax)
         cls._safe_layout(fig)
         return fig
@@ -182,14 +184,14 @@ class WeatherPlots:
         df: pd.DataFrame,
         title: str = "Vind"
     ) -> plt.Figure:
-        if df is None or df.empty:
+        df_prepared, times = cls._prepare_time_series(df)
+        if df_prepared is None or df_prepared.empty:
             return cls._empty_figure("Ingen data tilgjengelig")
 
         fig, ax = plt.subplots(figsize=(6, 4))
         fig.suptitle(title, fontsize=12, fontweight='bold')
-        times = df['reference_time']
         viz = settings.viz
-        cls._plot_wind(ax, times, df, viz)
+        cls._plot_wind(ax, times, df_prepared, viz)
         cls._format_time_axis(ax)
         cls._safe_layout(fig)
         return fig
@@ -201,14 +203,14 @@ class WeatherPlots:
         title: str = "Vindretning"
     ) -> plt.Figure:
         """Lag plot for vindretning med kritisk sektor markert."""
-        if df is None or df.empty:
+        df_prepared, times = cls._prepare_time_series(df)
+        if df_prepared is None or df_prepared.empty:
             return cls._empty_figure("Ingen data tilgjengelig")
 
         fig, ax = plt.subplots(figsize=(6, 4))
         fig.suptitle(title, fontsize=12, fontweight='bold')
-        times = df['reference_time']
         viz = settings.viz
-        cls._plot_wind_direction(ax, times, df, viz)
+        cls._plot_wind_direction(ax, times, df_prepared, viz)
         cls._format_time_axis(ax)
         cls._safe_layout(fig)
         return fig
@@ -220,14 +222,14 @@ class WeatherPlots:
         title: str = "Akkumulert nedbør"
     ) -> plt.Figure:
         """Lag plot for akkumulert nedbør."""
-        if df is None or df.empty:
+        df_prepared, times = cls._prepare_time_series(df)
+        if df_prepared is None or df_prepared.empty:
             return cls._empty_figure("Ingen data tilgjengelig")
 
         fig, ax = plt.subplots(figsize=(6, 4))
         fig.suptitle(title, fontsize=12, fontweight='bold')
-        times = df['reference_time']
         viz = settings.viz
-        cls._plot_accumulated_precip(ax, times, df, viz)
+        cls._plot_accumulated_precip(ax, times, df_prepared, viz)
         cls._format_time_axis(ax)
         cls._safe_layout(fig)
         return fig
@@ -248,41 +250,72 @@ class WeatherPlots:
         Returns:
             Matplotlib Figure
         """
-        if df is None or df.empty:
+        df_prepared, times = cls._prepare_time_series(df)
+        if df_prepared is None or df_prepared.empty:
             return cls._empty_figure("Ingen data tilgjengelig")
 
         from src.analyzers.base import BaseAnalyzer
 
         fig, ax = plt.subplots(figsize=(10, 4))
 
-        times = df['reference_time']
-        temp = df['air_temperature']
-        wind = df['wind_speed']
+        if 'air_temperature' not in df_prepared.columns or 'wind_speed' not in df_prepared.columns:
+            return cls._empty_figure("Mangler temperatur- eller vinddata")
+
+        temp = pd.to_numeric(df_prepared['air_temperature'], errors='coerce')
+        wind = pd.to_numeric(df_prepared['wind_speed'], errors='coerce')
 
         # Beregn vindkjøling
-        wind_chill = [
-            BaseAnalyzer.calculate_wind_chill(t, w)
-            for t, w in zip(temp, wind, strict=False)
-        ]
+        wind_chill: list[float] = []
+        for t, w in zip(temp.tolist(), wind.tolist(), strict=False):
+            if t is None or w is None or (isinstance(t, float) and np.isnan(t)) or (isinstance(w, float) and np.isnan(w)):
+                wind_chill.append(np.nan)
+            else:
+                wind_chill.append(float(BaseAnalyzer.calculate_wind_chill(t, w)))
 
         ax.plot(times, temp, color=settings.viz.color_temp,
                 linewidth=2, label='Lufttemperatur', alpha=0.7)
         ax.plot(times, wind_chill, color=settings.viz.color_critical,
                 linewidth=2, label='Vindkjøling', linestyle='--')
 
-        # Terskler
-        ax.axhline(y=-12, color=settings.viz.color_warning,
-                  linestyle=':', alpha=0.7, label='Advarsel (-12°C)')
-        ax.axhline(y=-15, color=settings.viz.color_critical,
-                  linestyle=':', alpha=0.7, label='Kritisk (-15°C)')
+        # Terskler (fra config)
+        ax.axhline(
+            y=settings.snowdrift.wind_chill_warning,
+            color=settings.viz.color_warning,
+            linestyle=':',
+            alpha=0.7,
+            label=f"Advarsel ({settings.snowdrift.wind_chill_warning:.0f}°C)",
+        )
+        ax.axhline(
+            y=settings.snowdrift.wind_chill_critical,
+            color=settings.viz.color_critical,
+            linestyle=':',
+            alpha=0.7,
+            label=f"Kritisk ({settings.snowdrift.wind_chill_critical:.0f}°C)",
+        )
         ax.axhline(y=0, color='navy', linestyle='-', alpha=0.3)
 
-        ax.fill_between(times, temp, wind_chill,
-                        where=[wc < t for t, wc in zip(temp, wind_chill, strict=False)],
-                        alpha=0.2, color=settings.viz.color_critical,
-                        label='Vindkjøling-effekt')
+        temp_arr = np.asarray(temp, dtype=float)
+        wc_arr = np.asarray(wind_chill, dtype=float)
+        finite_mask = np.isfinite(temp_arr) & np.isfinite(wc_arr)
+        where_mask = finite_mask & (wc_arr < temp_arr)
 
-        invalid_mask = [t >= 10 or w < 1.34 for t, w in zip(temp, wind, strict=False)]
+        if np.any(where_mask):
+            ax.fill_between(
+                times,
+                temp_arr,
+                wc_arr,
+                where=where_mask,
+                alpha=0.2,
+                color=settings.viz.color_critical,
+                label='Vindkjøling-effekt'
+            )
+
+        invalid_mask = []
+        for t, w in zip(temp_arr.tolist(), np.asarray(wind, dtype=float).tolist(), strict=False):
+            if not np.isfinite(t) or not np.isfinite(w):
+                invalid_mask.append(False)
+            else:
+                invalid_mask.append(bool(t >= 10 or w < 1.34))
         if any(invalid_mask):
             y_min, y_max = ax.get_ylim()
             ax.fill_between(
@@ -307,21 +340,64 @@ class WeatherPlots:
         return fig
 
     @classmethod
+    def _prepare_time_series(cls, df: pd.DataFrame | None) -> tuple[pd.DataFrame | None, pd.Series | None]:
+        """Returner (df, times) klargjort for plotting.
+
+        - Sikrer at reference_time finnes og er datetime
+        - Sorterer og filtrerer bort NaT
+        - Konverterer tidsakse til lokal tid og stripper timezone (matplotlib-robust)
+        """
+        if df is None or df.empty:
+            return None, None
+
+        if 'reference_time' not in df.columns:
+            return None, None
+
+        df_prepared = df.copy()
+        times = pd.to_datetime(df_prepared['reference_time'], errors='coerce', utc=True)
+        mask = times.notna()
+        df_prepared = df_prepared.loc[mask].copy()
+        times = times.loc[mask]
+
+        if df_prepared.empty:
+            return None, None
+
+        # Lokal tid for visning (og for å unngå tz-aware problemer i matplotlib)
+        try:
+            local_tz = datetime.now().astimezone().tzinfo
+            if local_tz is not None:
+                times = times.dt.tz_convert(local_tz)
+        except (TypeError, ValueError, AttributeError):
+            # Behold UTC hvis lokal konvertering feiler
+            pass
+
+        # Strip timezone (matplotlib er mest stabil på naive datetimes)
+        try:
+            times = times.dt.tz_localize(None)
+        except (TypeError, ValueError, AttributeError):
+            pass
+
+        df_prepared['reference_time'] = times
+        df_prepared = df_prepared.sort_values('reference_time').reset_index(drop=True)
+
+        return df_prepared, df_prepared['reference_time']
+
+    @classmethod
     def _plot_temperature(cls, ax, times, df, viz):
         """Plot temperatur med bakketemperatur og duggpunkt."""
         if 'air_temperature' in df.columns:
-            temp = df['air_temperature'].ffill()
+            temp = cls._numeric(df, 'air_temperature').ffill()
             ax.plot(times, temp, color=viz.color_temp,
                    linewidth=2, label='Lufttemperatur')
 
         # Bakketemperatur - kritisk for isdannelse
         if 'surface_temperature' in df.columns:
-            surface_temp = df['surface_temperature'].ffill()
+            surface_temp = cls._numeric(df, 'surface_temperature').ffill()
             ax.plot(times, surface_temp, color='#1E88E5',
                     linewidth=2, linestyle='-', label='Bakketemperatur')
             # Marker frysefare: luft > 0, bakke < 0
             if 'air_temperature' in df.columns:
-                temp = df['air_temperature'].ffill()
+                temp = cls._numeric(df, 'air_temperature').ffill()
                 freeze_risk = (temp > 0) & (surface_temp < 0)
                 if freeze_risk.any():
                     ax.fill_between(times, temp, surface_temp,
@@ -330,7 +406,7 @@ class WeatherPlots:
 
         # Duggpunkt - kritisk for snø vs regn
         if 'dew_point_temperature' in df.columns:
-            dew_point = df['dew_point_temperature'].ffill()
+            dew_point = cls._numeric(df, 'dew_point_temperature').ffill()
             ax.plot(times, dew_point, color='#7E57C2',
                     linewidth=1.5, linestyle='--', label='Duggpunkt')
 
@@ -347,27 +423,51 @@ class WeatherPlots:
         thresholds = settings.snowdrift
 
         if 'wind_speed' in df.columns:
-            wind = df['wind_speed'].ffill()
+            wind = cls._numeric(df, 'wind_speed').ffill()
             ax.plot(times, wind, color=viz.color_wind,
                     linewidth=2, label='Vind')
 
             # Marker terskler for snittvind
-            ax.axhline(thresholds.wind_speed_warning, color=viz.color_warning,
-                       linestyle=':', linewidth=1, alpha=0.7, label='Vind 8 m/s (advarsel)')
-            ax.axhline(thresholds.wind_speed_critical, color=viz.color_critical,
-                       linestyle='--', linewidth=1, alpha=0.7, label='Vind 10 m/s (kritisk)')
+            ax.axhline(
+                thresholds.wind_speed_warning,
+                color=viz.color_warning,
+                linestyle=':',
+                linewidth=1,
+                alpha=0.7,
+                label=f"Vind {thresholds.wind_speed_warning:.0f} m/s (advarsel)",
+            )
+            ax.axhline(
+                thresholds.wind_speed_critical,
+                color=viz.color_critical,
+                linestyle='--',
+                linewidth=1,
+                alpha=0.7,
+                label=f"Vind {thresholds.wind_speed_critical:.0f} m/s (kritisk)",
+            )
 
             # Vindkast hvis tilgjengelig
             gust_col = 'max_wind_gust' if 'max_wind_gust' in df.columns else 'wind_gust'
             if gust_col in df.columns:
-                gust = df[gust_col].ffill()
+                gust = cls._numeric(df, gust_col).ffill()
                 ax.plot(times, gust, color=viz.color_wind,
                         linewidth=1, alpha=0.6, linestyle='--', label='Vindkast')
 
-                ax.axhline(thresholds.wind_gust_warning, color='#EF6C00', linestyle=':',
-                           linewidth=1, alpha=0.6, label='Vindkast 15 m/s (advarsel)')
-                ax.axhline(thresholds.wind_gust_critical, color='#B71C1C', linestyle='--',
-                           linewidth=1, alpha=0.6, label='Vindkast 22 m/s (kritisk)')
+                ax.axhline(
+                    thresholds.wind_gust_warning,
+                    color=viz.color_warning,
+                    linestyle=':',
+                    linewidth=1,
+                    alpha=0.6,
+                    label=f"Vindkast {thresholds.wind_gust_warning:.0f} m/s (advarsel)",
+                )
+                ax.axhline(
+                    thresholds.wind_gust_critical,
+                    color=viz.color_critical,
+                    linestyle='--',
+                    linewidth=1,
+                    alpha=0.6,
+                    label=f"Vindkast {thresholds.wind_gust_critical:.0f} m/s (kritisk)",
+                )
 
         ax.set_ylabel('m/s')
         ax.legend(loc='upper right', fontsize=8)
@@ -382,22 +482,34 @@ class WeatherPlots:
         thresholds = settings.fresh_snow
 
         if 'surface_snow_thickness' in df.columns:
-            snow = df['surface_snow_thickness'].ffill()
+            snow = cls._numeric(df, 'surface_snow_thickness').ffill()
             ax.fill_between(times, 0, snow, color=viz.color_snow,
                            alpha=0.3, label='Snødybde')
             ax.plot(times, snow, color=viz.color_snow, linewidth=2)
 
             # Vis seks-timers snøøkning direkte i figuren
-            snow_change_6h = snow.diff(periods=6)
+            snow_change_6h = snow.diff(periods=6).fillna(0)
             significant = snow_change_6h >= thresholds.snow_increase_warning
             critical = snow_change_6h >= thresholds.snow_increase_critical
             if significant.any():
-                ax.scatter(times[significant], snow[significant],
-                           color='#E65100', marker='^', s=40, label='≥5 cm (6t)')
+                ax.scatter(
+                    times[significant],
+                    snow[significant],
+                    color=viz.color_warning,
+                    marker='^',
+                    s=40,
+                    label=f"≥{thresholds.snow_increase_warning:.0f} cm (6t)",
+                )
             if critical.any():
-                ax.scatter(times[critical], snow[critical],
-                           color='#B71C1C', marker='^', s=80,
-                           linewidth=1.5, label='≥10 cm (6t)')
+                ax.scatter(
+                    times[critical],
+                    snow[critical],
+                    color=viz.color_critical,
+                    marker='^',
+                    s=80,
+                    linewidth=1.5,
+                    label=f"≥{thresholds.snow_increase_critical:.0f} cm (6t)",
+                )
 
 
         ax.set_ylabel('Snødybde (cm)', color=viz.color_snow)
@@ -405,7 +517,7 @@ class WeatherPlots:
 
         # Nedbør (høyre akse)
         if 'precipitation_1h' in df.columns:
-            precip = df['precipitation_1h'].fillna(0)
+            precip = cls._numeric(df, 'precipitation_1h').fillna(0)
             ax2.bar(times, precip, width=0.03, alpha=0.6,
                    color=viz.color_precip, label='Nedbør')
 
@@ -426,7 +538,7 @@ class WeatherPlots:
             ax.text(0.5, 0.5, 'Ingen snødata', ha='center', va='center', transform=ax.transAxes)
             return
 
-        snow = df['surface_snow_thickness'].ffill()
+        snow = cls._numeric(df, 'surface_snow_thickness').ffill()
         ax.fill_between(times, 0, snow, color=viz.color_snow,
                         alpha=0.3)
         ax.plot(times, snow, color=viz.color_snow, linewidth=2, label='Snødybde')
@@ -440,12 +552,13 @@ class WeatherPlots:
         ax2.bar(times, new_snow, width=0.02, alpha=0.6,
                 color='#43A047', label='Nysnø (6t)')
 
-        # Marker signifikant nysnø (≥5 cm)
-        significant = new_snow >= 5
+        # Marker signifikant nysnø (terskel fra config)
+        thresholds = settings.fresh_snow
+        significant = new_snow >= thresholds.snow_increase_warning
         if significant.any():
             ax2.scatter(times[significant], new_snow[significant],
-                       color='#E53935', s=50, zorder=5, marker='v',
-                       label='≥5 cm (brøyting)')
+                       color=viz.color_critical, s=50, zorder=5, marker='v',
+                       label=f"≥{thresholds.snow_increase_warning:.0f} cm (6t)")
 
         ax2.set_ylabel('Nysnø siste 6t (cm)', color='#43A047')
         ax2.tick_params(axis='y', labelcolor='#43A047')
@@ -465,7 +578,7 @@ class WeatherPlots:
             ax.text(0.5, 0.5, 'Ingen nedbørsdata', ha='center', va='center', transform=ax.transAxes)
             return
 
-        precip = df['precipitation_1h'].fillna(0)
+        precip = cls._numeric(df, 'precipitation_1h').fillna(0)
         ax.bar(times, precip, width=0.03, alpha=0.6,
                color=viz.color_precip, label='Nedbør (mm/h)')
 
@@ -481,7 +594,7 @@ class WeatherPlots:
             ax.text(0.5, 0.5, 'Ingen vindretningsdata', ha='center', va='center', transform=ax.transAxes)
             return
 
-        wind_dir = df['wind_from_direction'].ffill()
+        wind_dir = cls._numeric(df, 'wind_from_direction').ffill()
 
         # Plott vindretning
         ax.scatter(times, wind_dir, c=viz.color_wind, s=15, alpha=0.7, label='Vindretning')
@@ -512,7 +625,7 @@ class WeatherPlots:
             ax.text(0.5, 0.5, 'Ingen nedbørsdata', ha='center', va='center', transform=ax.transAxes)
             return
 
-        precip = df['precipitation_1h'].fillna(0)
+        precip = cls._numeric(df, 'precipitation_1h').fillna(0)
         accumulated = precip.cumsum()
 
         # Akkumulert linje
@@ -535,12 +648,12 @@ class WeatherPlots:
 
         # Temperatur (venstre)
         if 'air_temperature' in df.columns:
-            temp = df['air_temperature'].ffill()
+            temp = cls._numeric(df, 'air_temperature').ffill()
             ax.plot(times, temp, color=viz.color_temp,
                    linewidth=2, label='Lufttemperatur')
 
         if 'dew_point_temperature' in df.columns:
-            dew_point = df['dew_point_temperature'].ffill()
+            dew_point = cls._numeric(df, 'dew_point_temperature').ffill()
             ax.plot(times, dew_point, color='#7E57C2', linestyle='--',
                     linewidth=1.6, label='Duggpunkt')
 
@@ -549,16 +662,15 @@ class WeatherPlots:
 
         # Vind (høyre)
         if 'wind_speed' in df.columns:
-            wind = df['wind_speed'].ffill()
+            wind = cls._numeric(df, 'wind_speed').ffill()
             ax2.plot(times, wind, color=viz.color_wind,
                      linewidth=2, label='Vind')
 
         gust_col = 'max_wind_gust' if 'max_wind_gust' in df.columns else 'wind_gust'
         if gust_col in df.columns:
-            gust = df[gust_col].ffill()
+            gust = cls._numeric(df, gust_col).ffill()
             ax2.plot(times, gust, color=viz.color_wind,
                      linewidth=1.2, linestyle='--', alpha=0.7, label='Vindkast')
-
 
         ax2.set_ylabel('m/s', color=viz.color_wind)
         ax2.tick_params(axis='y', labelcolor=viz.color_wind)
@@ -569,6 +681,11 @@ class WeatherPlots:
         ax.legend(lines1 + lines2, labels1 + labels2, loc='upper right', fontsize=8)
 
         ax.grid(True, alpha=0.3)
+
+    @staticmethod
+    def _numeric(df: pd.DataFrame, col: str) -> pd.Series:
+        """Returner kolonne som numerisk serie (float) uten å kaste."""
+        return pd.to_numeric(df[col], errors='coerce')
 
     @classmethod
     def _format_time_axis(cls, ax):
@@ -584,9 +701,9 @@ class WeatherPlots:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             try:
-                plt.tight_layout()
-            except Exception:
-                plt.subplots_adjust(bottom=0.15, top=0.92, hspace=0.3)
+                fig.tight_layout()
+            except (RuntimeError, ValueError):
+                fig.subplots_adjust(bottom=0.15, top=0.92, hspace=0.3)
 
     @classmethod
     def _empty_figure(cls, message: str) -> plt.Figure:
