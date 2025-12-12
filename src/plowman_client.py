@@ -110,11 +110,9 @@ class MaintenanceApiClient:
         """Hent siste vedlikeholdstidspunkt som PlowingEvent."""
         payload = self.get_latest()
         if not payload:
-            # Lokal dev / fallback: hvis vedlikeholds-API ikke er konfigurert,
+            # Fallback: hvis vedlikeholds-API ikke er konfigurert eller feiler (inkl. 401/403),
             # prøv å hente tidspunkt fra Plowman share-siden.
-            if not self.base_url:
-                return self._get_last_from_plowman_share()
-            return None
+            return self._get_last_from_plowman_share()
 
         ts_str = payload.get("timestamp_utc")
         ts = _parse_iso_utc(ts_str)
