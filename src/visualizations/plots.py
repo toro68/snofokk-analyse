@@ -282,14 +282,16 @@ class WeatherPlots:
             y=settings.snowdrift.wind_chill_warning,
             color=settings.viz.color_warning,
             linestyle=':',
-            alpha=0.7,
+            linewidth=1.2,
+            alpha=0.8,
             label=f"Advarsel ({settings.snowdrift.wind_chill_warning:.0f}°C)",
         )
         ax.axhline(
             y=settings.snowdrift.wind_chill_critical,
             color=settings.viz.color_critical,
-            linestyle=':',
-            alpha=0.7,
+            linestyle='--',
+            linewidth=1.6,
+            alpha=0.85,
             label=f"Kritisk ({settings.snowdrift.wind_chill_critical:.0f}°C)",
         )
         ax.axhline(y=0, color='navy', linestyle='-', alpha=0.3)
@@ -557,7 +559,7 @@ class WeatherPlots:
         significant = new_snow >= thresholds.snow_increase_warning
         if significant.any():
             ax2.scatter(times[significant], new_snow[significant],
-                       color=viz.color_critical, s=50, zorder=5, marker='v',
+                       color=viz.color_warning, s=50, zorder=5, marker='v',
                        label=f"≥{thresholds.snow_increase_warning:.0f} cm (6t)")
 
         ax2.set_ylabel('Nysnø siste 6t (cm)', color='#43A047')
