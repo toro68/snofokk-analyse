@@ -129,7 +129,13 @@ class MaintenanceApiClient:
             return MaintenanceFetchResult(payload=r.json(), status_code=r.status_code)
         except ValueError as e:
             logger.warning("Vedlikeholds-API returnerte ikke gyldig JSON: %s", e)
-            return MaintenanceFetchResult(payload=None, status_code=r.status_code, error="Vedlikeholds-API returnerte ikke gyldig JSON")
+            # Inkluder start av response for debugging
+            preview = r.text[:200] if r.text else "(tom response)"
+            return MaintenanceFetchResult(
+                payload=None,
+                status_code=r.status_code,
+                error=f"Vedlikeholds-API ({r.status_code}) returnerte ikke JSON. Response: {preview}"
+            )
 
     def get_last_maintenance_time(self) -> PlowingEvent | None:
         """Hent siste vedlikeholdstidspunkt som PlowingEvent."""
