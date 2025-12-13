@@ -666,6 +666,31 @@ def render_netatmo_map():
 
     st.pydeck_chart(deck, use_container_width=True)
 
+    # Vis når Netatmo-data sist ble oppdatert (nyttig ift. caching/TTL)
+    latest_ts = None
+    for s in temp_stations:
+        if s.timestamp is None:
+            continue
+        ts = s.timestamp
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=UTC)
+        if latest_ts is None or ts > latest_ts:
+            latest_ts = ts
+
+    if latest_ts is not None:
+        now_utc = datetime.now(tz=UTC)
+        age = max(timedelta(seconds=0), now_utc - latest_ts)
+        minutes = int(age.total_seconds() // 60)
+        try:
+            latest_local = latest_ts.astimezone(datetime.now().astimezone().tzinfo)
+        except Exception:
+            latest_local = latest_ts
+
+        st.caption(
+            f"Sist oppdatert Netatmo: {latest_local.strftime('%d.%m %H:%M')} "
+            f"(ca {minutes} min siden, cache 5 min)"
+        )
+
     # Temperaturstatistikk under kartet
     temps = [s.temperature for s in temp_stations]
     avg_temp = sum(temps) / len(temps)
