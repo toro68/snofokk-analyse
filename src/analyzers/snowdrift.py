@@ -267,33 +267,33 @@ class SnowdriftAnalyzer(BaseAnalyzer):
         # Vindkast (viktigste faktor!)
         if wind_gust is not None:
             if wind_gust >= thresholds.wind_gust_critical:
-                factors.append(f"⚡ Kraftige vindkast ({wind_gust:.1f} m/s)!")
+                factors.append(f"Kraftige vindkast ({wind_gust:.1f} m/s)!")
             elif wind_gust >= thresholds.wind_gust_warning:
-                factors.append(f"🌬️ Vindkast ({wind_gust:.1f} m/s)")
+                factors.append(f"Vindkast ({wind_gust:.1f} m/s)")
 
         if wind >= thresholds.wind_speed_critical:
-            factors.append(f"🌬️ Sterk vind ({wind:.1f} m/s)")
+            factors.append(f"Sterk vind ({wind:.1f} m/s)")
         elif wind >= thresholds.wind_speed_warning:
-            factors.append(f"💨 Moderat vind ({wind:.1f} m/s)")
+            factors.append(f"Moderat vind ({wind:.1f} m/s)")
 
         if is_critical_direction:
-            factors.append(f"⚠️ Kritisk vindretning ({wind_dir:.0f}° SE-S)")
+            factors.append(f"Kritisk vindretning ({wind_dir:.0f}° SE-S)")
 
         if temp <= thresholds.temperature_max:
-            factors.append(f"🌡️ Frost ({temp:.1f}°C)")
+            factors.append(f"Frost ({temp:.1f}°C)")
 
         if snow >= thresholds.snow_depth_min_cm:
-            factors.append(f"❄️ Snødekke ({snow:.0f} cm)")
+            factors.append(f"Snødekke ({snow:.0f} cm)")
 
         if wind_chill <= thresholds.wind_chill_critical:
             factors.append(f"🥶 Kritisk vindkjøling ({wind_chill:.1f}°C)")
         elif wind_chill <= thresholds.wind_chill_warning:
-            factors.append(f"🌬️ Vindkjøling ({wind_chill:.1f}°C)")
+            factors.append(f"Vindkjøling ({wind_chill:.1f}°C)")
 
         if snow_change >= thresholds.fresh_snow_threshold:
-            factors.append(f"🌨️ Nysnø (+{snow_change:.1f} cm/h)")
+            factors.append(f"Nysnø (+{snow_change:.1f} cm/h)")
         elif snow_change <= -0.2:
-            factors.append(f"💨 Vindtransport ({snow_change:.1f} cm/h)")
+            factors.append(f"Vindtransport ({snow_change:.1f} cm/h)")
 
         return factors
 
@@ -329,7 +329,7 @@ class SnowdriftAnalyzer(BaseAnalyzer):
                 risk_level=RiskLevel.LOW,
                 message=f"Stabile forhold: {loose_snow['reason']}",
                 scenario="Ingen løssnø",
-                factors=factors + [f"ℹ️ {loose_snow['reason']}"],
+                factors=factors + [f"{loose_snow['reason']}"],
                 details=details
             )
 
@@ -425,6 +425,6 @@ class SnowdriftAnalyzer(BaseAnalyzer):
             risk_level=RiskLevel.LOW,
             message="Lav snøfokk-risiko. Forhold innenfor normale grenser.",
             scenario="Normal",
-            factors=factors if factors else ["✅ Alle kriterier under terskel"],
+            factors=factors if factors else ["Alle kriterier under terskel"],
             details=details
         )

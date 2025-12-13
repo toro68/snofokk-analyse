@@ -291,13 +291,13 @@ def test_netatmo():
 
     # Sjekk om credentials er satt
     if not client.client_id:
-        print("⚠️  NETATMO_CLIENT_ID ikke satt i .env")
+        print("NETATMO_CLIENT_ID ikke satt i .env")
         print("   Opprett en app på https://dev.netatmo.com/apps")
         return
 
     refresh_token = os.getenv("NETATMO_REFRESH_TOKEN")
     if not refresh_token:
-        print("⚠️  NETATMO_REFRESH_TOKEN ikke satt i .env")
+        print("NETATMO_REFRESH_TOKEN ikke satt i .env")
         print("")
         print("   Slik får du refresh_token:")
         print("   1. Gå til https://dev.netatmo.com/apps")
@@ -311,23 +311,23 @@ def test_netatmo():
 
     # Autentiser
     if client.authenticate():
-        print("✅ Autentisering OK")
+        print("Autentisering OK")
 
         # Hent data fra Fjellbergsskardet
         stations = client.get_fjellbergsskardet_area()
 
-        print(f"\n📍 Stasjoner i Fjellbergsskardet-området: {len(stations)}")
+        print(f"\nStasjoner i Fjellbergsskardet-området: {len(stations)}")
 
         for s in stations:
             print(f"\n  {s.name} ({s.altitude} moh)")
             if s.temperature is not None:
-                print(f"    🌡️ Temperatur: {s.temperature:.1f}°C")
+                print(f"    Temperatur: {s.temperature:.1f}°C")
             if s.humidity is not None:
-                print(f"    💧 Fuktighet: {s.humidity:.0f}%")
+                print(f"    Fuktighet: {s.humidity:.0f}%")
             if s.rain_1h is not None:
-                print(f"    🌧️ Regn 1t: {s.rain_1h:.1f} mm")
+                print(f"    Regn 1t: {s.rain_1h:.1f} mm")
     else:
-        print("❌ Autentisering feilet")
+        print("Autentisering feilet")
 
 
 if __name__ == "__main__":

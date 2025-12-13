@@ -58,19 +58,19 @@ def inject_pwa_code():
 
                     // Check for updates
                     registration.addEventListener('updatefound', () => {
-                        console.log('🔄 Service Worker update found');
+                        console.log('Service Worker update found');
                         const newWorker = registration.installing;
 
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                console.log('✅ Service Worker updated - new content available');
+                                console.log('Service Worker updated - new content available');
                                 showUpdateNotification();
                             }
                         });
                     });
                 })
                 .catch(error => {
-                    console.error('❌ Service Worker registration failed:', error);
+                    console.error('Service Worker registration failed:', error);
                 });
             }
         }
@@ -93,7 +93,7 @@ def inject_pwa_code():
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                 ">
                     <div style="margin-bottom: 0.5rem; font-weight: 600;">
-                        🔄 Oppdatering tilgjengelig
+                        Oppdatering tilgjengelig
                     </div>
                     <div style="margin-bottom: 1rem; font-size: 0.9rem;">
                         En ny versjon av appen er klar.
@@ -137,7 +137,7 @@ def inject_pwa_code():
         function handleInstallPrompt() {
             // Listen for beforeinstallprompt event
             window.addEventListener('beforeinstallprompt', (e) => {
-                console.log('💾 PWA install prompt available');
+                console.log('PWA install prompt available');
                 e.preventDefault();
                 deferredPrompt = e;
                 showInstallButton();
@@ -145,7 +145,7 @@ def inject_pwa_code():
 
             // Listen for app installed event
             window.addEventListener('appinstalled', (e) => {
-                console.log('✅ PWA installed successfully');
+                console.log('PWA installed successfully');
                 isInstalled = true;
                 hideInstallButton();
                 showInstalledNotification();
@@ -181,7 +181,7 @@ def inject_pwa_code():
                     gap: 8px;
                     animation: pulse 2s infinite;
                 " onclick="installPWA()">
-                    📱 Installer app
+                    Installer app
                 </button>
                 <style>
                     @keyframes pulse {
@@ -198,9 +198,9 @@ def inject_pwa_code():
                     deferredPrompt.prompt();
                     deferredPrompt.userChoice.then((choiceResult) => {
                         if (choiceResult.outcome === 'accepted') {
-                            console.log('✅ User accepted PWA install');
+                            console.log('User accepted PWA install');
                         } else {
-                            console.log('❌ User declined PWA install');
+                            console.log('User declined PWA install');
                         }
                         deferredPrompt = null;
                         hideInstallButton();
@@ -237,7 +237,7 @@ def inject_pwa_code():
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                 ">
                     <div style="margin-bottom: 0.5rem; font-weight: 600;">
-                        ✅ App installert!
+                        App installert!
                     </div>
                     <div style="font-size: 0.9rem;">
                         Snøfokk Varsling er nå tilgjengelig som app på enheten din.
@@ -299,7 +299,7 @@ def inject_pwa_code():
                     font-size: 14px;
                     font-weight: 500;
                 ">
-                    📡 Ingen internettforbindelse - Viser lagrede data
+                    Ingen internettforbindelse - Viser lagrede data
                 </div>
             `;
             document.body.appendChild(notification);
@@ -320,7 +320,7 @@ def inject_pwa_code():
             // Check if already installed
             isInstalled = checkInstallStatus();
             if (isInstalled) {
-                console.log('✅ PWA is already installed');
+                console.log('PWA is already installed');
             }
 
             registerServiceWorker();
@@ -330,7 +330,7 @@ def inject_pwa_code():
             // Add PWA metadata to head if not present
             addPWAMetadata();
 
-            console.log('✅ PWA initialization complete');
+            console.log('PWA initialization complete');
         }
 
         // Add PWA metadata
@@ -424,8 +424,8 @@ def serve_static_files():
         <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/static/sw.js', { scope: '/' })
-                .then(registration => console.log('✅ Service Worker registered via /static/sw.js', registration.scope))
-                .catch(err => console.error('❌ SW registration failed:', err));
+                .then(registration => console.log('Service Worker registered via /static/sw.js', registration.scope))
+                .catch(err => console.error('SW registration failed:', err));
         }
         </script>
         ''', unsafe_allow_html=True)

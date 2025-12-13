@@ -132,20 +132,11 @@ class PlowingInfo:
 
     @property
     def status_emoji(self) -> str:
-        """Emoji basert på hvor lenge siden siste brøyting."""
-        if not self.last_plowing:
-            return "❓"
+        """Statusmarkør for UI.
 
-        if self.hours_since is not None:
-            if self.hours_since < 6:
-                return "✅"  # Nylig brøytet
-            elif self.hours_since < 24:
-                return "🟢"  # Brøytet siste døgn
-            elif self.hours_since < 48:
-                return "🟡"  # 1-2 dager
-            else:
-                return "🟠"  # Mer enn 2 dager
-        return "❓"
+        Appen bruker ikke emojis i UI.
+        """
+        return ""
 
 
 def parse_timestamps_from_html(html_content: str) -> list[datetime]:
@@ -207,6 +198,26 @@ def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int = 1) -> Pl
 
     # Hent live data fra vedlikeholds-API
     try:
+        # På Streamlit Cloud er dette ofte årsaken når vedlikehold mangler.
+        # Vi bruker ikke Plowman-fallback som default, så uten disse secrets blir det ingen data.
+        base_url = get_secret("MAINTENANCE_API_BASE_URL", "")
+        token = get_secret("MAINTENANCE_API_TOKEN", "")
+        if not base_url or not token:
+            missing: list[str] = []
+            if not base_url:
+                missing.append("MAINTENANCE_API_BASE_URL")
+            if not token:
+                missing.append("MAINTENANCE_API_TOKEN")
+
+            return PlowingInfo(
+                last_plowing=None,
+                hours_since=None,
+                is_recent=False,
+                all_timestamps=cache_data['all_timestamps'] if cache_data else [],
+                source='none',
+                error=f"Mangler vedlikeholds-API secrets: {', '.join(missing)}",
+            )
+
         event = get_last_plowing_time()
 
         if event and event.timestamp:

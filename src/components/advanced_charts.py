@@ -25,12 +25,12 @@ class AdvancedCharts:
 
         # Definer tilgjengelige metrics
         available_metrics = {
-            '🌡️ Temperatur': ['air_temperature', 'surface_temperature'],
-            '💨 Vind': ['wind_speed', 'max(wind_speed_of_gust PT1H)'],
-            '❄️ Snø': ['snow_depth_cm', 'new_snow_cm'],
-            '🌧️ Nedbør': ['sum(precipitation_amount PT1H)', 'accumulated(precipitation_amount)'],
-            '💧 Fuktighet': ['relative_humidity', 'dew_point_temperature'],
-            '🧊 Snøtype': ['snow_type']
+            'Temperatur': ['air_temperature', 'surface_temperature'],
+            'Vind': ['wind_speed', 'max(wind_speed_of_gust PT1H)'],
+            'Snø': ['snow_depth_cm', 'new_snow_cm'],
+            'Nedbør': ['sum(precipitation_amount PT1H)', 'accumulated(precipitation_amount)'],
+            'Fuktighet': ['relative_humidity', 'dew_point_temperature'],
+            'Snøtype': ['snow_type']
         }
 
         # Filtrer valgte metrics som faktisk eksisterer
@@ -420,7 +420,7 @@ class AdvancedCharts:
                 st.markdown("""
                 <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
                             border-radius: 10px; padding: 1rem; color: white; text-align: center;">
-                    <h4 style="margin: 0;">🌡️ Temperatur</h4>
+                    <h4 style="margin: 0;">Temperatur</h4>
                     <p style="margin: 0.5rem 0; font-size: 0.9rem;">
                         Snitt: {:.1f}°C<br>
                         Min/Max: {:.1f}°/{:.1f}°C
@@ -437,7 +437,7 @@ class AdvancedCharts:
                 st.markdown("""
                 <div style="background: linear-gradient(135deg, #48cae4 0%, #023e8a 100%);
                             border-radius: 10px; padding: 1rem; color: white; text-align: center;">
-                    <h4 style="margin: 0;">💨 Vind</h4>
+                    <h4 style="margin: 0;">Vind</h4>
                     <p style="margin: 0.5rem 0; font-size: 0.9rem;">
                         Snitt: {:.1f} m/s<br>
                         Max: {:.1f} m/s ({} t sterk)
@@ -460,7 +460,7 @@ class AdvancedCharts:
             st.markdown("""
             <div style="background: {};
                         border-radius: 10px; padding: 1rem; color: white; text-align: center;">
-                <h4 style="margin: 0;">❄️ Nysnø</h4>
+                <h4 style="margin: 0;">Nysnø</h4>
                 <p style="margin: 0.5rem 0; font-size: 0.9rem;">
                     {:.1f} cm {}<br>
                     {}

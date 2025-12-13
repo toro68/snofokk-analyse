@@ -60,7 +60,7 @@ class SlapsAnalyzer(BaseAnalyzer):
             risk_level=RiskLevel.LOW,
             message="Sommersesong - ingen slaps-risiko",
             scenario="Sommer",
-            factors=["☀️ Utenfor vintersesong"]
+            factors=["Utenfor vintersesong"]
         )
 
     def _winter_analysis(self, df: pd.DataFrame) -> AnalysisResult:
@@ -110,7 +110,7 @@ class SlapsAnalyzer(BaseAnalyzer):
                 risk_level=RiskLevel.LOW,
                 message=f"Lite snø ({snow:.0f} cm) - lav slaps-risiko",
                 scenario="Lite snø",
-                factors=[f"❄️ Snødybde: {snow:.0f} cm (krever ≥ {thresholds.snow_depth_min:.0f} cm)"],
+                factors=[f"Snødybde: {snow:.0f} cm (krever ≥ {thresholds.snow_depth_min:.0f} cm)"],
                 details=details
             )
 
@@ -121,7 +121,7 @@ class SlapsAnalyzer(BaseAnalyzer):
                     risk_level=RiskLevel.LOW,
                     message=f"For kaldt for slaps ({temp:.1f}°C)",
                     scenario="Frost",
-                    factors=[f"🌡️ {temp:.1f}°C < {thresholds.temp_min}°C → snø, ikke slaps"],
+                    factors=[f"{temp:.1f}°C < {thresholds.temp_min}°C → snø, ikke slaps"],
                     details=details
                 )
             else:  # temp > thresholds.temp_max
@@ -131,20 +131,20 @@ class SlapsAnalyzer(BaseAnalyzer):
                         risk_level=RiskLevel.MEDIUM,
                         message=f"Varm ({temp:.1f}°C) - snøsmelting pågår",
                         scenario="Smelting",
-                        factors=[f"🌡️ {temp:.1f}°C > {thresholds.temp_max}°C → snø smelter"],
+                        factors=[f"{temp:.1f}°C > {thresholds.temp_max}°C → snø smelter"],
                         details=details
                     )
                 return AnalysisResult(
                     risk_level=RiskLevel.LOW,
                     message=f"Varmt ({temp:.1f}°C) men ingen tydelig smelting",
                     scenario="Varmt",
-                    factors=[f"🌡️ {temp:.1f}°C > {thresholds.temp_max}°C"],
+                    factors=[f"{temp:.1f}°C > {thresholds.temp_max}°C"],
                     details=details
                 )
 
         # SLAPS-scenario: Riktig temperatur + snø
-        factors.append(f"🌡️ Temperatur: {temp:.1f}°C (slaps-området)")
-        factors.append(f"❄️ Snødybde: {snow:.0f} cm")
+        factors.append(f"Temperatur: {temp:.1f}°C (slaps-området)")
+        factors.append(f"Snødybde: {snow:.0f} cm")
 
         # Sjekk tegn på aktiv slaps
         slaps_indicators = []
@@ -154,11 +154,11 @@ class SlapsAnalyzer(BaseAnalyzer):
 
         if rain_on_snow:
             slaps_indicators.append("rain_on_snow")
-            factors.append(f"🌧️ Regn på snø: {precip:.1f} mm/t")
+            factors.append(f"Regn på snø: {precip:.1f} mm/t")
 
         if snow_change < -2:
             slaps_indicators.append("melting")
-            factors.append(f"📉 Snø smelter: {abs(snow_change):.1f} cm siste 6t")
+            factors.append(f"Snø smelter: {abs(snow_change):.1f} cm siste 6t")
 
         if len(slaps_indicators) >= 2:
             return AnalysisResult(
@@ -200,7 +200,7 @@ class SlapsAnalyzer(BaseAnalyzer):
         is_cooling = self._is_temperature_falling(df)
 
         if is_cooling and temp <= thresholds.temp_max:
-            factors.append("⚠️ Temperatur synker - frysefare")
+            factors.append("Temperatur synker - frysefare")
             return AnalysisResult(
                 risk_level=RiskLevel.MEDIUM,
                 message=f"Slaps-forhold med frysefare ({temp:.1f}°C, synkende)",
@@ -213,7 +213,7 @@ class SlapsAnalyzer(BaseAnalyzer):
             risk_level=RiskLevel.LOW,
             message=f"Slaps-temperatur ({temp:.1f}°C) men ingen aktiv nedbør",
             scenario="Potensielt slaps",
-            factors=factors + ["ℹ️ Krever både nedbør/smelting"],
+            factors=factors + ["Krever både nedbør/smelting"],
             details=details
         )
 

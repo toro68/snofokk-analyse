@@ -2,10 +2,10 @@
 Føreforhold Gullingen - Komplett varslingssystem.
 
 Fire varslingskategorier for brøytemannskaper og hytteeiere:
-1. ❄️ Nysnø - Behov for brøyting
-2. 🌬️ Snøfokk - Redusert sikt, snødrev på veier
-3. ❄️ Slaps - Tung snø/vann-blanding
-4. 🧊 Glatte veier - Is, rimfrost, regn på snø
+1. Nysnø - Behov for brøyting
+2. Snøfokk - Redusert sikt, snødrev på veier
+3. Slaps - Tung snø/vann-blanding
+4. Glatte veier - Is, rimfrost, regn på snø
 """
 
 import sys
@@ -48,7 +48,7 @@ logger = logging.getLogger(__name__)
 # Page config
 st.set_page_config(
     page_title="Føreforhold – Gullingen",
-    page_icon="❄️",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -83,24 +83,19 @@ st.markdown("""
 
 def get_risk_emoji(level: RiskLevel) -> str:
     """Get emoji for risk level."""
-    return {
-        RiskLevel.HIGH: "🔴",
-        RiskLevel.MEDIUM: "🟡",
-        RiskLevel.LOW: "🟢",
-        RiskLevel.UNKNOWN: "⚪"
-    }.get(level, "⚪")
+    return ""
 
 
 def render_compact_risk_card(icon: str, title: str, result: AnalysisResult) -> None:
     """Render a compact risk card (Streamlit-native styling)."""
     if result.risk_level == RiskLevel.HIGH:
-        st.error(f"{icon} **{title}**: {result.message}")
+        st.error(f"**{title}**: {result.message}")
     elif result.risk_level == RiskLevel.MEDIUM:
-        st.warning(f"{icon} **{title}**: {result.message}")
+        st.warning(f"**{title}**: {result.message}")
     elif result.risk_level == RiskLevel.UNKNOWN:
-        st.info(f"{icon} **{title}**: {result.message}")
+        st.info(f"**{title}**: {result.message}")
     else:
-        st.success(f"{icon} **{title}**: {result.message}")
+        st.success(f"**{title}**: {result.message}")
 
     # Keep it compact: optionally show scenario + up to 2 factors as a caption
     caption_parts: list[str] = []
@@ -116,8 +111,7 @@ def render_compact_risk_card(icon: str, title: str, result: AnalysisResult) -> N
 
 def render_risk_details(result):
     """Vis detaljer for et analyseresultat i tabber."""
-    emoji = get_risk_emoji(result.risk_level)
-    st.markdown(f"{emoji} **{result.risk_level.norwegian.upper()}** – {result.message}")
+    st.markdown(f"**{result.risk_level.norwegian.upper()}** – {result.message}")
 
     if result.factors:
         st.caption("Nøkkelfaktorer:")
@@ -158,7 +152,7 @@ def render_key_metrics(df, plowing_info: PlowingInfo):
 
     with col3:
         snow = latest.get('surface_snow_thickness', 0)
-        st.metric("❄️ Snø", f"{snow:.0f} cm")
+        st.metric("Snø", f"{snow:.0f} cm")
 
     with col4:
         precip = latest.get('precipitation_1h', 0)
@@ -175,7 +169,7 @@ def render_maintenance_top(plowing_info: PlowingInfo, suppress_alerts: bool) -> 
         if plowing_info.last_event_type:
             value = f"{value} – {plowing_info.last_event_type}"
 
-        st.metric(f"{plowing_info.status_emoji} Siste vedlikehold", value)
+        st.metric("Siste vedlikehold", value)
 
         details_parts: list[str] = []
         if plowing_info.last_work_types:
@@ -198,7 +192,7 @@ def render_maintenance_top(plowing_info: PlowingInfo, suppress_alerts: bool) -> 
         if details_parts:
             st.caption(" | ".join(details_parts))
     else:
-        st.metric("🚜 Siste vedlikehold", "Ingen registrert")
+        st.metric("Siste vedlikehold", "Ingen registrert")
         if plowing_info.error:
             st.caption(plowing_info.error)
 
@@ -218,24 +212,24 @@ def get_overall_status(results: dict) -> tuple[str, str, RiskLevel]:
 
     if highest_risk == RiskLevel.HIGH:
         categories = ", ".join(critical_warnings)
-        return "🚨 KRITISK", f"Kritiske forhold: {categories}", highest_risk
+        return "KRITISK", f"Kritiske forhold: {categories}", highest_risk
     elif highest_risk == RiskLevel.MEDIUM:
-        return "⚠️ VÆR OPPMERKSOM", "Enkelte forhold krever oppmerksomhet", highest_risk
+        return "VÆR OPPMERKSOM", "Enkelte forhold krever oppmerksomhet", highest_risk
     else:
-        return "✅ NORMALE FORHOLD", "Trygge kjøreforhold", highest_risk
+        return "NORMALE FORHOLD", "Trygge kjøreforhold", highest_risk
 
 
 def main():
     """Main app function."""
 
     # Header
-    st.markdown("# ❄️ Føreforhold Gullingen")
+    st.markdown("# Føreforhold Gullingen")
     st.caption(f"{settings.station.name} ({settings.station.altitude_m} moh) | Oppdatert: {datetime.now().strftime('%H:%M')}")
 
     # Validate config
     valid, msg = settings.validate()
     if not valid:
-        st.error(f"⚠️ Konfigurasjonsfeil: {msg}")
+        st.error(f"Konfigurasjonsfeil: {msg}")
         st.info("Legg til FROST_CLIENT_ID i .env fil eller Streamlit secrets")
         st.stop()
 
@@ -332,9 +326,9 @@ def main():
             - Normal gradient: -0.65°C per 100m
 
             #### Fargekoder
-            - 🟢 **Grønn**: Trygge forhold
-            - 🟡 **Gul**: Vær oppmerksom
-            - 🔴 **Rød**: Kritiske forhold
+            - **Grønn**: Trygge forhold
+            - **Gul**: Vær oppmerksom
+            - **Rød**: Kritiske forhold
 
             ---
             *Utviklet for Fjellbergsskardet Hyttegrend*
@@ -364,7 +358,7 @@ def main():
         with st.spinner("Henter værdata..."):
             weather_data = client.fetch_period(selected_start_utc, selected_end_utc)
     except FrostAPIError as e:
-        st.error(f"❌ Kunne ikke hente data: {e}")
+        st.error(f"Kunne ikke hente data: {e}")
         st.stop()
 
     if weather_data.is_empty:
@@ -441,15 +435,15 @@ def main():
     st.subheader("Varsler nå")
     col1, col2 = st.columns(2)
     with col1:
-        render_compact_risk_card("❄️", "Nysnø", results["Nysnø"])
+        render_compact_risk_card("", "Nysnø", results["Nysnø"])
     with col2:
-        render_compact_risk_card("🌬️", "Snøfokk", results["Snøfokk"])
+        render_compact_risk_card("", "Snøfokk", results["Snøfokk"])
 
     col3, col4 = st.columns(2)
     with col3:
-        render_compact_risk_card("❄️", "Slaps", results["Slaps"])
+        render_compact_risk_card("", "Slaps", results["Slaps"])
     with col4:
-        render_compact_risk_card("🧊", "Glatte veier", results["Glatte veier"])
+        render_compact_risk_card("", "Glatte veier", results["Glatte veier"])
 
     # Current metrics
     st.subheader("Nåværende forhold")
@@ -466,11 +460,11 @@ def main():
 
     st.subheader("Værgrafer")
     snow_tab, precip_tab, temp_tab, wind_tab, wind_dir_tab = st.tabs([
-        "❄️ Snødybde",
-        "🌧️ Nedbør",
-        "🌡️ Temperatur",
-        "🌬️ Vindstyrke",
-        "🧭 Vindretning",
+        "Snødybde",
+        "Nedbør",
+        "Temperatur",
+        "Vindstyrke",
+        "Vindretning",
     ])
 
     with snow_tab:
@@ -492,7 +486,7 @@ def main():
     with temp_tab:
         fig = WeatherPlots.create_temperature_plot(df)
         st.pyplot(fig)
-        st.caption("💡 Duggpunkt < 0°C = nedbør faller som snø")
+        st.caption("Duggpunkt < 0°C: Nedbør faller som snø")
         plt.close(fig)
 
     with wind_tab:
@@ -503,7 +497,7 @@ def main():
     with wind_dir_tab:
         fig = WeatherPlots.create_wind_direction_plot(df)
         st.pyplot(fig)
-        st.caption("⚠️ SE-S (135-225°) er kritisk retning for snøfokk på Gullingen")
+        st.caption("SE-S (135-225°) er kritisk retning for snøfokk på Gullingen")
         plt.close(fig)
 
     # Detailed data (collapsed by default)
@@ -679,7 +673,7 @@ def render_netatmo_map():
     )
 
     tooltip = {
-        "html": "<b>{name}</b><br/>🌡️ {temp_str}<br/>📍 {alt_str}<br/>💧 {hum_str}",
+        "html": "<b>{name}</b><br/>Temp: {temp_str}<br/>Høyde: {alt_str}<br/>Fukt: {hum_str}",
         "style": {
             "backgroundColor": "rgba(0,0,0,0.85)",
             "color": "white",
@@ -741,7 +735,7 @@ def render_netatmo_map():
     with col1:
         st.metric("Netatmo snitt", f"{avg_temp:.1f}°C")
     with col2:
-        st.metric("❄️ Kaldest", f"{min_temp:.1f}°C")
+        st.metric("Kaldest", f"{min_temp:.1f}°C")
     with col3:
         st.metric("Varmest", f"{max_temp:.1f}°C")
     with col4:
@@ -875,13 +869,13 @@ def render_snow_limit_info(snow_limit: dict, all_stations, high_stations, low_st
             snow_limit.get("confidence", "lav")
 
             if limit <= 0:
-                st.success("❄️ **Snø til sjøen**")
+                st.success("**Snø til sjøen**")
             elif limit < 300:
-                st.success(f"❄️ **Snøgrense ~{int(limit)} moh**")
+                st.success(f"**Snøgrense ~{int(limit)} moh**")
             elif limit < 600:
-                st.warning(f"❄️ **Snøgrense ~{int(limit)} moh**")
+                st.warning(f"**Snøgrense ~{int(limit)} moh**")
             else:
-                st.error(f"❄️ **Snøgrense ~{int(limit)} moh**")
+                st.error(f"**Snøgrense ~{int(limit)} moh**")
 
             # Gradient-info
             if gradient:

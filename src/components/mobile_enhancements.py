@@ -152,7 +152,7 @@ class GestureNavigation:
                             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
                             animation: swipeFeedback 0.5s ease-out;
                         ">
-                            📱 ${this.getTabDisplayName(tab)}
+                            ${this.getTabDisplayName(tab)}
                         </div>
                         <style>
                             @keyframes swipeFeedback {
@@ -174,10 +174,10 @@ class GestureNavigation:
 
                 getTabDisplayName(tab) {
                     const names = {
-                        'overview': '📊 Oversikt',
-                        'analysis': '📈 Analyse',
-                        'plowing': '🚜 Brøyting',
-                        'settings': '⚙️ Innstillinger'
+                        'overview': 'Oversikt',
+                        'analysis': 'Analyse',
+                        'plowing': 'Brøyting',
+                        'settings': 'Innstillinger'
                     };
                     return names[tab] || tab;
                 }
@@ -188,7 +188,7 @@ class GestureNavigation:
                 if (window.SwipeHandler) return; // Already initialized
 
                 window.SwipeHandler = new SwipeHandler();
-                console.log('✅ Swipe navigation initialized');
+                console.log('Swipe navigation initialized');
             }
 
             if (document.readyState === 'loading') {
@@ -282,7 +282,7 @@ class OfflineManager:
                             font-weight: 500;
                             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                         ">
-                            📡 Offline-modus - Viser lagrede data
+                            Offline-modus - Viser lagrede data
                             <div style="font-size: 12px; margin-top: 4px; opacity: 0.9;">
                                 Søker tilkobling...
                             </div>
@@ -318,9 +318,9 @@ class OfflineManager:
                         offlineData.weatherData = data;
 
                         localStorage.setItem('gullingen_offline_data', JSON.stringify(offlineData));
-                        console.log('✅ Data stored offline');
+                        console.log('Data stored offline');
                     } catch (error) {
-                        console.error('❌ Failed to store offline data:', error);
+                        console.error('Failed to store offline data:', error);
                     }
                 }
 
@@ -329,7 +329,7 @@ class OfflineManager:
                         const data = localStorage.getItem('gullingen_offline_data');
                         return data ? JSON.parse(data) : null;
                     } catch (error) {
-                        console.error('❌ Failed to load offline data:', error);
+                        console.error('Failed to load offline data:', error);
                         return null;
                     }
                 }
@@ -348,7 +348,7 @@ class OfflineManager:
                         // Show user that action was stored
                         this.showOfflineActionNotification();
                     } catch (error) {
-                        console.error('❌ Failed to store offline action:', error);
+                        console.error('Failed to store offline action:', error);
                     }
                 }
 
@@ -369,7 +369,7 @@ class OfflineManager:
                             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                         ">
-                            💾 Handling lagret offline - vil synkroniseres når tilkoblingen er tilbake
+                            Handling lagret offline - vil synkroniseres når tilkoblingen er tilbake
                         </div>
                     `;
 
@@ -390,7 +390,7 @@ class OfflineManager:
                         const actions = JSON.parse(localStorage.getItem('gullingen_offline_actions') || '[]');
 
                         if (actions.length > 0) {
-                            console.log(`🔄 Syncing ${actions.length} offline actions`);
+                            console.log(`Syncing ${actions.length} offline actions`);
 
                             // Clear offline actions
                             localStorage.removeItem('gullingen_offline_actions');
@@ -399,7 +399,7 @@ class OfflineManager:
                             this.showSyncNotification(actions.length);
                         }
                     } catch (error) {
-                        console.error('❌ Failed to sync offline actions:', error);
+                        console.error('Failed to sync offline actions:', error);
                     }
                 }
 
@@ -419,7 +419,7 @@ class OfflineManager:
                             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                             max-width: 300px;
                         ">
-                            ✅ Tilbake online!
+                            Tilbake online!
                             <div style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.9;">
                                 ${actionCount} offline-handlinger synkronisert
                             </div>
@@ -441,7 +441,7 @@ class OfflineManager:
                 if (window.GullingenOfflineManager) return;
 
                 window.GullingenOfflineManager = new OfflineManager();
-                console.log('✅ Offline manager initialized');
+                console.log('Offline manager initialized');
             }
 
             if (document.readyState === 'loading') {
@@ -498,7 +498,7 @@ class GeolocationService:
 
                 requestLocation() {
                     if (!navigator.geolocation) {
-                        console.log('❌ Geolocation not supported');
+                        console.log('Geolocation not supported');
                         return;
                     }
 
@@ -530,7 +530,7 @@ class GeolocationService:
                         this.gullingenLon
                     );
 
-                    console.log(`📍 Location: ${distance.toFixed(1)}km from Gullingen`);
+                    console.log(`Location: ${distance.toFixed(1)}km from Gullingen`);
 
                     // Send til Streamlit
                     window.parent.postMessage({
@@ -545,7 +545,7 @@ class GeolocationService:
                 }
 
                 onLocationError(error) {
-                    console.log('📍 Location error:', error.message);
+                    console.log('Location error:', error.message);
 
                     // Send feil til Streamlit
                     window.parent.postMessage({
@@ -602,7 +602,7 @@ class GeolocationService:
                     }, '*');
                 }
 
-                showLocationNotification(message, icon = '📍') {
+                showLocationNotification(message, icon = '') {
                     const notification = document.createElement('div');
                     notification.innerHTML = `
                         <div style="
@@ -643,7 +643,7 @@ class GeolocationService:
                 if (window.GullingenGeolocation) return;
 
                 window.GullingenGeolocation = new GeolocationService();
-                console.log('✅ Geolocation service initialized');
+                console.log('Geolocation service initialized');
             }
 
             if (document.readyState === 'loading') {

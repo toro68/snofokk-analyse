@@ -231,14 +231,11 @@ def get_risk_color(risk_level: str) -> str:
 
 
 def get_risk_emoji(risk_level: str) -> str:
-    """Få emoji for risikonivå"""
-    emojis = {
-        'high': '🔴',
-        'medium': '🟡',
-        'low': '🟢',
-        'unknown': '⚪'
-    }
-    return emojis.get(risk_level, '⚪')
+    """Returner tom streng.
+
+    Appen bruker ikke emojis i UI.
+    """
+    return ""
 
 
 def validate_weather_data(df: pd.DataFrame) -> dict[str, Any]:

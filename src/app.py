@@ -27,7 +27,7 @@ def main():
     # Sidekonfigurasjon
     st.set_page_config(
         page_title="Føreforhold – Gullingen",
-        page_icon="❄️",
+        page_icon=None,
         layout="wide",
         initial_sidebar_state="expanded"
     )
@@ -35,17 +35,17 @@ def main():
     # Sjekk konfigurasjon
     valid, msg = settings.validate()
     if not valid:
-        st.error(f"⚠️ Konfigurasjonsfeil: {msg}")
+        st.error(f"Konfigurasjonsfeil: {msg}")
         st.info("Legg til FROST_CLIENT_ID i .env fil eller Streamlit secrets")
         st.stop()
 
     # Header
-    st.title("❄️ Føreforhold – Gullingen")
+    st.title("Føreforhold – Gullingen")
     st.caption(f"Stasjon: {settings.station.name} ({settings.station.station_id}) | {settings.station.altitude_m} moh")
 
     # Sidebar
     with st.sidebar:
-        st.header("⚙️ Innstillinger")
+        st.header("Innstillinger")
 
         hours_back = st.slider(
             "Timer tilbake",
@@ -58,14 +58,14 @@ def main():
 
         st.divider()
 
-        if st.button("🔄 Oppdater data", use_container_width=True):
+        if st.button("Oppdater data", use_container_width=True):
             st.cache_data.clear()
             st.rerun()
 
         st.divider()
 
         # Info
-        with st.expander("ℹ️ Om appen"):
+        with st.expander("Om appen"):
             st.markdown("""
             **Varslingssystem for snøfokk og glattføre**
 
@@ -76,8 +76,8 @@ def main():
             - Stasjon: SN46220 Gullingen
 
             **Varslingskriterier:**
-            - 🌬️ Snøfokk: Vindkjøling < -12°C + vind > 8 m/s
-            - 🧊 Glattføre: Regn på snø, is-dannelse, rimfrost
+            - Snøfokk: Vindkjøling < -12°C + vind > 8 m/s
+            - Glattføre: Regn på snø, is-dannelse, rimfrost
             """)
 
     # Hent data
@@ -86,7 +86,7 @@ def main():
         with st.spinner("Henter værdata..."):
             weather_data = client.fetch_recent(hours_back=hours_back)
     except FrostAPIError as e:
-        st.error(f"❌ Kunne ikke hente data: {e}")
+        st.error(f"Kunne ikke hente data: {e}")
         st.stop()
 
     if weather_data.is_empty:
@@ -104,21 +104,21 @@ def main():
 
     # Varsler øverst hvis kritisk
     if snowdrift_result.is_critical or slippery_result.is_critical:
-        st.error("🚨 **KRITISK VARSEL**")
+        st.error("**KRITISK VARSEL**")
         if snowdrift_result.is_critical:
-            st.error(f"🌬️ **Snøfokk:** {snowdrift_result.message}")
+            st.error(f"**Snøfokk:** {snowdrift_result.message}")
         if slippery_result.is_critical:
-            st.error(f"🧊 **Glattføre:** {slippery_result.message}")
+            st.error(f"**Glattføre:** {slippery_result.message}")
         st.divider()
 
     # Hovedinnhold
     col1, col2 = st.columns(2)
 
     with col1:
-        render_risk_card("🌬️ Snøfokk-risiko", snowdrift_result)
+        render_risk_card("Snøfokk-risiko", snowdrift_result)
 
     with col2:
-        render_risk_card("🧊 Glattføre-risiko", slippery_result)
+        render_risk_card("Glattføre-risiko", slippery_result)
 
     st.divider()
 
@@ -128,7 +128,7 @@ def main():
     st.divider()
 
     # Grafer
-    tab1, tab2, tab3 = st.tabs(["📈 Oversikt", "🌬️ Vindkjøling", "📊 Detaljer"])
+    tab1, tab2, tab3 = st.tabs(["Oversikt", "Vindkjøling", "Detaljer"])
 
     with tab1:
         fig = WeatherPlots.create_overview_plot(df)
@@ -163,7 +163,7 @@ def main():
 
 def render_risk_card(title: str, result):
     """Render risiko-kort med styling."""
-    st.subheader(f"{result.risk_level.emoji} {title}")
+    st.subheader(title)
 
     # Fargekoding
     if result.risk_level == RiskLevel.HIGH:
@@ -188,7 +188,7 @@ def render_risk_card(title: str, result):
 
 def render_key_metrics(df):
     """Render nøkkelverdier fra siste måling."""
-    st.subheader("📊 Nåværende forhold")
+    st.subheader("Nåværende forhold")
 
     latest = df.iloc[-1]
 
@@ -197,24 +197,24 @@ def render_key_metrics(df):
     with col1:
         temp = latest.get('air_temperature')
         if temp is not None:
-            st.metric("🌡️ Temperatur", f"{temp:.1f}°C")
+            st.metric("Temperatur", f"{temp:.1f}°C")
         else:
-            st.metric("🌡️ Temperatur", "N/A")
+            st.metric("Temperatur", "N/A")
 
     with col2:
         wind = latest.get('wind_speed')
         if wind is not None:
-            st.metric("💨 Vind", f"{wind:.1f} m/s")
+            st.metric("Vind", f"{wind:.1f} m/s")
         else:
-            st.metric("💨 Vind", "N/A")
+            st.metric("Vind", "N/A")
 
     with col3:
         snow = latest.get('surface_snow_thickness', 0)
-        st.metric("❄️ Snødybde", f"{snow:.0f} cm")
+        st.metric("Snødybde", f"{snow:.0f} cm")
 
     with col4:
         precip = latest.get('precipitation_1h', 0)
-        st.metric("🌧️ Nedbør", f"{precip:.1f} mm/h")
+        st.metric("Nedbør", f"{precip:.1f} mm/h")
 
 
 if __name__ == "__main__":

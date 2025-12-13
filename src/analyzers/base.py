@@ -25,13 +25,11 @@ class RiskLevel(Enum):
 
     @property
     def emoji(self) -> str:
-        """Emoji-representasjon for UI."""
-        return {
-            RiskLevel.UNKNOWN: "❓",
-            RiskLevel.LOW: "🟢",
-            RiskLevel.MEDIUM: "🟡",
-            RiskLevel.HIGH: "🔴"
-        }[self]
+        """Emoji-representasjon for UI.
+
+        Appen bruker ikke emojis i UI.
+        """
+        return ""
 
     @property
     def color(self) -> str:

@@ -37,24 +37,24 @@ class MobileLayout:
     def configure_mobile_page():
         """Konfigurer siden for mobil-first design"""
         st.set_page_config(
-            page_title="❄️ Snøfokk Varsling",
-            page_icon="❄️",
+            page_title="Snøfokk Varsling",
+            page_icon=None,
             layout="wide",  # Paradoksalt, men gir mer kontroll over responsive design
             initial_sidebar_state="auto",  # Auto for bedre PWA-opplevelse
             menu_items={
                 'Get Help': 'https://github.com/toro68/snofokk-analyse',
                 'Report a bug': 'https://github.com/toro68/snofokk-analyse/issues',
                 'About': """
-                # ❄️ Snøfokk & Glattføre Varsling
+                # Snøfokk & Glattføre Varsling
 
                 Mobil-optimalisert væranalyse for Gullingen Skisenter.
 
                 **Utviklet for operative beslutninger:**
-                - 📱 Mobil-first design
-                - ⚡ Rask lasting
-                - 🔄 Offline støtte via PWA
-                - 📊 Sanntidsdata fra Meteorologisk institutt
-                - 💾 Installerbar som app
+                - Mobil-first design
+                - Rask lasting
+                - Offline støtte via PWA
+                - Sanntidsdata fra Meteorologisk institutt
+                - Installerbar som app
                 """
             }
         )
@@ -301,7 +301,7 @@ class MobileLayout:
         """Kompakt mobil-header med kritisk info"""
         st.markdown("""
         <div style="text-align: center; margin-bottom: 1rem;">
-            <h1 style="margin: 0; color: #2d3436;">❄️ Gullingen Skisenter</h1>
+            <h1 style="margin: 0; color: #2d3436;">Gullingen Skisenter</h1>
             <p style="margin: 0; color: #636e72; font-size: 0.9rem;">Snøfokk & Glattføre Varsling</p>
         </div>
         """, unsafe_allow_html=True)
@@ -326,7 +326,7 @@ class MobileLayout:
         # Create accessible HTML with proper ARIA attributes
         return f"""
         <div class="risk-card {css_class}" role="region" aria-labelledby="{card_id}-title" tabindex="0">
-            <h3 id="{card_id}-title" style="margin: 0;">{icon} {title}</h3>
+            <h3 id="{card_id}-title" style="margin: 0;">{title}</h3>
             <p style="margin: 0.5rem 0; font-size: 1.1rem; font-weight: bold;" aria-label="Risikostatus: {message}">
                 {message}
             </p>
@@ -344,7 +344,7 @@ class MobileLayout:
         with col1:
             snowdrift_card = MobileLayout._create_risk_card(
                 title="Snøfokk",
-                icon="🌪️",
+                icon="",
                 risk_data=snowdrift_risk,
                 card_id="snowdrift"
             )
@@ -353,7 +353,7 @@ class MobileLayout:
         with col2:
             slippery_card = MobileLayout._create_risk_card(
                 title="Glattføre",
-                icon="🧊",
+                icon="",
                 risk_data=slippery_risk,
                 card_id="slippery"
             )
@@ -376,7 +376,7 @@ class MobileLayout:
             st.session_state.conditions_loaded = True
             st.rerun()
 
-        st.markdown("### 🌡️ Aktuelle forhold")
+        st.markdown("### Aktuelle forhold")
 
         # 4 viktigste målinger i kompakt grid med forbedret accessibility
         col1, col2, col3, _ = st.columns(4)
@@ -526,18 +526,18 @@ class MobileLayout:
         df_prepared = MobileLayout.prepare_weather_data(df)
 
         # Smaller chart for mobile
-        st.markdown("### 📊 Værtrend (siste 24t)")
+        st.markdown("### Værtrend (siste 24t)")
 
         # Chart selection for mobile
         chart_options = {
-            "🌡️ Temperatur": "temperature",
-            "💨 Vind": "wind",
-            "❄️ Snø": "snow",
-            "🌧️ Nedbør": "precipitation"
+            "Temperatur": "temperature",
+            "Vind": "wind",
+            "Snø": "snow",
+            "Nedbør": "precipitation"
         }
 
         # Find initial selection key
-        initial_key = "🌡️ Temperatur"
+        initial_key = "Temperatur"
         for key, value in chart_options.items():
             if value == initial_chart_type:
                 initial_key = key
@@ -577,18 +577,18 @@ class MobileLayout:
     @staticmethod
     def show_mobile_controls():
         """Kompakte kontroller for mobil"""
-        st.markdown("### ⚙️ Innstillinger")
+        st.markdown("### Innstillinger")
 
         # Compact control layout
         col1, col2 = st.columns(2)
 
         with col1:
-            auto_refresh = st.checkbox("🔄 Auto-oppdater", value=True)
+            auto_refresh = st.checkbox("Auto-oppdater", value=True)
             if auto_refresh:
                 st.caption("Oppdaterer hvert 5. minutt")
 
         with col2:
-            if st.button("🔄 Oppdater nå", key="mobile_refresh"):
+            if st.button("Oppdater nå", key="mobile_refresh"):
                 st.rerun()
 
     @staticmethod
@@ -597,9 +597,9 @@ class MobileLayout:
         st.markdown("---")
         st.markdown("""
         <div style="text-align: center; color: #636e72; font-size: 0.8rem;">
-            📡 Data: Meteorologisk institutt • 🏔️ Gullingen Skisenter (639 moh)<br>
-            💻 <a href="https://github.com/toro68/snofokk-analyse">GitHub</a> •
-            📱 Mobil-optimalisert versjon
+            Data: Meteorologisk institutt • Gullingen Skisenter (639 moh)<br>
+            <a href="https://github.com/toro68/snofokk-analyse">GitHub</a> •
+            Mobil-optimalisert versjon
         </div>
         """, unsafe_allow_html=True)
 
@@ -646,7 +646,7 @@ class MobileLayout:
     def show_data_quality_indicator(df: pd.DataFrame):
         """Kompakt datakvalitetsindikator"""
         if df.empty:
-            st.error("🔴 Ingen data")
+            st.error("Ingen data")
             return
 
         # Beregn datakvalitet
@@ -657,8 +657,8 @@ class MobileLayout:
         quality_score = ((total_points - missing_temp - missing_wind) / (total_points * 2)) * 100
 
         if quality_score >= 80:
-            st.success(f"✅ Datakvalitet: {quality_score:.0f}%")
+            st.success(f"Datakvalitet: {quality_score:.0f}%")
         elif quality_score >= 50:
-            st.warning(f"⚠️ Datakvalitet: {quality_score:.0f}%")
+            st.warning(f"Datakvalitet: {quality_score:.0f}%")
         else:
-            st.error(f"❌ Datakvalitet: {quality_score:.0f}%")
+            st.error(f"Datakvalitet: {quality_score:.0f}%")

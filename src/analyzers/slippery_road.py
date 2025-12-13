@@ -99,7 +99,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
         if surface_temp is not None and dew_point is not None:
             frost_risk = surface_temp <= 0 and abs(temp - dew_point) < 2
             if frost_risk:
-                factors.append(f"🧊 Rimfrost-risiko (bakketemperatur: {surface_temp:.1f}°C)")
+                factors.append(f"Rimfrost-risiko (bakketemperatur: {surface_temp:.1f}°C)")
 
         if frost_risk:
             return AnalysisResult(
@@ -115,14 +115,14 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
                 risk_level=RiskLevel.LOW,
                 message=f"Sommerregn ({precip:.1f} mm/h) - normalt gode forhold",
                 scenario="Sommerregn",
-                factors=[f"🌧️ Nedbør: {precip:.1f} mm/h"]
+                factors=[f"Nedbør: {precip:.1f} mm/h"]
             )
 
         return AnalysisResult(
             risk_level=RiskLevel.LOW,
             message=f"Normale sommerforhold ({temp:.1f}°C)",
             scenario="Sommer",
-            factors=["✅ Sommersesong - lav glattføre-risiko"]
+            factors=["Sommersesong - lav glattføre-risiko"]
         )
 
     def _winter_analysis(
@@ -155,7 +155,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
                 risk_level=RiskLevel.LOW,
                 message="Fersk nysnø - naturlig strøing",
                 scenario="Snøfall",
-                factors=["🌨️ Økende snødybde - gir friksjon"],
+                factors=["Økende snødybde - gir friksjon"],
                 details=details
             )
 
@@ -175,11 +175,11 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
 
         # Samle faktorer
         if mild_weather:
-            factors.append(f"🌡️ Mildvær ({temp:.1f}°C)")
+            factors.append(f"Mildvær ({temp:.1f}°C)")
         if existing_snow:
-            factors.append(f"❄️ Snødekke ({snow:.0f} cm)")
+            factors.append(f"Snødekke ({snow:.0f} cm)")
         if rain_now:
-            factors.append(f"🌧️ Nedbør ({precip:.1f} mm/h)")
+            factors.append(f"Nedbør ({precip:.1f} mm/h)")
 
         # NY PRIMÆR LOGIKK: Bakketemperatur-basert is-risiko
         hidden_freeze = False
@@ -192,14 +192,14 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
                 and surface_temp <= thresholds.hidden_freeze_surface_max
             )
             if hidden_freeze:
-                factors.insert(0, f"⚠️ SKJULT FRYSEFARE: Luft {temp:.1f}°C, bakke {surface_temp:.1f}°C")
+                factors.insert(0, f"SKJULT FRYSEFARE: Luft {temp:.1f}°C, bakke {surface_temp:.1f}°C")
             elif ice_risk:
-                factors.append(f"🧊 Kald bakke ({surface_temp:.1f}°C)")
+                factors.append(f"Kald bakke ({surface_temp:.1f}°C)")
 
             # Vis temperaturforskjell
             temp_diff = temp - surface_temp
             if temp_diff > 2:
-                factors.append(f"📉 Bakke {temp_diff:.1f}°C kaldere enn luft")
+                factors.append(f"Bakke {temp_diff:.1f}°C kaldere enn luft")
 
         # Rimfrost-risiko
         frost_risk = False
@@ -211,12 +211,12 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
                 and (wind is None or wind <= thresholds.rimfrost_wind_max)
             )
             if frost_risk:
-                factors.append(f"🌫️ Rimfrost-forhold (duggpunkt: {dew_point:.1f}°C)")
+                factors.append(f"Rimfrost-forhold (duggpunkt: {dew_point:.1f}°C)")
 
         # Temperaturovergang
         temp_rising = self._check_temp_rise(df)
         if temp_rising:
-            factors.append("📈 Temperaturøkning siste 6t")
+            factors.append("Temperaturøkning siste 6t")
 
         # SCENARIO 0: Skjult frysefare (KRITISK - ofte oversett!)
         if hidden_freeze:
@@ -244,7 +244,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
                     risk_level=RiskLevel.MEDIUM,
                     message=f"Regn ({precip:.1f} mm/h) på fersk snø - slaps, ikke is",
                     scenario="Regn på snø",
-                    factors=factors + ["❄️ Fersk snø modererer glattføre"],
+                    factors=factors + ["Fersk snø modererer glattføre"],
                     details=details
                 )
             return AnalysisResult(
@@ -281,7 +281,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
             if frost_risk or melt_indicator:
                 extra = []
                 if melt_indicator:
-                    extra.append("📉 Smelting siste 6t")
+                    extra.append("Smelting siste 6t")
                 return AnalysisResult(
                     risk_level=RiskLevel.MEDIUM,
                     message=f"Moderat risiko: Kald bakke ({surface_temp:.1f}°C) etter smelting/rimfrost",
@@ -293,7 +293,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
                 risk_level=RiskLevel.LOW,
                 message="Lav risiko: Tørr vinterføre (kald bakke under snø)",
                 scenario="Tørr vinterføre",
-                factors=factors if factors else ["✅ Ingen tegn til isdannelse på veien"],
+                factors=factors if factors else ["Ingen tegn til isdannelse på veien"],
                 details=details
             )
 
@@ -323,7 +323,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
                 risk_level=RiskLevel.LOW,
                 message=f"Stabile vinterforhold: Kaldt ({temp:.1f}°C) og tørt",
                 scenario="Stabilt kaldt",
-                factors=factors + ["✅ Tørr snø ved god frost"],
+                factors=factors + ["Tørr snø ved god frost"],
                 details=details
             )
 
@@ -332,7 +332,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
             risk_level=RiskLevel.LOW,
             message="Lav glattføre-risiko. Normale vinterforhold.",
             scenario="Normal",
-            factors=factors if factors else ["✅ Ingen kritiske kombinasjoner"],
+            factors=factors if factors else ["Ingen kritiske kombinasjoner"],
             details=details
         )
 

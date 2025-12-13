@@ -550,7 +550,7 @@ async def test_enhanced_service():
 
     try:
         # Test sanntids data
-        print("\n📡 SANNTIDS VÆRFORHOLD:")
+        print("\nSANNTIDS VÆRFORHOLD:")
         current = await service.get_real_time_conditions()
 
         for key, value in current.items():
@@ -560,7 +560,7 @@ async def test_enhanced_service():
                 print(f"  {key}: {value}")
 
         # Test snøfokk-analyse
-        print("\n❄️ SNØFOKK-ANALYSE (siste 6 timer):")
+        print("\nSNØFOKK-ANALYSE (siste 6 timer):")
         analysis = await service.analyze_snowdrift_conditions(hours_back=6)
 
         if 'error' not in analysis:
@@ -580,10 +580,10 @@ async def test_enhanced_service():
             print(f"  Anbefaling: {pred['recommended_action']}")
             print(f"  Trend: {pred['deterioration_trend']}")
 
-        print("\n✅ Utvidet værservice fungerer!")
+        print("\nUtvidet værservice fungerer!")
 
     except Exception as e:
-        print(f"❌ Feil under testing: {e}")
+        print(f"Feil under testing: {e}")
 
 
 if __name__ == '__main__':

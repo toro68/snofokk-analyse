@@ -57,7 +57,7 @@ class FreshSnowAnalyzer(BaseAnalyzer):
             risk_level=RiskLevel.LOW,
             message="Sommersesong - ingen nysnø-varsling",
             scenario="Sommer",
-            factors=["☀️ Utenfor vintersesong"]
+            factors=["Utenfor vintersesong"]
         )
 
     def _winter_analysis(self, df: pd.DataFrame) -> AnalysisResult:
@@ -91,17 +91,17 @@ class FreshSnowAnalyzer(BaseAnalyzer):
         }
 
         # Bygg faktor-liste
-        factors.append(f"❄️ Snødybde: {snow_now:.0f} cm")
+        factors.append(f"Snødybde: {snow_now:.0f} cm")
         if snow_change > 0:
-            factors.append(f"📈 Økt {snow_change:.1f} cm siste 6t")
+            factors.append(f"Økt {snow_change:.1f} cm siste 6t")
         elif snow_change < -2:
-            factors.append(f"📉 Redusert {abs(snow_change):.1f} cm siste 6t (smelting)")
+            factors.append(f"Redusert {abs(snow_change):.1f} cm siste 6t (smelting)")
 
         if active_snowfall:
-            factors.append(f"🌨️ Aktivt snøfall: {precip:.1f} mm/t")
+            factors.append(f"Aktivt snøfall: {precip:.1f} mm/t")
 
         if is_snow and dew_point is not None:
-            factors.append(f"🌡️ Duggpunkt {dew_point:.1f}°C < 0 → snø")
+            factors.append(f"Duggpunkt {dew_point:.1f}°C < 0 → snø")
 
         # Klassifiser risiko
         if snow_change >= thresholds.snow_increase_critical:
