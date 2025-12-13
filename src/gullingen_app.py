@@ -32,7 +32,7 @@ from src.analyzers import (
 )
 from src.config import settings
 from src.frost_client import FrostAPIError, FrostClient
-from src.netatmo_client import NetatmoClient
+from src.netatmo_client import NetatmoClient, NetatmoStation
 from src.plowing_service import (
     PlowingInfo,
     get_maintenance_suppress_hours,
@@ -548,11 +548,28 @@ def main():
 
 @st.cache_data(ttl=300)  # Cache i 5 minutter
 def fetch_netatmo_stations():
-    """Hent Netatmo-stasjoner (cached)."""
+    """Hent Netatmo-stasjoner (cached).
+
+    Viktig: `st.cache_data` krever at returverdien kan serialiseres.
+    Derfor cacher vi kun en liste med enkle dicts, ikke NetatmoStation-objekter.
+    """
     try:
         client = get_netatmo_client()
         if client.authenticate():
-            return client.get_fjellbergsskardet_area(radius_km=10)
+            stations = client.get_fjellbergsskardet_area(radius_km=10)
+            rows: list[dict] = []
+            for s in stations:
+                rows.append({
+                    "station_id": s.station_id,
+                    "name": s.name,
+                    "lat": s.lat,
+                    "lon": s.lon,
+                    "altitude": s.altitude,
+                    "temperature": s.temperature,
+                    "humidity": s.humidity,
+                    "timestamp": s.timestamp.isoformat() if s.timestamp else None,
+                })
+            return rows
     except Exception as e:
         logger.warning(f"Netatmo feil: {e}")
     return []
@@ -569,7 +586,29 @@ def render_netatmo_map():
 
     st.subheader("Temperaturkart")
 
-    stations = fetch_netatmo_stations()
+    cached_rows = fetch_netatmo_stations()
+
+    stations: list[NetatmoStation] = []
+    for r in cached_rows:
+        ts = None
+        if r.get("timestamp"):
+            try:
+                ts = datetime.fromisoformat(r["timestamp"])
+            except Exception:
+                ts = None
+
+        stations.append(
+            NetatmoStation(
+                station_id=str(r.get("station_id") or ""),
+                name=str(r.get("name") or ""),
+                lat=float(r.get("lat") or 0.0),
+                lon=float(r.get("lon") or 0.0),
+                altitude=int(r.get("altitude") or 0),
+                temperature=r.get("temperature"),
+                humidity=r.get("humidity"),
+                timestamp=ts,
+            )
+        )
 
     if not stations:
         st.info("Ingen Netatmo-data tilgjengelig. Sjekk at NETATMO_REFRESH_TOKEN er satt.")
