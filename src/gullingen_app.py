@@ -132,7 +132,7 @@ def render_key_metrics(df, plowing_info: PlowingInfo):
     """Render current weather metrics."""
     latest = df.iloc[-1]
 
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
         temp = latest.get('air_temperature')
@@ -164,24 +164,39 @@ def render_key_metrics(df, plowing_info: PlowingInfo):
         precip = latest.get('precipitation_1h', 0)
         st.metric("Nedbør", f"{precip:.1f} mm/h")
 
-    with col5:
-        if plowing_info.last_plowing:
-            st.metric(f"{plowing_info.status_emoji} Siste vedlikehold", plowing_info.formatted_time)
 
-            details_parts: list[str] = []
-            if plowing_info.last_event_type:
-                details_parts.append(f"Type: {plowing_info.last_event_type}")
-            if plowing_info.last_work_types:
-                details_parts.append(f"Arbeid: {', '.join(plowing_info.last_work_types)}")
-            if plowing_info.last_operator_id:
-                details_parts.append(f"Operatør: {plowing_info.last_operator_id}")
+def render_maintenance_top(plowing_info: PlowingInfo, suppress_alerts: bool) -> None:
+    """Viser 'Siste vedlikehold' øverst og forklarer nullstilling av varsler."""
 
-            if details_parts:
-                st.caption(" | ".join(details_parts))
+    suppress_hours = get_maintenance_suppress_hours()
+
+    if plowing_info.last_plowing:
+        st.metric(f"{plowing_info.status_emoji} Siste vedlikehold", plowing_info.formatted_time)
+
+        details_parts: list[str] = []
+        if plowing_info.last_work_types:
+            details_parts.append(f"Arbeid: {', '.join(plowing_info.last_work_types)}")
+        if plowing_info.last_event_type:
+            details_parts.append(f"Type: {plowing_info.last_event_type}")
+        if plowing_info.last_operator_id:
+            details_parts.append(f"Operatør: {plowing_info.last_operator_id}")
+
+        if suppress_alerts and plowing_info.hours_since is not None:
+            remaining = max(0.0, suppress_hours - float(plowing_info.hours_since))
+            details_parts.append(
+                f"Farevarsler nullstilles i {suppress_hours:.1f}t etter brøyting/strøing (nå: {remaining:.1f}t igjen)"
+            )
         else:
-            st.metric("🚜 Siste vedlikehold", "Ingen registrert")
-            if plowing_info.error:
-                st.caption(plowing_info.error)
+            details_parts.append(
+                f"Ved brøyting/strøing nullstilles farevarsler i {suppress_hours:.1f}t"
+            )
+
+        if details_parts:
+            st.caption(" | ".join(details_parts))
+    else:
+        st.metric("🚜 Siste vedlikehold", "Ingen registrert")
+        if plowing_info.error:
+            st.caption(plowing_info.error)
 
 
 def get_overall_status(results: dict) -> tuple[str, str, RiskLevel]:
@@ -406,26 +421,15 @@ def main():
     # Overall status banner
     status_title, status_msg, overall_risk = get_overall_status(results)
 
+    # Vis kun banner når det faktisk er noe å reagere på.
+    # Ved normale forhold lar vi "Varsler nå" tale for seg.
     if overall_risk == RiskLevel.HIGH:
         st.error(f"## {status_title}\n{status_msg}")
     elif overall_risk == RiskLevel.MEDIUM:
         st.warning(f"## {status_title}\n{status_msg}")
-    else:
-        st.success(f"## {status_title}\n{status_msg}")
 
-    if suppress_alerts:
-        suppress_hours = get_maintenance_suppress_hours()
-        if plowing_info.hours_since is not None:
-            remaining = max(0.0, suppress_hours - float(plowing_info.hours_since))
-            st.info(
-                "🚜 Vedlikehold registrert – farevarsler stanset "
-                f"({plowing_info.hours_since:.1f}t siden, {remaining:.1f}t igjen av {suppress_hours:.1f}t)"
-            )
-        else:
-            st.info(
-                "🚜 Vedlikehold registrert – farevarsler stanset "
-                f"(vinduslengde {suppress_hours:.1f}t)"
-            )
+    # Flyttet opp: Siste vedlikehold (erstatter tidligere "NORMALE FORHOLD"-banner)
+    render_maintenance_top(plowing_info, suppress_alerts)
 
     st.divider()
 
