@@ -16,6 +16,10 @@ import matplotlib.pyplot as plt
 import streamlit as st
 
 from src.analyzers import RiskLevel, SlipperyRoadAnalyzer, SnowdriftAnalyzer
+from src.components.smoreguide import (
+    generate_wax_recommendation,
+    get_sources_section_markdown,
+)
 from src.config import settings
 from src.frost_client import FrostAPIError, FrostClient
 from src.visualizations import WeatherPlots
@@ -125,6 +129,9 @@ def main():
     # Nøkkelverdier
     render_key_metrics(df)
 
+    # Smøreguide
+    render_wax_guide(df)
+
     st.divider()
 
     # Grafer
@@ -215,6 +222,49 @@ def render_key_metrics(df):
     with col4:
         precip = latest.get('precipitation_1h', 0)
         st.metric("Nedbør", f"{precip:.1f} mm/h")
+
+
+def render_wax_guide(df):
+    """Render en kompakt smøreguide under nåværende forhold."""
+
+    st.subheader("Smøreguide")
+
+    try:
+        rec = generate_wax_recommendation(df)
+    except (KeyError, ValueError, TypeError) as e:
+        st.info(f"Smøreguide utilgjengelig: {e}")
+        return
+
+    if rec is None:
+        st.info("Smøreguide utilgjengelig: mangler nok ferske værdata.")
+        return
+
+    st.markdown(f"**{rec.headline}**")
+    if rec.swix_products:
+        st.write("Anbefalt:")
+        for product in rec.swix_products:
+            st.write(f"• {product}")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.caption(f"Serie: {rec.swix_family}")
+        st.caption(f"Temperatur: {rec.temp_band}")
+    with col2:
+        st.caption(f"Vurdering: {rec.condition}")
+        st.caption(f"Sikkerhet: {rec.confidence:.0%}")
+
+    if rec.factors:
+        with st.expander("Nøkkelfaktorer"):
+            for factor in rec.factors[:3]:
+                st.write(f"• {factor}")
+
+    if rec.instructions:
+        with st.expander("Fremgangsmåte"):
+            for step in rec.instructions:
+                st.write(f"• {step}")
+
+    with st.expander("Kilder og datagrunnlag"):
+        st.markdown(get_sources_section_markdown())
 
 
 if __name__ == "__main__":

@@ -23,4 +23,4 @@ if [ -f "$PROJECT_DIR/requirements.txt" ]; then
 fi
 
 echo "Virtual environment activated and ready!"
-echo "You can now run: streamlit run src/live_conditions_app.py"
+echo "You can now run: streamlit run app.py"
