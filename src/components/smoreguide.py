@@ -235,7 +235,19 @@ def generate_wax_recommendation(df: pd.DataFrame) -> WaxRecommendation | None:
     if df is None or df.empty:
         return None
 
-    latest = df.iloc[-1]
+    # Bruk siste rad som faktisk har temperaturdata. I praksis kan siste måling
+    # mangle både luft- og bakketemperatur, og da skal ikke hele smøreguiden
+    # "forsvinne".
+    latest = None
+    for _, row in df.iloc[::-1].iterrows():
+        air_temp_candidate = _safe_float(row, "air_temperature")
+        surface_temp_candidate = _safe_float(row, "surface_temperature")
+        if air_temp_candidate is not None or surface_temp_candidate is not None:
+            latest = row
+            break
+
+    if latest is None:
+        return None
 
     air_temp = _safe_float(latest, "air_temperature")
     surface_temp = _safe_float(latest, "surface_temperature")

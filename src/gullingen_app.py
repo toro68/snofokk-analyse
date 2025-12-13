@@ -163,16 +163,18 @@ def render_key_metrics(df, plowing_info: PlowingInfo):
 def render_wax_guide(df: pd.DataFrame) -> None:
     """Vis en kompakt smøreguide under værdata."""
 
+    st.markdown("#### Smøreguide")
+
     try:
         rec = generate_wax_recommendation(df)
     except (KeyError, ValueError, TypeError) as e:
         logger.debug("Smøreguide feilet: %s", e)
+        st.info("Smøreguide utilgjengelig: mangler eller ugyldige værdata.")
         return
 
     if rec is None:
+        st.info("Smøreguide utilgjengelig: mangler nok ferske værdata.")
         return
-
-    st.markdown("#### Smøreguide")
     st.caption(f"{rec.swix_family} | {rec.temp_band} | {rec.condition}")
 
     st.write(f"**Anbefaling:** {rec.headline}")
