@@ -99,6 +99,29 @@ class TestMaintenanceApiClient:
         assert event.event_type == "SCRAPE"
         assert event.work_types == ["skraping"]
 
+    @patch('src.plowman_client.requests.Session.get')
+    def test_get_latest_prefers_completed_time(self, mock_get):
+        """Vinduet for nullstilling skal telles fra ferdig vedlikehold."""
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "event_id": "abc123",
+            "operator_id": "operator_42",
+            # Start/registrert tidspunkt
+            "timestamp_utc": "2025-11-27T10:55:38.911Z",
+            # Ferdig tidspunkt (skal brukes)
+            "completed_at_utc": "2025-11-27T11:20:00.000Z",
+            "type": "SCRAPE",
+            "status": "COMPLETED",
+        }
+        mock_get.return_value = mock_response
+
+        client = MaintenanceApiClient(base_url="https://example.web.app", token="token")
+        event = client.get_last_maintenance_time()
+
+        assert event is not None
+        assert event.timestamp.isoformat().startswith("2025-11-27T11:20:00")
+
 
 class TestPlowingService:
     """Tester for PlowingService som håndterer brøytedata med caching."""

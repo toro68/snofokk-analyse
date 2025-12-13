@@ -123,7 +123,15 @@ class MaintenanceApiClient:
                 return self._get_last_from_plowman_share()
             return None
 
-        ts_str = payload.get("timestamp_utc")
+        # Viktig: suppression-window skal telles fra FERDIG vedlikehold.
+        # API kan eksponere flere felt; prioriter "finished/completed" før generell timestamp.
+        ts_str = (
+            payload.get("finished_at_utc")
+            or payload.get("completed_at_utc")
+            or payload.get("ended_at_utc")
+            or payload.get("end_timestamp_utc")
+            or payload.get("timestamp_utc")
+        )
         ts = _parse_iso_utc(ts_str)
         if not ts:
             return None
