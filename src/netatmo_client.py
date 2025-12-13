@@ -10,7 +10,7 @@ API-dokumentasjon: https://dev.netatmo.com/apidocumentation/weather
 import logging
 import os
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import requests
 
@@ -64,7 +64,9 @@ class NetatmoClient:
         """
         self.client_id = client_id or os.getenv("NETATMO_CLIENT_ID")
         self.client_secret = client_secret or os.getenv("NETATMO_CLIENT_SECRET")
-        self.access_token = None
+        self.access_token: str | None = None
+        self.access_token_expires_at: datetime | None = None
+        self._session = requests.Session()
 
     def get_public_data(
         self,
@@ -109,7 +111,7 @@ class NetatmoClient:
         }
 
         try:
-            response = requests.get(url, params=params, headers=headers, timeout=10)
+            response = self._session.get(url, params=params, headers=headers, timeout=10)
             response.raise_for_status()
             data = response.json()
 
@@ -160,6 +162,13 @@ class NetatmoClient:
         Returns:
             True hvis autentisering lyktes
         """
+        # Hvis vi allerede har en gyldig token, ikke forny unødig.
+        if self.access_token and self.access_token_expires_at:
+            now = datetime.now(tz=UTC)
+            # Litt buffer for å unngå race rundt utløp
+            if now < (self.access_token_expires_at - timedelta(seconds=60)):
+                return True
+
         if not self.client_id or not self.client_secret:
             logger.warning("Netatmo: Mangler client_id eller client_secret")
             return False
@@ -181,11 +190,20 @@ class NetatmoClient:
         }
 
         try:
-            response = requests.post(url, data=data, timeout=10)
+            response = self._session.post(url, data=data, timeout=10)
             response.raise_for_status()
 
             token_data = response.json()
             self.access_token = token_data.get("access_token")
+
+            expires_in = token_data.get("expires_in")
+            try:
+                if expires_in is not None:
+                    self.access_token_expires_at = datetime.now(tz=UTC) + timedelta(seconds=int(expires_in))
+                else:
+                    self.access_token_expires_at = None
+            except (TypeError, ValueError):
+                self.access_token_expires_at = None
 
             # Lagre ny refresh_token for neste gang
             new_refresh = token_data.get("refresh_token")

@@ -546,12 +546,18 @@ def main():
 def fetch_netatmo_stations():
     """Hent Netatmo-stasjoner (cached)."""
     try:
-        client = NetatmoClient()
+        client = get_netatmo_client()
         if client.authenticate():
             return client.get_fjellbergsskardet_area(radius_km=10)
     except Exception as e:
         logger.warning(f"Netatmo feil: {e}")
     return []
+
+
+@st.cache_resource
+def get_netatmo_client() -> NetatmoClient:
+    """Gjenbruk Netatmo-klient mellom reruns for mindre overhead."""
+    return NetatmoClient()
 
 
 def render_netatmo_map():
