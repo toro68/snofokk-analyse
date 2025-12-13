@@ -31,6 +31,7 @@ from src.analyzers import (
     SnowdriftAnalyzer,
 )
 from src.config import settings
+from src.components.smoreguide import generate_wax_recommendation, get_sources_section_markdown
 from src.frost_client import FrostAPIError, FrostClient
 from src.netatmo_client import NetatmoClient, NetatmoStation
 from src.plowing_service import (
@@ -157,6 +158,41 @@ def render_key_metrics(df, plowing_info: PlowingInfo):
     with col4:
         precip = latest.get('precipitation_1h', 0)
         st.metric("Nedbør", f"{precip:.1f} mm/h")
+
+
+def render_wax_guide(df: pd.DataFrame) -> None:
+    """Vis en kompakt smøreguide under værdata."""
+
+    try:
+        rec = generate_wax_recommendation(df)
+    except (KeyError, ValueError, TypeError) as e:
+        logger.debug("Smøreguide feilet: %s", e)
+        return
+
+    if rec is None:
+        return
+
+    st.markdown("#### Smøreguide")
+    st.caption(f"{rec.swix_family} | {rec.temp_band} | {rec.condition}")
+
+    st.write(f"**Anbefaling:** {rec.headline}")
+    if rec.swix_products:
+        st.write("Produkter:")
+        for product in rec.swix_products:
+            st.write(f"- {product}")
+
+    if rec.factors:
+        top_factors = [f for f in rec.factors if f][:3]
+        if top_factors:
+            st.caption("Nøkkelfaktorer: " + " | ".join(top_factors))
+
+    if rec.instructions:
+        with st.expander("Fremgangsmåte", expanded=False):
+            for step in rec.instructions:
+                st.write(f"- {step}")
+
+    with st.expander("Kilder og datagrunnlag", expanded=False):
+        st.markdown(get_sources_section_markdown())
 
 
 def render_maintenance_top(plowing_info: PlowingInfo, suppress_alerts: bool) -> None:
@@ -452,6 +488,8 @@ def main():
         logger.warning("Operational logger failed: %s", e)
 
     render_key_metrics(df, plowing_info)
+
+    render_wax_guide(df)
 
     st.divider()
 

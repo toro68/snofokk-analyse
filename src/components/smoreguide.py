@@ -3,6 +3,15 @@ Smøreguide basert på Swix sine temperatur- og fuktighetssoner.
 
 Modulen analyserer siste tilgjengelige værdata og anbefaler
 Swix-produkter som passer forholdene på Gullingen.
+
+Kilder og datagrunnlag (som lagt inn i koden her):
+- Swix V-serien hardvoks: produktspesifikasjoner (to temperaturintervaller per voks: nysnø vs omdannet snø)
+- Swix KX-serien klister: temperaturintervaller for klister
+- Swix Wax Manual/"Grip Tip" og Swix School: tommelfingerregler for luftfuktighet og snøtransformasjon
+
+Merk om verifisering:
+- Denne modulen har ikke tilgang til eksterne PDF-er. Tallene under må derfor betraktes som
+    "datagrunnlag slik det er lagt inn i kode" og bør sammenlignes mot dine kildedokumenter ved behov.
 """
 
 from __future__ import annotations
@@ -11,6 +20,198 @@ from dataclasses import dataclass
 from typing import Iterable
 
 import pandas as pd
+
+
+@dataclass(frozen=True)
+class _TempBand:
+    min_c: float
+    max_c: float
+
+    def contains(self, temp_c: float) -> bool:
+        return self.min_c <= temp_c <= self.max_c
+
+    def midpoint(self) -> float:
+        return (self.min_c + self.max_c) / 2.0
+
+
+@dataclass(frozen=True)
+class _WaxSpec:
+    code: str
+    name: str
+    new_snow: _TempBand
+    transformed: _TempBand
+    comment: str = ""
+
+
+@dataclass(frozen=True)
+class _KlisterSpec:
+    code: str
+    name: str
+    temp: _TempBand
+    use_case: str = ""
+
+
+def get_sources_section_markdown() -> str:
+    """Returner en kort kildeseksjon for visning i UI."""
+
+    return (
+        "**Kilder og datagrunnlag**\n"
+        "- Swix V-serien hardvoks: produktspesifikasjoner (to temp-intervaller per voks: nysnø vs omdannet snø)\n"
+        "- Swix KX-serien klister: temperaturintervaller for klister\n"
+        "- Swix Wax Manual / \"Grip Tip\" og Swix School: tommelfingerregler for luftfuktighet og snøtransformasjon\n\n"
+        "**Bekreftelse av data**\n"
+        "Tallene som brukes av smøreguiden er lagt inn i koden som temperaturintervaller per voks/klister. "
+        "Hvis du ønsker 100% samsvar med en spesifikk PDF-utgave, sammenlign intervallene under mot dokumentet du har."  # noqa: E501
+    )
+
+
+# V-serien hardvoks (temperaturintervaller) – lagt inn basert på tallene du oppga.
+_V_SERIES: list[_WaxSpec] = [
+    _WaxSpec(
+        code="V20",
+        name="Grønn",
+        new_snow=_TempBand(min_c=-20.0, max_c=-10.0),
+        transformed=_TempBand(min_c=-15.0, max_c=-8.0),
+        comment="For svært kaldt vær. Høy slitestyrke.",
+    ),
+    _WaxSpec(
+        code="V30",
+        name="Blå",
+        new_snow=_TempBand(min_c=-10.0, max_c=-2.0),
+        transformed=_TempBand(min_c=-15.0, max_c=-5.0),
+        comment="Standardvoks for minusgrader.",
+    ),
+    _WaxSpec(
+        code="V40",
+        name="Blå Extra",
+        new_snow=_TempBand(min_c=-7.0, max_c=-1.0),
+        transformed=_TempBand(min_c=-10.0, max_c=-3.0),
+        comment="Dekker mye av normalt vinterføre.",
+    ),
+    _WaxSpec(
+        code="V45",
+        name="Fiolett",
+        new_snow=_TempBand(min_c=-3.0, max_c=0.0),
+        transformed=_TempBand(min_c=-6.0, max_c=-2.0),
+        comment="Brukes når blå extra er for hard.",
+    ),
+    _WaxSpec(
+        code="V55",
+        name="Rød Spesial",
+        new_snow=_TempBand(min_c=0.0, max_c=1.0),
+        transformed=_TempBand(min_c=-2.0, max_c=0.0),
+        comment="For fuktig nysnø. Krever forsiktighet for å unngå ising.",
+    ),
+    _WaxSpec(
+        code="V60",
+        name="Rød/Sølv",
+        new_snow=_TempBand(min_c=0.0, max_c=3.0),
+        transformed=_TempBand(min_c=-1.0, max_c=1.0),
+        comment="For svært våt nysnø. Aluminium for å hindre ising.",
+    ),
+]
+
+
+# KX-serien klister (temperaturintervaller) – lagt inn basert på tallene du oppga.
+_KX_SERIES: list[_KlisterSpec] = [
+    _KlisterSpec(
+        code="KX30",
+        name="Blå Isklister",
+        temp=_TempBand(min_c=-12.0, max_c=0.0),
+        use_case="Is og hardt skareføre.",
+    ),
+    _KlisterSpec(
+        code="KX35",
+        name="Fiolett Spesial",
+        temp=_TempBand(min_c=-4.0, max_c=1.0),
+        use_case="Frossen grovkornet snø.",
+    ),
+    _KlisterSpec(
+        code="KX40S",
+        name="Sølv",
+        temp=_TempBand(min_c=-4.0, max_c=2.0),
+        use_case="Omdannet finkornet snø. God når føret skifter.",
+    ),
+    _KlisterSpec(
+        code="K22",
+        name="Universal",
+        temp=_TempBand(min_c=-3.0, max_c=10.0),
+        use_case="Grovkornet snø. Dekker mye av gammelt føre.",
+    ),
+    _KlisterSpec(
+        code="KX65",
+        name="Rød",
+        temp=_TempBand(min_c=1.0, max_c=5.0),
+        use_case="Våt grovkornet snø.",
+    ),
+]
+
+
+def _select_v_series(temp_c: float, *, snow_is_new: bool, humidity_pct: float | None) -> _WaxSpec:
+    """Velg voks fra V-serien basert på temp + snøtype, med enkel fuktighetskorreksjon."""
+
+    candidates: list[_WaxSpec] = []
+    for wax in _V_SERIES:
+        band = wax.new_snow if snow_is_new else wax.transformed
+        if band.contains(temp_c):
+            candidates.append(wax)
+
+    # Fallback hvis temp faller utenfor alle intervaller: bruk nærmeste voks.
+    if not candidates:
+        def dist(w: _WaxSpec) -> float:
+            band = w.new_snow if snow_is_new else w.transformed
+            if temp_c < band.min_c:
+                return band.min_c - temp_c
+            if temp_c > band.max_c:
+                return temp_c - band.max_c
+            return 0.0
+
+        return min(_V_SERIES, key=dist)
+
+    # Velg voks hvis midtpunkt er nærmest temperaturen.
+    def midpoint_dist(w: _WaxSpec) -> float:
+        band = w.new_snow if snow_is_new else w.transformed
+        return abs(temp_c - band.midpoint())
+
+    candidates = sorted(candidates, key=midpoint_dist)
+    base = candidates[0]
+
+    # Swix-regel (forenklet): høy fuktighet -> ett hakk mykere/varmere. Lav fuktighet -> ett hakk kaldere.
+    if humidity_pct is None:
+        return base
+
+    humidity_step = 0
+    if humidity_pct > 80.0:
+        humidity_step = 1
+    elif humidity_pct < 50.0:
+        humidity_step = -1
+
+    if humidity_step == 0:
+        return base
+
+    ordered = _V_SERIES  # kald -> varm
+    base_index = ordered.index(base)
+    target_index = max(0, min(len(ordered) - 1, base_index + humidity_step))
+    return ordered[target_index]
+
+
+def _select_klister(temp_c: float) -> _KlisterSpec:
+    """Velg klister basert på temperatur."""
+
+    candidates = [k for k in _KX_SERIES if k.temp.contains(temp_c)]
+    if not candidates:
+        # Fallback til nærmeste
+        def dist(k: _KlisterSpec) -> float:
+            if temp_c < k.temp.min_c:
+                return k.temp.min_c - temp_c
+            if temp_c > k.temp.max_c:
+                return temp_c - k.temp.max_c
+            return 0.0
+
+        return min(_KX_SERIES, key=dist)
+
+    # Nærmeste midtpunkt
+    return min(candidates, key=lambda k: abs(temp_c - k.temp.midpoint()))
 
 
 @dataclass
@@ -56,8 +257,13 @@ def generate_wax_recommendation(df: pd.DataFrame) -> WaxRecommendation | None:
         and surface_temp < 0
     )
 
-    wet_snow = (effective_temp >= 0.5) or (recent_precip is not None and recent_precip >= 0.8)
-    humid_snow = humidity is not None and humidity >= 85
+    snow_is_new = bool(new_snow_last_hours)
+
+    wet_snow = (
+        (effective_temp >= 0.5)
+        or (recent_precip is not None and recent_precip >= 0.8)
+        or (dew_point is not None and dew_point > 0.0)
+    )
 
     metrics = {
         "air_temperature": air_temp,
@@ -77,142 +283,43 @@ def generate_wax_recommendation(df: pd.DataFrame) -> WaxRecommendation | None:
         factors.append(f"Siste 3t nedbør {recent_precip:.1f} mm/h")
     if snow_depth is not None:
         factors.append(f"Snødybde {snow_depth:.0f} cm")
-    if new_snow_last_hours:
-        factors.append("Nysnø siste 6 timer")
+    if snow_is_new:
+        factors.append("Nysnø (indikasjon: økning siste timer)")
+    else:
+        factors.append("Omdannet/gammel snø (ingen tydelig nysnø-økning)")
 
-    if effective_temp <= -10:
-        return WaxRecommendation(
-            headline="Kald tørrsnø",
-            swix_family="Hardvoks – grønn/blå sone",
-            swix_products=["Swix V05 Polar", "Swix V20 Green"],
-            temp_band="-25 til -10°C",
-            condition="Tørr og kald snø",
-            instructions=_hardwax_instructions("VG30", layers=3),
-            factors=[f"Bakke/luft {effective_temp:.1f}°C", *factors],
-            confidence=confidence,
-            metrics=metrics,
-        )
+    # Forenklet tommelfingerregel: klister når snøen er omdannet og forholdene er fuktige/nær null.
+    use_klister = (not snow_is_new) and (wet_snow or effective_temp >= -1.0 or freeze_thaw)
 
-    if effective_temp <= -3:
-        if humid_snow:
-            return WaxRecommendation(
-                headline="Kald og fuktig nysnø",
-                swix_family="Hardvoks – VR blå",
-                swix_products=["Swix VR30", "Swix VR40 Blue Extra"],
-                temp_band="-8 til -2°C",
-                condition="Fuktig/snøfokk med nye krystaller",
-                instructions=_hardwax_instructions("VG35", layers=4),
-                factors=[f"Bakke/luft {effective_temp:.1f}°C", "Høy fuktighet", *factors],
-                confidence=confidence,
-                metrics=metrics,
-            )
+    if use_klister:
+        klister = _select_klister(effective_temp)
+        headline = "Klister" if not freeze_thaw else "Is/skare-klister"
+        swix_family = "Klister (KX/K)"
+        products = [f"Swix {klister.code} {klister.name}"]
+        condition = klister.use_case or "Klisterføre"
         return WaxRecommendation(
-            headline="Blå fører",
-            swix_family="Hardvoks – V blå",
-            swix_products=["Swix V30", "Swix V40 Blue Extra"],
-            temp_band="-8 til -3°C",
-            condition="Tørr, eldre snø",
-            instructions=_hardwax_instructions("VG30", layers=3),
-            factors=[f"Bakke/luft {effective_temp:.1f}°C", *factors],
-            confidence=confidence,
-            metrics=metrics,
-        )
-
-    if effective_temp < -1:
-        if humid_snow or new_snow_last_hours:
-            return WaxRecommendation(
-                headline="Fuktig violett",
-                swix_family="Hardvoks – VR fiolett",
-                swix_products=["Swix VR45", "Swix VR50"],
-                temp_band="-3 til -1°C",
-                condition="Fersk snø nær null",
-                instructions=_hardwax_instructions("VG35", layers=4),
-                factors=[f"Bakke/luft {effective_temp:.1f}°C", "Fersk snø", *factors],
-                confidence=confidence,
-                metrics=metrics,
-            )
-        return WaxRecommendation(
-            headline="Violett på gammel snø",
-            swix_family="Hardvoks – V fiolett",
-            swix_products=["Swix V45", "Swix V50"],
-            temp_band="-3 til -1°C",
-            condition="Gammel eller omdannet snø",
-            instructions=_hardwax_instructions("VG30", layers=3),
-            factors=[f"Bakke/luft {effective_temp:.1f}°C", *factors],
-            confidence=confidence,
-            metrics=metrics,
-        )
-
-    if effective_temp <= 1.0:
-        if wet_snow or humid_snow:
-            return WaxRecommendation(
-                headline="Nullføre med fukt",
-                swix_family="Klister + dekning",
-                swix_products=["Swix KX40S Silver", "Swix VR50 som dekning"],
-                temp_band="-1 til +1°C",
-                condition="Våt/fuktig snø ved null",
-                instructions=_klister_instructions(topcoat="VR50"),
-                factors=[
-                    f"Bakke/luft {effective_temp:.1f}°C",
-                    "Fuktig snø",
-                    *factors,
-                ],
-                confidence=confidence,
-                metrics=metrics,
-            )
-        return WaxRecommendation(
-            headline="Nullføre tørr",
-            swix_family="Hardvoks – VR55N",
-            swix_products=["Swix VR50", "Swix VR55N"],
-            temp_band="-1 til +1°C",
-            condition="Skare eller blandet føre",
-            instructions=_hardwax_instructions("VG35", layers=4),
-            factors=[f"Bakke/luft {effective_temp:.1f}°C", *factors],
-            confidence=confidence,
-            metrics=metrics,
-        )
-
-    # Warmer than +1°C → klistervalg
-    if freeze_thaw:
-        return WaxRecommendation(
-            headline="Isklister",
-            swix_family="Klister – is/skare",
-            swix_products=["Swix KX30 Ice Klister", "Swix KB20 base"]
-            if snow_depth and snow_depth > 0
-            else ["Swix KX30 Ice Klister"],
-            temp_band="-3 til +3°C",
-            condition="Is og fast skare etter mildvær",
+            headline=headline,
+            swix_family=swix_family,
+            swix_products=products,
+            temp_band=f"{klister.temp.min_c:g} til {klister.temp.max_c:g}°C",
+            condition=condition,
             instructions=_klister_instructions(topcoat=None),
-            factors=[
-                f"Luft {air_temp:.1f}°C" if air_temp is not None else "",
-                f"Bakke {surface_temp:.1f}°C" if surface_temp is not None else "",
-                "Fryse/tine-syklus",
-                *factors,
-            ],
+            factors=[f"Bakke/luft {effective_temp:.1f}°C", *factors],
             confidence=confidence,
             metrics=metrics,
         )
 
-    if wet_snow and recent_precip is not None and recent_precip >= 1.0:
-        return WaxRecommendation(
-            headline="Våt vårsnø",
-            swix_family="Klister – rød/gul",
-            swix_products=["Swix KX65 Red Klister", "Swix K22 Universal"],
-            temp_band="0 til +5°C",
-            condition="Regn på snø eller tung slaps",
-            instructions=_klister_instructions(topcoat=None),
-            factors=[f"Bakke/luft {effective_temp:.1f}°C", "Mye nedbør", *factors],
-            confidence=confidence,
-            metrics=metrics,
-        )
-
+    wax = _select_v_series(effective_temp, snow_is_new=snow_is_new, humidity_pct=humidity)
+    band = wax.new_snow if snow_is_new else wax.transformed
+    snow_type_label = "nysnø" if snow_is_new else "omdannet snø"
+    headline = f"Hardvoks {wax.code}"
     return WaxRecommendation(
-        headline="Varm grovkornet snø",
-        swix_family="Klister – gul",
-        swix_products=["Swix KX75 Yellow", "Swix K70"],
-        temp_band="+3 til +8°C",
-        condition="Vårslush og grovkornet snø",
-        instructions=_klister_instructions(topcoat=None),
+        headline=headline,
+        swix_family="Hardvoks (V-serien)",
+        swix_products=[f"Swix {wax.code} {wax.name}"],
+        temp_band=f"{band.min_c:g} til {band.max_c:g}°C",
+        condition=f"Valgt ut fra {snow_type_label} + luftfuktighet",
+        instructions=_hardwax_instructions("VG30", layers=3),
         factors=[f"Bakke/luft {effective_temp:.1f}°C", *factors],
         confidence=confidence,
         metrics=metrics,
