@@ -601,21 +601,6 @@ def render_netatmo_map():
             "color": [r, g, b, 200],
         })
 
-    # Legg til Gullingen (Frost) - grønn markør
-    # Koordinater: 59.41172°N, 6.47204°Ø, 637 moh
-    map_data.append({
-        "lat": 59.41172,
-        "lon": 6.47204,
-        "name": "Gullingen (Frost)",
-        "altitude": 637,
-        "temperature": None,
-        "humidity": None,
-        "temp_str": "Se topp",
-        "hum_str": "-",
-        "alt_str": "637 moh",
-        "color": [0, 200, 0, 255],  # Grønn
-    })
-
     map_df = pd.DataFrame(map_data)
 
     # Beregn kartsentrum (midt mellom Gullingen og Fjellbergsskardet)
