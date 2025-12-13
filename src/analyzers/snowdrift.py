@@ -1,7 +1,7 @@
 """
 Snøfokk-risikoanalyse.
 
-Bruker ML-baserte terskler validert mot 149 historiske episoder.
+Bruker ML-baserte terskler validert mot historiske episoder (2022-2025).
 Vindkjøling har 73.1% viktighet i modellen.
 """
 from __future__ import annotations
@@ -26,7 +26,7 @@ class SnowdriftAnalyzer(BaseAnalyzer):
 
     Ny innsikt (2025):
     - Snøfokk-episoder: snittwind 10.3 m/s, vindkast 21.9 m/s
-    - 73% fra SE-S vindretninger (135-225°)
+    - 73% fra kritisk vindsektor (se `settings.snowdrift.critical_wind_dir_min/max`)
     """
 
     REQUIRED_COLUMNS = ['air_temperature', 'wind_speed', 'surface_snow_thickness']
@@ -60,7 +60,9 @@ class SnowdriftAnalyzer(BaseAnalyzer):
         snow = self._safe_get(latest, 'surface_snow_thickness', 0)
         temp = self._safe_get(latest, 'air_temperature', 0)
 
-        if snow < 1:
+        thresholds = settings.snowdrift
+
+        if snow < thresholds.summer_snow_depth_min_cm:
             return AnalysisResult(
                 risk_level=RiskLevel.LOW,
                 message=f"Sommersesong uten snø ({temp:.1f}°C)",
@@ -131,7 +133,7 @@ class SnowdriftAnalyzer(BaseAnalyzer):
         """
         Sjekk om vinden kommer fra kritisk retning (SE-S).
 
-        73% av snøfokk-episoder på Gullingen kom fra SE-S (135-225°).
+        73% av snøfokk-episoder på Gullingen kom fra kritisk vindsektor (styrt av config).
         """
         if wind_dir is None:
             return False
@@ -148,8 +150,9 @@ class SnowdriftAnalyzer(BaseAnalyzer):
         - Kontinuerlig frost bevarer løssnø
         - Mildvær (>0°C) smelter/kompakterer snøen
         """
+        thresholds = settings.snowdrift
         now = datetime.now(UTC)
-        last_24h = df[df['reference_time'] >= (now - timedelta(hours=24))]
+        last_24h = df[df['reference_time'] >= (now - timedelta(hours=thresholds.loose_snow_lookback_hours))]
 
         if 'air_temperature' not in last_24h.columns or last_24h.empty:
             return {"available": True, "reason": "Usikker - mangler temperaturdata"}
@@ -159,15 +162,15 @@ class SnowdriftAnalyzer(BaseAnalyzer):
             return {"available": True, "reason": "Usikker - mangler temperaturdata"}
 
         # Sjekk for mildvær
-        mild_hours = (temps > 0).sum()
-        continuous_frost = (temps <= -1).all()
+        mild_hours = (temps > thresholds.loose_snow_mild_temp_min_c).sum()
+        continuous_frost = (temps <= thresholds.loose_snow_continuous_frost_temp_max_c).all()
 
         if continuous_frost:
             return {"available": True, "reason": "Kontinuerlig frost bevarer løssnø"}
-        elif mild_hours >= 6:
-            return {"available": False, "reason": f"Mildvær siste 24t ({mild_hours} timer > 0°C)"}
+        elif mild_hours >= thresholds.loose_snow_mild_hours_min:
+            return {"available": False, "reason": f"Mildvær siste 24t ({mild_hours} timer > {thresholds.loose_snow_mild_temp_min_c:.0f}°C)"}
         elif mild_hours > 0:
-            return {"available": True, "reason": f"Delvis mildvær ({mild_hours} timer > 0°C)"}
+            return {"available": True, "reason": f"Delvis mildvær ({mild_hours} timer > {thresholds.loose_snow_mild_temp_min_c:.0f}°C)"}
         else:
             return {"available": True, "reason": "Frostforhold"}
 
@@ -286,13 +289,13 @@ class SnowdriftAnalyzer(BaseAnalyzer):
             factors.append(f"Snødekke ({snow:.0f} cm)")
 
         if wind_chill <= thresholds.wind_chill_critical:
-            factors.append(f"🥶 Kritisk vindkjøling ({wind_chill:.1f}°C)")
+            factors.append(f"Kritisk vindkjøling ({wind_chill:.1f}°C)")
         elif wind_chill <= thresholds.wind_chill_warning:
             factors.append(f"Vindkjøling ({wind_chill:.1f}°C)")
 
         if snow_change >= thresholds.fresh_snow_threshold:
             factors.append(f"Nysnø (+{snow_change:.1f} cm/h)")
-        elif snow_change <= -0.2:
+        elif snow_change <= thresholds.wind_transport_snow_change_threshold_cm_per_h:
             factors.append(f"Vindtransport ({snow_change:.1f} cm/h)")
 
         return factors
@@ -346,7 +349,7 @@ class SnowdriftAnalyzer(BaseAnalyzer):
         # NY: Vindkast-basert trigger (høyeste prioritet!)
         if wind_gust is not None:
             gust_gate_critical_ok = wind >= thresholds.wind_speed_warning
-            gust_gate_warning_ok = wind >= thresholds.wind_speed_median
+            gust_gate_warning_ok = wind >= thresholds.wind_speed_gust_warning_gate
 
             if (
                 gust_gate_critical_ok

@@ -9,6 +9,8 @@ import plotly.graph_objects as go
 import streamlit as st
 from plotly.subplots import make_subplots
 
+from src.config import settings
+
 
 class AdvancedCharts:
     """Avanserte chart-komponenter for værutforskning"""
@@ -293,8 +295,8 @@ class AdvancedCharts:
             return fig
 
         # Terskler for brøyting
-        wet_snow_threshold = 6  # cm
-        dry_snow_threshold = 12  # cm
+        wet_snow_threshold = settings.historical.plowing_threshold_wet_cm
+        dry_snow_threshold = settings.historical.plowing_threshold_dry_cm
 
         # Finn akkumulert nysnø over tid
         if 'new_snow_cm' in df.columns:
@@ -359,6 +361,8 @@ class AdvancedCharts:
     def create_weather_summary_cards(df: pd.DataFrame, snow_analysis: dict) -> None:
         """Lag sammendrag-kort for værperioden"""
 
+        th = settings.chart_risk_timeline
+
         if df.empty:
             st.warning("Ingen data for sammendrag")
             return
@@ -385,16 +389,12 @@ class AdvancedCharts:
             wind_stats = {
                 'avg': df[wind_col].mean(),
                 'max': df[wind_col].max(),
-                'strong_hours': (df[wind_col] > 8).sum()
+                'strong_hours': (df[wind_col] > th.snowdrift_wind_low_ms).sum()
             }
 
         # Nedbør-statistikk
         precip_col = 'sum(precipitation_amount PT1H)'
-        if precip_col in df.columns:
-            {
-                'total': df[precip_col].sum(),
-                'hours_with_precip': (df[precip_col] > 0).sum()
-            }
+        _ = precip_col  # bevarer kolonnenavn for evt. videre utvidelser
 
         # Vis kort i kolonner
         col1, col2, col3, col4 = st.columns(4)
@@ -403,7 +403,7 @@ class AdvancedCharts:
             st.markdown("""
             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                         border-radius: 10px; padding: 1rem; color: white; text-align: center;">
-                <h4 style="margin: 0;">🕒 Periode</h4>
+                <h4 style="margin: 0;">Periode</h4>
                 <p style="margin: 0.5rem 0; font-size: 0.9rem;">
                     {:.1f} timer<br>
                     {} - {}
@@ -477,6 +477,8 @@ class AdvancedCharts:
     def create_risk_timeline(df: pd.DataFrame) -> go.Figure:
         """Lag tidslinje med risiko-markører"""
 
+        th = settings.chart_risk_timeline
+
         fig = go.Figure()
 
         if df.empty:
@@ -490,20 +492,26 @@ class AdvancedCharts:
         # Snøfokk-risiko (0-3)
         snowdrift_risk = 0
         if 'wind_speed' in df.columns and 'air_temperature' in df.columns:
-            wind_risk = (df_risk['wind_speed'] > 8).astype(int) + (df_risk['wind_speed'] > 12).astype(int)
-            temp_risk = (df_risk['air_temperature'] < -1).astype(int) + (df_risk['air_temperature'] < -5).astype(int)
+            wind_risk = (
+                (df_risk['wind_speed'] > th.snowdrift_wind_low_ms).astype(int)
+                + (df_risk['wind_speed'] > th.snowdrift_wind_high_ms).astype(int)
+            )
+            temp_risk = (
+                (df_risk['air_temperature'] < th.snowdrift_temp_cold_c).astype(int)
+                + (df_risk['air_temperature'] < th.snowdrift_temp_very_cold_c).astype(int)
+            )
             snowdrift_risk = wind_risk + temp_risk
 
         # Glattføre-risiko (0-2)
         slippery_risk = 0
         if 'air_temperature' in df.columns:
             slippery_risk = (
-                (df_risk['air_temperature'] >= -2) &
-                (df_risk['air_temperature'] <= 2)
+                (df_risk['air_temperature'] >= th.slippery_temp_min_c) &
+                (df_risk['air_temperature'] <= th.slippery_temp_max_c)
             ).astype(int)
 
             if 'relative_humidity' in df.columns:
-                slippery_risk += (df_risk['relative_humidity'] > 85).astype(int)
+                slippery_risk += (df_risk['relative_humidity'] > th.slippery_humidity_high_pct).astype(int)
 
         # Kombinert risiko
         total_risk = snowdrift_risk + slippery_risk
@@ -511,11 +519,11 @@ class AdvancedCharts:
         # Fargekoding
         colors = []
         for risk in total_risk:
-            if risk >= 4:
+            if risk >= th.risk_red_min:
                 colors.append('red')
-            elif risk >= 3:
+            elif risk >= th.risk_orange_min:
                 colors.append('orange')
-            elif risk >= 2:
+            elif risk >= th.risk_yellow_min:
                 colors.append('yellow')
             else:
                 colors.append('green')
@@ -537,17 +545,17 @@ class AdvancedCharts:
         )
 
         # Risiko-soner
-        fig.add_hrect(y0=0, y1=1, fillcolor="green", opacity=0.1, annotation_text="Lav risiko")
-        fig.add_hrect(y0=1, y1=3, fillcolor="yellow", opacity=0.1, annotation_text="Moderat risiko")
-        fig.add_hrect(y0=3, y1=5, fillcolor="orange", opacity=0.1, annotation_text="Høy risiko")
-        fig.add_hrect(y0=5, y1=6, fillcolor="red", opacity=0.1, annotation_text="Kritisk risiko")
+        fig.add_hrect(y0=0, y1=th.band_green_max, fillcolor="green", opacity=0.1, annotation_text="Lav risiko")
+        fig.add_hrect(y0=th.band_green_max, y1=th.band_yellow_max, fillcolor="yellow", opacity=0.1, annotation_text="Moderat risiko")
+        fig.add_hrect(y0=th.band_yellow_max, y1=th.band_orange_max, fillcolor="orange", opacity=0.1, annotation_text="Høy risiko")
+        fig.add_hrect(y0=th.band_orange_max, y1=th.band_red_max, fillcolor="red", opacity=0.1, annotation_text="Kritisk risiko")
 
         fig.update_layout(
             title="Risiko-tidslinje (Snøfokk + Glattføre)",
             xaxis_title="Tid",
             yaxis_title="Risiko-score",
-            height=300,
-            yaxis={"range": [0, 6]}
+            height=th.chart_height_px,
+            yaxis={"range": [0, th.yaxis_max]}
         )
 
         return fig

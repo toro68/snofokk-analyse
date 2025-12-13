@@ -37,6 +37,13 @@
 ## 🔍 **Detaljerte Valideringer**
 
 ### ✅ **Test 1: Datainnlasting og integritet**
+> ARKIVERT DOKUMENT
+>
+> Denne filen inneholder historiske tall fra analyser/validering og skal ikke brukes som
+> kilde til gjeldende terskler i app eller varsling.
+>
+> Gjeldende terskler finnes kun i `src/config.py` (bruk `settings.*`).
+
 - Alle 166 brøytingsrecords lastet enn uten feil
 - Korrekt parsing av norsk datoformat
 - Validert enhets-ID'er (8810, 8894, 9389)

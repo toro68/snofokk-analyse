@@ -20,6 +20,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from src.config import settings
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_ANALYZED = PROJECT_ROOT / "data" / "analyzed"
@@ -123,13 +125,17 @@ def start_hour_distribution(plowing_csv: Path) -> dict:
     df["start_hour_local"] = df["start_utc"].dt.tz_convert(oslo).dt.hour
 
     counts = df["start_hour_local"].value_counts().sort_index()
-    morning = int(counts.loc[6:11].sum()) if len(counts) else 0
+    morning_start = int(settings.scripts.compare_morning_start_hour)
+    morning_end = int(settings.scripts.compare_morning_end_hour)
+    morning = int(counts.loc[morning_start:morning_end].sum()) if len(counts) else 0
     total = int(counts.sum()) if len(counts) else 0
 
     return {
         "events": total,
         "morning_06_11_n": morning,
         "morning_06_11_pct": float(morning / total * 100) if total else 0.0,
+        "morning_start": morning_start,
+        "morning_end": morning_end,
     }
 
 
@@ -177,7 +183,7 @@ def main() -> None:
     # Also print a tiny plowing start-time summary
     hstats = start_hour_distribution(args.plowing)
     print(
-        f"Plowing start times: events={hstats['events']}, morning(06-11)={hstats['morning_06_11_n']} ({hstats['morning_06_11_pct']:.1f}%)"
+        f"Plowing start times: events={hstats['events']}, morning({hstats['morning_start']:02d}-{hstats['morning_end']:02d})={hstats['morning_06_11_n']} ({hstats['morning_06_11_pct']:.1f}%)"
     )
 
 

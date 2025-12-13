@@ -4,13 +4,24 @@ Utvidet WeatherService som utnytter alle tilgjengelige data fra Gullingen værst
 Demonstrerer hvordan vi kan forbedre datautnyttelsen betydelig.
 """
 import asyncio
+import importlib
 import sys
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-import aiohttp
+try:
+    aiohttp = importlib.import_module("aiohttp")
+except ModuleNotFoundError:  # pragma: no cover
+    aiohttp = None
 import pandas as pd
+
+
+class _MissingAiohttpClientError(Exception):
+    pass
+
+
+AIOHTTP_CLIENT_ERROR = aiohttp.ClientError if aiohttp is not None else _MissingAiohttpClientError
 
 # Add src to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
@@ -105,6 +116,9 @@ class EnhancedWeatherService:
         time_resolution: str = 'PT1H'
     ) -> list[EnhancedWeatherData]:
         """Hent utvidet værdata med alle tilgjengelige elementer"""
+
+        if aiohttp is None:
+            raise RuntimeError("aiohttp er påkrevd for EnhancedWeatherService")
 
         async with aiohttp.ClientSession() as session:
             # Hent data for alle elementer
@@ -212,7 +226,7 @@ class EnhancedWeatherService:
                 'max_gust': df['max_wind_gust'].max(),
                 'speed_consistency': df['wind_speed'].std(),
                 'direction_variability': df['wind_direction'].std(),
-                'hours_above_threshold': (df['wind_speed'] > 8).sum(),
+                'hours_above_threshold': (df['wind_speed'] > settings.analysis_wind_hours_above_ms).sum(),
                 'gust_factor': df['max_wind_gust'].max() / df['wind_speed'].mean() if df['wind_speed'].mean() > 0 else 0
             },
 
@@ -222,7 +236,7 @@ class EnhancedWeatherService:
                 'avg_surface_temp': df['surface_temp'].mean(),
                 'temp_range': df['air_temp'].max() - df['air_temp'].min(),
                 'surface_air_diff': (df['surface_temp'] - df['air_temp']).mean(),
-                'freezing_hours': (df['air_temp'] <= 0).sum(),
+                'freezing_hours': (df['air_temp'] <= settings.ice_air_temp_max_c).sum(),
                 'wind_chill_avg': df['wind_chill'].mean()
             },
 
@@ -230,13 +244,13 @@ class EnhancedWeatherService:
             'snow_analysis': {
                 'avg_depth': df['snow_depth'].mean(),
                 'depth_change': df['snow_depth'].iloc[-1] - df['snow_depth'].iloc[0] if len(df) > 1 else 0,
-                'snow_available': df['snow_depth'].mean() > 5,
-                'new_snow': (df['precipitation'] > 0).sum()
+                'snow_available': df['snow_depth'].mean() > settings.analysis_snow_available_min_cm,
+                'new_snow': (df['precipitation'] > settings.analysis_precip_any_min_mmph).sum()
             },
 
             # Risikovurdering
             'risk_assessment': {
-                'blowing_snow_hours': (df['blowing_snow_risk'] > 0.5).sum(),
+                'blowing_snow_hours': (df['blowing_snow_risk'] > settings.analysis_blowing_snow_hours_risk_min).sum(),
                 'combined_risk_score': self._calculate_combined_risk(df),
                 'visibility_impact': self._estimate_visibility_impact(df),
                 'road_condition_risk': self._assess_road_conditions(df)
@@ -288,6 +302,8 @@ class EnhancedWeatherService:
         }
 
         headers = {'Accept': 'application/json'}
+        if aiohttp is None:
+            raise RuntimeError("aiohttp er påkrevd for EnhancedWeatherService")
         auth = aiohttp.BasicAuth(settings.frost_client_id, '')
 
         try:
@@ -299,7 +315,7 @@ class EnhancedWeatherService:
                     print(f"API-feil {response.status} for elementer: {elements[:3]}...")
                     return {}
 
-        except Exception as e:
+        except (asyncio.TimeoutError, ValueError, AIOHTTP_CLIENT_ERROR) as e:
             print(f"Feil ved henting av {elements[:3]}...: {e}")
             return {}
 
@@ -404,26 +420,26 @@ class EnhancedWeatherService:
         risk = 0.0
 
         # Vindstyrke (hovedfaktor)
-        if data.wind_speed > 8:
-            risk += 0.4
-        elif data.wind_speed > 5:
-            risk += 0.2
+        if data.wind_speed > settings.blowing_wind_high_ms:
+            risk += settings.blowing_wind_high_add
+        elif data.wind_speed > settings.blowing_wind_medium_ms:
+            risk += settings.blowing_wind_medium_add
 
         # Vindkast
-        if data.max_wind_gust_hourly and data.max_wind_gust_hourly > 12:
-            risk += 0.2
+        if data.max_wind_gust_hourly and data.max_wind_gust_hourly > settings.blowing_gust_min_ms:
+            risk += settings.blowing_gust_add
 
         # Snødybde
-        if data.surface_snow_thickness > 10:
-            risk += 0.3
-        elif data.surface_snow_thickness > 5:
-            risk += 0.15
+        if data.surface_snow_thickness > settings.blowing_snow_depth_high_cm:
+            risk += settings.blowing_snow_depth_high_add
+        elif data.surface_snow_thickness > settings.blowing_snow_depth_medium_cm:
+            risk += settings.blowing_snow_depth_medium_add
 
         # Temperatur (tørr snø blåser lettere)
-        if data.air_temperature < -5:
-            risk += 0.1
-        elif data.air_temperature > 2:
-            risk -= 0.2  # Våt snø blåser mindre
+        if data.air_temperature < settings.blowing_temp_very_cold_c:
+            risk += settings.blowing_temp_very_cold_add
+        elif data.air_temperature > settings.blowing_temp_wet_snow_min_c:
+            risk -= settings.blowing_temp_wet_snow_penalty  # Våt snø blåser mindre
 
         return min(max(risk, 0.0), 1.0)
 
@@ -436,18 +452,18 @@ class EnhancedWeatherService:
         risk = 0.0
 
         # Temperatur nær frysepunktet
-        if data.air_temperature <= 0 and data.air_temperature > -3:
-            risk += 0.4
+        if data.air_temperature <= settings.ice_air_temp_max_c and data.air_temperature > settings.ice_air_temp_min_c:
+            risk += settings.ice_air_temp_add
 
         # Overflatetemperatur under lufttemperatur
         if data.surface_temperature < data.air_temperature:
-            risk += 0.3
+            risk += settings.ice_surface_below_air_add
 
         # Høy fuktighet
-        if data.relative_humidity > 85:
-            risk += 0.3
+        if data.relative_humidity > settings.ice_humidity_high_pct:
+            risk += settings.ice_humidity_add
 
-        return min(risk, 1.0)
+        return min(risk, settings.ice_risk_max)
 
     def _estimate_visibility(self, data: EnhancedWeatherData) -> float | None:
         """Estimer siktbarhet basert på værforhold"""
@@ -455,34 +471,36 @@ class EnhancedWeatherService:
             return None
 
         # Start med god sikt
-        visibility = 10.0  # km
+        visibility = settings.visibility_base_km  # km
 
         # Reduser for snøfokk
-        if data.blowing_snow_risk and data.blowing_snow_risk > 0.3:
+        if data.blowing_snow_risk and data.blowing_snow_risk > settings.visibility_blowing_risk_min:
             visibility *= (1 - data.blowing_snow_risk)
 
         # Reduser for nedbør
-        if data.precipitation_amount_hourly and data.precipitation_amount_hourly > 2:
-            visibility *= 0.7
+        if data.precipitation_amount_hourly and data.precipitation_amount_hourly > settings.visibility_precip_min_mmph:
+            visibility *= settings.visibility_precip_multiplier
 
-        return max(visibility, 0.1)
+        return max(visibility, settings.visibility_min_km)
 
     def _calculate_combined_risk(self, df: pd.DataFrame) -> float:
         """Beregn kombinert risikoscore"""
         if df.empty:
             return 0.0
 
-        return (df['blowing_snow_risk'].fillna(0).mean() * 0.6 +
-                (df['wind_speed'].fillna(0) > 10).mean() * 0.4)
+        return (
+            df['blowing_snow_risk'].fillna(0).mean() * settings.combined_blowing_risk_weight
+            + (df['wind_speed'].fillna(0) > settings.combined_wind_threshold_ms).mean() * settings.combined_wind_weight
+        )
 
     def _estimate_visibility_impact(self, df: pd.DataFrame) -> str:
         """Estimer påvirkning på siktbarhet"""
         avg_risk = df['blowing_snow_risk'].fillna(0).mean()
 
-        if avg_risk > 0.7:
-            return 'Kraftig redusert sikt (<500m)'
-        elif avg_risk > 0.4:
-            return 'Moderat redusert sikt (500-2000m)'
+        if avg_risk > settings.visibility_impact_high_risk_min:
+            return f"Kraftig redusert sikt (<{settings.visibility_impact_high_max_m}m)"
+        elif avg_risk > settings.visibility_impact_medium_risk_min:
+            return f"Moderat redusert sikt ({settings.visibility_impact_high_max_m}-{settings.visibility_impact_medium_max_m}m)"
         else:
             return 'Minimal påvirkning på sikt'
 
@@ -491,11 +509,11 @@ class EnhancedWeatherService:
         wind_avg = df['wind_speed'].fillna(0).mean()
         temp_avg = df['air_temp'].fillna(0).mean()
 
-        if wind_avg > 10 and temp_avg < 0:
+        if wind_avg > settings.road_critical_wind_min_ms and temp_avg < settings.road_freezing_max_c:
             return 'Kritiske forhold - snøfokk og is'
-        elif wind_avg > 8:
+        elif wind_avg > settings.road_challenging_wind_min_ms:
             return 'Utfordrende forhold - snøfokk'
-        elif temp_avg < 0:
+        elif temp_avg < settings.road_freezing_max_c:
             return 'Glatte forhold - is'
         else:
             return 'Akseptable forhold'
@@ -505,11 +523,11 @@ class EnhancedWeatherService:
         if len(df) < 2:
             return 0.0
 
-        recent_trend = df['blowing_snow_risk'].fillna(0).tail(3).mean()
-        wind_trend = df['wind_speed'].fillna(0).diff().tail(3).mean()
+        recent_trend = df['blowing_snow_risk'].fillna(0).tail(settings.trend_window_points).mean()
+        wind_trend = df['wind_speed'].fillna(0).diff().tail(settings.trend_window_points).mean()
 
         # Øk risiko hvis vind øker
-        adjustment = wind_trend * 0.1 if wind_trend > 0 else 0
+        adjustment = wind_trend * settings.trend_adjustment_coef if wind_trend > 0 else 0
 
         return min(recent_trend + adjustment, 1.0)
 
@@ -518,12 +536,12 @@ class EnhancedWeatherService:
         if len(df) < 3:
             return 'Utilstrekkelig data'
 
-        wind_trend = df['wind_speed'].fillna(0).tail(5).diff().mean()
-        risk_trend = df['blowing_snow_risk'].fillna(0).tail(5).diff().mean()
+        wind_trend = df['wind_speed'].fillna(0).tail(settings.deterioration_trend_tail_points).diff().mean()
+        risk_trend = df['blowing_snow_risk'].fillna(0).tail(settings.deterioration_trend_tail_points).diff().mean()
 
-        if wind_trend > 1 or risk_trend > 0.1:
+        if wind_trend > settings.deterioration_wind_trend_high or risk_trend > settings.deterioration_risk_trend_high:
             return 'Forverring - økende risiko'
-        elif wind_trend < -1 or risk_trend < -0.1:
+        elif wind_trend < settings.deterioration_wind_trend_low or risk_trend < settings.deterioration_risk_trend_low:
             return 'Forbedring - avtakende risiko'
         else:
             return 'Stabile forhold'
@@ -533,9 +551,9 @@ class EnhancedWeatherService:
         risk_avg = df['blowing_snow_risk'].fillna(0).mean()
         wind_max = df['wind_speed'].fillna(0).max()
 
-        if risk_avg > 0.7 or wind_max > 15:
+        if risk_avg > settings.action_high_risk_min or wind_max > settings.action_high_wind_max_min_ms:
             return 'HØYPRIORITET: Kontinuerlig brøyting anbefalt'
-        elif risk_avg > 0.4 or wind_max > 10:
+        elif risk_avg > settings.action_medium_risk_min or wind_max > settings.action_medium_wind_max_min_ms:
             return 'MEDIUM: Økt brøytefrikevens anbefalt'
         else:
             return 'LAV: Normal brøyteplan tilstrekkelig'
@@ -545,7 +563,7 @@ async def test_enhanced_service():
     """Test den utvidede værservicen"""
     service = EnhancedWeatherService()
 
-    print("🌟 UTVIDET VÆRSERVICE - DEMONSTRASJON")
+    print("UTVIDET VÆRSERVICE - DEMONSTRASJON")
     print("=" * 50)
 
     try:
@@ -560,8 +578,8 @@ async def test_enhanced_service():
                 print(f"  {key}: {value}")
 
         # Test snøfokk-analyse
-        print("\nSNØFOKK-ANALYSE (siste 6 timer):")
-        analysis = await service.analyze_snowdrift_conditions(hours_back=6)
+        print(f"\nSNØFOKK-ANALYSE (siste {settings.demo_hours_back} timer):")
+        analysis = await service.analyze_snowdrift_conditions(hours_back=settings.demo_hours_back)
 
         if 'error' not in analysis:
             print(f"  Dataperiode: {analysis['period']['hours']} timer ({analysis['period']['data_points']} punkter)")
@@ -582,7 +600,7 @@ async def test_enhanced_service():
 
         print("\nUtvidet værservice fungerer!")
 
-    except Exception as e:
+    except (asyncio.TimeoutError, ValueError, RuntimeError) as e:
         print(f"Feil under testing: {e}")
 
 

@@ -1,38 +1,31 @@
-# 🎯 ML-KALIBRERING FULLFØRT 2025
+# ML-kalibrering fullført 2025 (historisk rapport)
 
-## 📊 HOVEDRESULTAT: PERFEKT KALIBRERING OPPNÅDD!
+Denne rapporten beskriver historisk ML-kalibrering. Gjeldende terskler for
+live drift er samlet i `src/config.py` og skal ikke dupliseres i dokumentasjon.
+
+Se:
+- `src/config.py` (`settings.snowdrift.*`)
+- `docs/terskler_og_validering.md`
+
+## Hovedresultat
 
 **Måloppnåelse:** ✅ Under 10 dager/sesong (historisk gjennomsnitt: 4.5 dager/sesong)
 
 ---
 
-## 🏆 Finalkalibrerte Grenseverdier (PRODUKSJONSKLAR)
+## Finalkalibrerte grenseverdier
 
-### Kritiske Kombinasjoner
-```json
-{
-  "high_risk_combo": {
-    "wind_chill_threshold": -15.0,
-    "wind_speed_threshold": 10.0,
-    "surface_snow_thickness": 0.20,
-    "requires_all": true,
-    "risk_level": "HIGH"
-  },
-  "medium_risk_combo": {
-    "wind_chill_threshold": -12.0,
-    "wind_speed_threshold": 8.0,
-    "surface_snow_thickness": 0.15,
-    "requires_all": true,
-    "risk_level": "MEDIUM"
-  }
-}
-```
+Tidligere ble terskler dokumentert som JSON i denne filen. For å unngå drift
+er tersklene nå definert kun i `src/config.py`.
 
-### Enkeltkriterier (Fallback)
-- **Vindkjøling:** < -15°C (kritisk), < -12°C (advarsel)
-- **Vindstyrke:** > 10 m/s (kritisk), > 8 m/s (advarsel)
-- **Lufttemperatur:** < -10°C (kritisk), < -8°C (advarsel)
-- **Snødybde:** > 20cm (kritisk), > 15cm (advarsel)
+### Kritiske kombinasjoner (gjeldende kilde)
+- Vindkjøling: `settings.snowdrift.wind_chill_critical` / `settings.snowdrift.wind_chill_warning`
+- Vind (snitt): `settings.snowdrift.wind_speed_critical` / `settings.snowdrift.wind_speed_warning`
+- Vindkast: `settings.snowdrift.wind_gust_critical` / `settings.snowdrift.wind_gust_warning`
+- Minimum snødekke: `settings.snowdrift.snow_depth_min_cm`
+
+### Enkeltkriterier (fallback)
+Bruk alltid terskler fra `src/config.py` i kode og UI. Ikke kopier tall hit.
 
 ---
 
@@ -84,13 +77,12 @@
 
 ---
 
-## ⚙️ Implementering i Produksjon
+## Implementering i produksjon
 
-### Oppdaterte Filer
-1. **`src/ml_snowdrift_detector.py`** - Hovedklasse med kalibrerte verdier
-2. **`config/optimized_snowdrift_config.json`** - Konfigurasjonsfil
-3. **`docs/ml_grenseverdier_kalibrert.md`** - Detaljert dokumentasjon
-4. **`data/analyzed/final_calibrated_thresholds.json`** - Lagrede terskelverdier
+### Oppdaterte filer
+1. `src/config.py` - eneste kilde til gjeldende terskler
+2. `src/analyzers/snowdrift.py` - bruker `settings.snowdrift.*`
+3. `docs/terskler_og_validering.md` - metodikk (uten dupliserte tall)
 
 ### Integrering med Live App
 - **Modul:** `MLSnowdriftDetector` klasse

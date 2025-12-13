@@ -20,6 +20,7 @@ from datetime import UTC, datetime, timedelta
 import requests
 
 from src.config import get_secret
+from src.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +104,7 @@ class MaintenanceApiClient:
             headers["Authorization"] = f"Bearer {self.token}"
 
         try:
-            r = self.session.get(url, headers=headers, timeout=10)
+            r = self.session.get(url, headers=headers, timeout=settings.plowman.http_timeout_seconds)
         except requests.RequestException as e:
             logger.warning("Vedlikeholds-API utilgjengelig: %s", e)
             return MaintenanceFetchResult(payload=None, status_code=None, error=f"Vedlikeholds-API utilgjengelig: {e}")
@@ -205,7 +206,7 @@ class MaintenanceApiClient:
             return None
 
         try:
-            r = self.session.get(share_url, timeout=10)
+            r = self.session.get(share_url, timeout=settings.plowman.http_timeout_seconds)
         except requests.RequestException as e:
             logger.warning("Plowman share utilgjengelig: %s", e)
             return None
@@ -247,10 +248,10 @@ def get_last_maintenance_result() -> tuple[PlowingEvent | None, str | None]:
         # Ingen payload uten tydelig feil
         return None, None
 
-    event = client.get_last_maintenance_time()
-    if not event:
+    maintenance_event = client.get_last_maintenance_time()
+    if not maintenance_event:
         return None, "Vedlikeholds-API: Kunne ikke tolke tidspunkt fra payload"
-    return event, None
+    return maintenance_event, None
 
 
 def _parse_iso_utc(value: str | None) -> datetime | None:
@@ -373,12 +374,12 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
 
     print("Tester vedlikeholds-API...")
-    event = get_last_plowing_time()
-    if event:
+    test_event = get_last_plowing_time()
+    if test_event:
         print("\nSiste brøyting:")
-        print(f"  Tidspunkt: {event.timestamp}")
-        print(f"  Timer siden: {event.hours_since():.1f}")
-        print(f"  Operatør: {event.vehicle_name or 'Ukjent'}")
-        print(f"  Type: {event.sector_name or 'Ukjent'}")
+        print(f"  Tidspunkt: {test_event.timestamp}")
+        print(f"  Timer siden: {test_event.hours_since():.1f}")
+        print(f"  Operatør: {test_event.vehicle_name or 'Ukjent'}")
+        print(f"  Type: {test_event.sector_name or 'Ukjent'}")
     else:
         print("\nKunne ikke hente brøytedata")

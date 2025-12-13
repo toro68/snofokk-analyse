@@ -55,15 +55,15 @@ def fetch_year(client: FrostClient, year: int, output_dir: Path) -> dict:
         weather_data = client.fetch_period(start, end)
 
         if weather_data.is_empty:
-            print(f"  ⚠️ Ingen data for {year}")
+            print(f"  ADVARSEL: Ingen data for {year}")
             return {"year": year, "records": 0, "no_data": True}
 
         # Lagre til JSON
         output_file = output_dir / f"weather_{year}.json"
         weather_data.to_json(str(output_file))
 
-        print(f"  ✅ Hentet {weather_data.record_count} målinger")
-        print(f"  💾 Lagret til {output_file}")
+        print(f"  OK: Hentet {weather_data.record_count} målinger")
+        print(f"  LAGRET: {output_file}")
 
         return {
             "year": year,
@@ -73,24 +73,24 @@ def fetch_year(client: FrostClient, year: int, output_dir: Path) -> dict:
         }
 
     except FrostAPIError as e:
-        print(f"  ❌ Feil for {year}: {e}")
+        print(f"  FEIL for {year}: {e}")
         return {"year": year, "records": 0, "error": str(e)}
 
 
 def fetch_elements(client: FrostClient) -> list[str]:
     """Hent og vis tilgjengelige elementer."""
-    print("\n🔍 Henter tilgjengelige elementer...")
+    print("\nHenter tilgjengelige elementer...")
 
     elements = client.fetch_available_elements()
 
     if elements:
-        print(f"  ✅ Funnet {len(elements)} elementer:")
+        print(f"  OK: Funnet {len(elements)} elementer:")
         for elem in sorted(elements)[:20]:
             print(f"     - {elem}")
         if len(elements) > 20:
             print(f"     ... og {len(elements) - 20} flere")
     else:
-        print("  ⚠️ Kunne ikke hente elementer")
+        print("  ADVARSEL: Kunne ikke hente elementer")
 
     return elements
 
@@ -138,7 +138,7 @@ def main():
     # Sjekk konfigurasjon
     valid, msg = settings.validate()
     if not valid:
-        print(f"\n❌ Feil: {msg}")
+        print(f"\nFEIL: {msg}")
         sys.exit(1)
 
     # Opprett output-mappe
@@ -160,7 +160,7 @@ def main():
                 "fetched_at": datetime.now(UTC).isoformat(),
                 "elements": elements
             }, f, indent=2)
-        print(f"\n💾 Elementer lagret til {elements_file}")
+        print(f"\nLAGRET: Elementer til {elements_file}")
         return
 
     # Bestem perioder å hente
@@ -175,7 +175,7 @@ def main():
         current_year = datetime.now().year
         years = [current_year - 2, current_year - 1, current_year]
 
-    print(f"\n📆 Henter data for år: {years}")
+    print(f"\nHenter data for år: {years}")
 
     # Hent data
     results = []
@@ -185,16 +185,16 @@ def main():
 
     # Oppsummering
     print("\n" + "=" * 60)
-    print("📊 OPPSUMMERING")
+    print("OPPSUMMERING")
     print("=" * 60)
 
     total_records = sum(r.get('records', 0) for r in results)
     successful = [r for r in results if r.get('records', 0) > 0]
 
-    print(f"✅ Hentet {total_records} målinger fra {len(successful)} år")
+    print(f"OK: Hentet {total_records} målinger fra {len(successful)} år")
 
     for r in results:
-        status = "✅" if r.get('records', 0) > 0 else "❌"
+        status = "OK" if r.get('records', 0) > 0 else "FEIL"
         print(f"   {status} {r['year']}: {r.get('records', 0)} målinger")
 
     # Lagre sammendrag
@@ -208,8 +208,8 @@ def main():
             "available_elements": elements
         }, f, indent=2)
 
-    print(f"\n💾 Sammendrag lagret til {summary_file}")
-    print("\n✅ Ferdig!")
+    print(f"\nLAGRET: Sammendrag til {summary_file}")
+    print("\nOK: Ferdig!")
 
 
 if __name__ == "__main__":

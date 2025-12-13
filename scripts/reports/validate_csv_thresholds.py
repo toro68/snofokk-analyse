@@ -136,17 +136,18 @@ def loose_snow_available(df: pd.DataFrame, t: pd.Timestamp) -> bool | None:
     """Sjekk om løssnø er tilgjengelig (kontinuerlig frost)."""
     if COLS.air_temp not in df.columns or df.empty:
         return None
-    window = df[(df[COLS.time] >= (t - pd.Timedelta(hours=24))) & (df[COLS.time] <= t)]
+    th = settings.snowdrift
+    window = df[(df[COLS.time] >= (t - pd.Timedelta(hours=th.loose_snow_lookback_hours))) & (df[COLS.time] <= t)]
     temps = pd.to_numeric(window[COLS.air_temp], errors="coerce").dropna()
     if temps.empty:
         return None
     
-    mild_hours = int((temps > 0).sum())
-    continuous_frost = bool((temps <= -1).all())
+    mild_hours = int((temps > th.loose_snow_mild_temp_min_c).sum())
+    continuous_frost = bool((temps <= th.loose_snow_continuous_frost_temp_max_c).all())
     
     if continuous_frost:
         return True
-    if mild_hours >= 6:
+    if mild_hours >= th.loose_snow_mild_hours_min:
         return False
     return True
 
@@ -190,7 +191,7 @@ def evaluate_snowdrift(df: pd.DataFrame, row: pd.Series) -> RiskLevel:
     if gust is not None and temp <= th.temperature_max:
         if gust >= th.wind_gust_critical and wind >= th.wind_speed_warning:
             return RiskLevel.HIGH
-        if gust >= th.wind_gust_warning and wind >= th.wind_speed_median:
+        if gust >= th.wind_gust_warning and wind >= th.wind_speed_gust_warning_gate:
             return RiskLevel.MEDIUM
     
     # ML vindkjøling-kriterier
@@ -224,12 +225,12 @@ def evaluate_fresh_snow(df: pd.DataFrame, row: pd.Series) -> RiskLevel:
     dew = safe_float(row.get(COLS.dew_point))
     precip = safe_float(row.get(COLS.precip_1h)) or 0.0
     
-    change_6h = snow_change(df, t, hours=6)
+    change_6h = snow_change(df, t, hours=settings.scripts.snow_change_window_hours)
     if change_6h is None:
         change_6h = safe_float(row.get("snow_change_6h"))
     
     is_snow = False
-    if precip > 0:
+    if precip > th.precipitation_min:
         if dew is not None:
             is_snow = dew < th.dew_point_max
         elif temp is not None:
@@ -263,7 +264,7 @@ def evaluate_slaps(df: pd.DataFrame, row: pd.Series) -> RiskLevel:
     
     snow = safe_float(row.get(COLS.snow)) or 0.0
     precip = safe_float(row.get(COLS.precip_1h)) or 0.0
-    precip_12h = precip_total(df, t, hours=12)
+    precip_12h = precip_total(df, t, hours=settings.scripts.slaps_precip_accumulation_hours)
     dew = safe_float(row.get(COLS.dew_point))
     
     if snow < th.snow_depth_min:
@@ -274,16 +275,18 @@ def evaluate_slaps(df: pd.DataFrame, row: pd.Series) -> RiskLevel:
         if temp < th.temp_min:
             return RiskLevel.LOW
         # Temp over maks gir ikke slaps-varsel alene – krever tegn på aktiv smelting.
-        change_6h = snow_change(df, t, hours=6)
-        if change_6h is not None and change_6h < -2:
+        change_6h = snow_change(df, t, hours=settings.scripts.snow_change_window_hours)
+        if change_6h is not None and change_6h < th.snow_melt_change_threshold_cm:
             return RiskLevel.MEDIUM
         return RiskLevel.LOW
     
-    change_6h = snow_change(df, t, hours=6)
-    rain = (dew is not None and dew >= 0.0) or (dew is None and temp >= 1.0)
+    change_6h = snow_change(df, t, hours=settings.scripts.snow_change_window_hours)
+    rain = (dew is not None and dew >= settings.fresh_snow.dew_point_max) or (
+        dew is None and temp >= settings.fresh_snow.air_temp_max
+    )
     
     rain_on_snow = rain and precip_12h >= th.precipitation_12h_min
-    melting = change_6h is not None and change_6h < -2
+    melting = change_6h is not None and change_6h < th.snow_melt_change_threshold_cm
     
     if rain_on_snow and melting:
         return RiskLevel.HIGH
@@ -358,12 +361,12 @@ def evaluate_slippery(df: pd.DataFrame, row: pd.Series) -> RiskLevel:
         frost_risk = False
         if dew_point is not None:
             frost_risk = (
-                abs(temp - dew_point) < 2
+                abs(temp - dew_point) < th.rimfrost_dewpoint_delta_max
                 and (humidity is None or humidity >= th.rimfrost_humidity_min)
                 and (wind is None or wind <= th.rimfrost_wind_max)
             )
 
-        melt = snow_change(df, t, hours=6)
+        melt = snow_change(df, t, hours=settings.scripts.snow_change_window_hours)
         melt_indicator = melt is not None and melt <= th.melt_snow_change_6h_cm
 
         if frost_risk or melt_indicator:

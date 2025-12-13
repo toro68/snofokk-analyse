@@ -87,7 +87,14 @@ elif (wind_chill < -12.0 and wind_speed > 8.0 and snow_depth > 0.20):
 | Kilde | Vindterskel | Status |
 |-------|-------------|--------|
 | **Graf i app (linje 691)** | `12 m/s` | ✅ RETTET |
-| **Empirisk validert (median)** | `12.2 m/s` | ✅ KORREKT |
+> ARKIVERT DOKUMENT
+>
+> Denne filen inneholder historiske tall fra analyser/validering og skal ikke brukes som
+> kilde til gjeldende terskler i app eller varsling.
+>
+> Gjeldende terskler finnes kun i `src/config.py` (bruk `settings.*`).
+
+| **Empirisk validert (median)** | `12.2 m/s` | KORREKT |
 | **Validert logikk** | `12 m/s (høy), 10 m/s (medium)` | ✅ KORREKT |
 
 ### 🎯 ALLE GRENSEVERDIER VALIDERT

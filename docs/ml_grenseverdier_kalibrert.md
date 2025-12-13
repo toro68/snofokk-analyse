@@ -1,7 +1,11 @@
-# ML-Baserte Grenseverdier for Snøfokk-Varsling - KALIBRERT
+# ML-baserte grenseverdier for snøfokk-varsling (historisk)
+
+Gjeldende terskler for live drift ligger kun i `src/config.py` og brukes via
+`settings.snowdrift.*`. Denne filen beskriver historikk og metode, men skal ikke
+være en kilde til tallverdier i app eller dokumentasjon.
 
 **Sist oppdatert:** 9. august 2025  
-**Status:** ✅ KALIBRERT FOR REALISTISK FREKVENS
+**Status:** Kalibrering dokumentert (historisk)
 
 ## 🎯 Kalibrering-Resultat
 
@@ -10,27 +14,23 @@
 **FINAL KALIBRERING:** 8 dager med varsling (4.4% av vinteren)  
 **Reduksjonsfaktor:** 23x færre varslinger  
 
-### ⚡ FINAL Kalibrerte Grenseverdier (ANBEFALT)
+### Final kalibrerte grenseverdier (gjeldende kilde)
 
-**KRITISKE GRENSEVERDIER (Høy risiko):**
-- 🌡️ **Vindkjøling:** < -15°C (skjerpet fra -12°C)
-- 💨 **Vindstyrke:** > 10 m/s (skjerpet fra 8 m/s)  
-- ❄️ **Lufttemperatur:** < -10°C (skjerpet fra -8°C)
-- 🏔️ **Snødybde minimum:** > 20cm (skjerpet fra 10cm)
+**Kritiske terskler:**
+- Vindkjøling: `settings.snowdrift.wind_chill_critical`
+- Vind (snitt): `settings.snowdrift.wind_speed_critical`
+- Vindkast: `settings.snowdrift.wind_gust_critical`
+- Temperatur-gate: `settings.snowdrift.temperature_max`
+- Minimum snødekke: `settings.snowdrift.snow_depth_min_cm`
 
-**ADVARSELS-GRENSEVERDIER (Medium risiko):**
-- 🌡️ **Vindkjøling:** < -12°C
-- 💨 **Vindstyrke:** > 8 m/s
-- ❄️ **Lufttemperatur:** < -8°C
-- 🏔️ **Snødybde minimum:** > 15cm
+**Advarselsterskler:**
+- Vindkjøling: `settings.snowdrift.wind_chill_warning`
+- Vind (snitt): `settings.snowdrift.wind_speed_warning`
+- Vindkast: `settings.snowdrift.wind_gust_warning`
 
-### 🔗 FINAL Kalibrerte Kombinasjonsregler
+### Kombinasjonsregler
 
-**Høy risiko-kombinasjon (ALLE kriterier må oppfylles):**
-- Vindkjøling < -15°C **OG** vindstyrke > 10 m/s **OG** snødybde > 20cm
-
-**Medium risiko-kombinasjon (ALLE kriterier må oppfylles):**
-- Vindkjøling < -12°C **OG** vindstyrke > 8 m/s **OG** snødybde > 15cm
+Kombinasjonslogikk og gating er implementert i kode. Se `src/analyzers/snowdrift.py`.
 
 ## 📊 Historisk Validering (2018-2024)
 
@@ -61,7 +61,7 @@
 - **April:** 2 dager totalt
 - **Desember:** 1 dag totalt
 
-**Konklusjon:** Grenseverdiene er perfekt kalibrert med kun 4.5 dager/år over 6+ år! 🎯
+**Konklusjon:** Kalibrering ga realistisk frekvens, men gjeldende terskler styres av `src/config.py`.
 
 ## 🎯 Implementering i Appen
 

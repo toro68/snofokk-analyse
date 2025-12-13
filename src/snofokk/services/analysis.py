@@ -64,15 +64,15 @@ class AnalysisService:
     def _calculate_confidence(self, depth: float, change: float) -> float:
         """Calculate confidence score for snow analysis"""
         # Base confidence
-        confidence = 0.8
+        confidence = settings.confidence_base
 
         # Reduce confidence for extreme values
-        if depth > 200:  # Very deep snow
-            confidence -= 0.2
-        if abs(change) > 20:  # Very large change
-            confidence -= 0.3
+        if depth > settings.confidence_extreme_depth_threshold:
+            confidence -= settings.confidence_extreme_depth_penalty
+        if abs(change) > settings.confidence_extreme_change_threshold:
+            confidence -= settings.confidence_extreme_change_penalty
 
-        return max(0.1, confidence)
+        return max(settings.confidence_min, confidence)
 
     def detect_risk_periods(self, df: WeatherData) -> pd.DataFrame:
         """Detect periods with high snow drift risk"""
@@ -87,30 +87,33 @@ class AnalysisService:
         # Wind risk component
         if 'wind_speed' in df.columns:
             wind_risk = np.where(
-                df['wind_speed'] >= 15.0, 1.0,
-                np.where(df['wind_speed'] >= settings.wind_impact_threshold, 0.6, 0.0)
+                df['wind_speed'] >= settings.wind_speed_high_threshold,
+                settings.wind_risk_high,
+                np.where(df['wind_speed'] >= settings.wind_impact_threshold, settings.wind_risk_medium, 0.0)
             )
-            df['risk_score'] += wind_risk * 0.4
+            df['risk_score'] += wind_risk * settings.wind_weight
 
         # Temperature risk component (cold temperatures increase drift risk)
         if 'air_temperature' in df.columns:
             temp_risk = np.where(
-                df['air_temperature'] <= -10.0, 0.8,
-                np.where(df['air_temperature'] <= settings.temperature_snow_threshold, 0.4, 0.0)
+                df['air_temperature'] <= settings.temperature_cold_threshold,
+                settings.temp_risk_high,
+                np.where(df['air_temperature'] <= settings.temperature_snow_threshold, settings.temp_risk_medium, 0.0)
             )
-            df['risk_score'] += temp_risk * 0.3
+            df['risk_score'] += temp_risk * settings.temp_weight
 
         # Snow change component
         if 'surface_snow_thickness' in df.columns:
             snow_change = df['surface_snow_thickness'].diff().abs()
             snow_risk = np.where(
-                snow_change >= 5.0, 0.8,
-                np.where(snow_change >= settings.snow_change_threshold, 0.4, 0.0)
+                snow_change >= settings.snow_change_high_threshold,
+                settings.snow_risk_high,
+                np.where(snow_change >= settings.snow_change_threshold, settings.snow_risk_medium, 0.0)
             )
-            df['risk_score'] += snow_risk * 0.3
+            df['risk_score'] += snow_risk * settings.snow_weight
 
-        # Identify high-risk periods (risk_score > 0.6)
-        df['is_high_risk'] = df['risk_score'] > 0.6
+        # Identify high-risk periods
+        df['is_high_risk'] = df['risk_score'] > settings.risk_score_high_threshold
 
         # Find continuous periods
         periods = self._identify_continuous_periods(df)

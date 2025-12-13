@@ -14,10 +14,15 @@ class GestureNavigation:
     def setup_swipe_navigation():
         """Sett opp swipe gestures for navigasjon"""
 
+        from src.config import settings
+
         swipe_js = """
         <script>
         (function() {
             'use strict';
+
+            const SWIPE_PREVENT_SCROLL_MIN_PX = __SWIPE_PREVENT_SCROLL_MIN_PX__;
+            const SWIPE_MIN_DISTANCE_PX = __SWIPE_MIN_DISTANCE_PX__;
 
             let startX = 0;
             let startY = 0;
@@ -56,7 +61,7 @@ class GestureNavigation:
                     const diffY = startY - currentY;
 
                     // Forhindre vertikal scrolling hvis horisontal swipe
-                    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 20) {
+                    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > SWIPE_PREVENT_SCROLL_MIN_PX) {
                         e.preventDefault();
                     }
                 }
@@ -71,7 +76,7 @@ class GestureNavigation:
                     const diffY = startY - endY;
 
                     // Minimum swipe distance
-                    const minSwipeDistance = 80;
+                    const minSwipeDistance = SWIPE_MIN_DISTANCE_PX;
 
                     if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > minSwipeDistance) {
                         if (diffX > 0) {
@@ -199,6 +204,12 @@ class GestureNavigation:
         })();
         </script>
         """
+
+        swipe_js = (
+            swipe_js
+            .replace("__SWIPE_PREVENT_SCROLL_MIN_PX__", str(settings.mobile.swipe_prevent_scroll_min_px))
+            .replace("__SWIPE_MIN_DISTANCE_PX__", str(settings.mobile.swipe_min_distance_px))
+        )
 
         # Inject swipe navigation
         components.html(swipe_js, height=0)
@@ -481,15 +492,23 @@ class GeolocationService:
     def setup_geolocation():
         """Sett opp geolocation for kontekst-bevisste varsler"""
 
+        from src.config import settings
+
         geo_js = """
         <script>
         (function() {
             'use strict';
 
+            const GULLINGEN_NEAR_DISTANCE_KM = __GULLINGEN_NEAR_DISTANCE_KM__;
+            const GULLINGEN_MEDIUM_DISTANCE_KM = __GULLINGEN_MEDIUM_DISTANCE_KM__;
+            const GULLINGEN_REFRESH_INTERVAL_FAR_S = __GULLINGEN_REFRESH_INTERVAL_FAR_S__;
+            const GULLINGEN_REFRESH_INTERVAL_MEDIUM_S = __GULLINGEN_REFRESH_INTERVAL_MEDIUM_S__;
+            const GULLINGEN_REFRESH_INTERVAL_NEAR_S = __GULLINGEN_REFRESH_INTERVAL_NEAR_S__;
+
             class GeolocationService {
                 constructor() {
-                    this.gullingenLat = 60.7;  // Estimert
-                    this.gullingenLon = 11.0;   // Estimert
+                    this.gullingenLat = __GULLINGEN_STATION_LAT__;
+                    this.gullingenLon = __GULLINGEN_STATION_LON__;
                     this.userLocation = null;
                     this.watchId = null;
 
@@ -574,17 +593,17 @@ class GeolocationService:
 
                 updateLocationContext(distance) {
                     let priority = 'low';
-                    let refreshInterval = 1800; // 30 min
+                    let refreshInterval = GULLINGEN_REFRESH_INTERVAL_FAR_S;
                     let showDetailed = false;
 
-                    if (distance < 5) {
+                    if (distance < GULLINGEN_NEAR_DISTANCE_KM) {
                         priority = 'high';
-                        refreshInterval = 60; // 1 min
+                        refreshInterval = GULLINGEN_REFRESH_INTERVAL_NEAR_S;
                         showDetailed = true;
-                        this.showLocationNotification('Du er nær Gullingen Skisenter!', '🎿');
-                    } else if (distance < 20) {
+                        this.showLocationNotification('Du er nær Gullingen Skisenter!');
+                    } else if (distance < GULLINGEN_MEDIUM_DISTANCE_KM) {
                         priority = 'medium';
-                        refreshInterval = 300; // 5 min
+                        refreshInterval = GULLINGEN_REFRESH_INTERVAL_MEDIUM_S;
                         showDetailed = false;
                     }
 
@@ -655,6 +674,17 @@ class GeolocationService:
         </script>
         """
 
+        geo_js = (
+            geo_js
+            .replace("__GULLINGEN_NEAR_DISTANCE_KM__", str(settings.mobile.near_distance_km))
+            .replace("__GULLINGEN_MEDIUM_DISTANCE_KM__", str(settings.mobile.medium_distance_km))
+            .replace("__GULLINGEN_REFRESH_INTERVAL_FAR_S__", str(settings.mobile.refresh_interval_far_s))
+            .replace("__GULLINGEN_REFRESH_INTERVAL_MEDIUM_S__", str(settings.mobile.refresh_interval_medium_s))
+            .replace("__GULLINGEN_REFRESH_INTERVAL_NEAR_S__", str(settings.mobile.refresh_interval_near_s))
+            .replace("__GULLINGEN_STATION_LAT__", str(settings.station.lat))
+            .replace("__GULLINGEN_STATION_LON__", str(settings.station.lon))
+        )
+
         # Inject geolocation service
         components.html(geo_js, height=0)
 
@@ -668,9 +698,11 @@ def setup_mobile_enhancements():
 
 def get_location_context() -> dict[str, Any]:
     """Hent location context fra session state"""
+    from src.config import settings
+
     return st.session_state.get('location_context', {
         'priority': 'medium',
-        'refresh_interval': 300,
+        'refresh_interval': settings.mobile.refresh_interval_medium_s,
         'show_detailed': False,
         'distance': None
     })
@@ -678,6 +710,8 @@ def get_location_context() -> dict[str, Any]:
 
 def is_near_gullingen() -> bool:
     """Sjekk om brukeren er nær Gullingen"""
+    from src.config import settings
+
     context = get_location_context()
     distance = context.get('distance')
-    return distance is not None and distance < 10  # Within 10km
+    return distance is not None and distance < settings.mobile.nearby_distance_km

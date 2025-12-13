@@ -66,17 +66,17 @@ def main():
 
         # Info
         with st.expander("Om appen"):
-            st.markdown("""
+            st.markdown(f"""
             **Varslingssystem for snøfokk og glattføre**
 
             Bruker ML-baserte terskler validert mot historiske data.
 
             **Datakilder:**
             - Frost API (Meteorologisk institutt)
-            - Stasjon: SN46220 Gullingen
+            - Stasjon: {settings.station.station_id} {settings.station.name}
 
             **Varslingskriterier:**
-            - Snøfokk: Vindkjøling < -12°C + vind > 8 m/s
+            - Snøfokk: Vindkjøling < {settings.snowdrift.wind_chill_warning}°C + vind > {settings.snowdrift.wind_speed_warning} m/s
             - Glattføre: Regn på snø, is-dannelse, rimfrost
             """)
 

@@ -9,6 +9,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import numpy as np
+
+from src.config import settings
 import pandas as pd
 
 
@@ -110,7 +112,7 @@ class WeatherPlowingCorrelationAnalyzer:
 
                 records.append(record)
 
-            except Exception as e:
+            except (KeyError, ValueError, IndexError) as e:
                 print(f"Kunne ikke parse rad: {row} - Feil: {e}")
                 continue
 
@@ -147,9 +149,13 @@ class WeatherPlowingCorrelationAnalyzer:
         if not weather_year_data:
             return {}
 
-        # Find weather data in a 24-hour window around plowing
-        start_window = plowing_record.start_time - timedelta(hours=12)
-        end_window = plowing_record.end_time + timedelta(hours=12)
+        # Find weather data in a window around plowing
+        start_window = plowing_record.start_time - timedelta(
+            hours=settings.scripts.plowing_weather_window_before_hours
+        )
+        end_window = plowing_record.end_time + timedelta(
+            hours=settings.scripts.plowing_weather_window_after_hours
+        )
 
         relevant_weather = []
 
@@ -181,47 +187,51 @@ class WeatherPlowingCorrelationAnalyzer:
         if not weather_conditions:
             return False, 0.0
 
+        th = settings.scripts
         score = 0.0
 
         # Snow accumulation factor
         snow_depth = weather_conditions.get("max_snow_depth", 0)
-        if snow_depth > 15:
-            score += 0.4
-        elif snow_depth > 8:
-            score += 0.3
-        elif snow_depth > 3:
-            score += 0.1
+        if snow_depth > th.correlation_snow_depth_high_cm:
+            score += th.correlation_score_snow_high
+        elif snow_depth > th.correlation_snow_depth_medium_cm:
+            score += th.correlation_score_snow_medium
+        elif snow_depth > th.correlation_snow_depth_low_cm:
+            score += th.correlation_score_snow_low
 
         # Precipitation factor
         total_precip = weather_conditions.get("total_precipitation", 0)
         max_precip_1h = weather_conditions.get("max_precipitation_1h", 0)
 
-        if total_precip > 10:
-            score += 0.3
-        elif total_precip > 5:
-            score += 0.2
+        if total_precip > th.correlation_total_precip_high_mm:
+            score += th.correlation_score_precip_high
+        elif total_precip > th.correlation_total_precip_medium_mm:
+            score += th.correlation_score_precip_medium
 
-        if max_precip_1h > 5:
-            score += 0.2
+        if max_precip_1h > th.correlation_max_precip_1h_mm:
+            score += th.correlation_score_precip_1h
 
         # Temperature factor (freezing conditions)
         avg_temp = weather_conditions.get("avg_air_temperature", 10)
         min_surface_temp = weather_conditions.get("min_surface_temperature", 10)
 
-        if avg_temp < -5 and min_surface_temp < -2:
-            score += 0.2
-        elif avg_temp < 0:
-            score += 0.1
+        if (
+            avg_temp < th.correlation_avg_temp_very_cold_c
+            and min_surface_temp < th.correlation_min_surface_temp_cold_c
+        ):
+            score += th.correlation_score_temp_very_cold
+        elif avg_temp < th.correlation_avg_temp_freezing_c:
+            score += th.correlation_score_temp_freezing
 
         # Wind factor (drifting snow)
         max_wind = weather_conditions.get("max_wind_speed", 0)
-        if max_wind > 12 and snow_depth > 5:
-            score += 0.15
-        elif max_wind > 8 and snow_depth > 3:
-            score += 0.1
+        if max_wind > th.correlation_wind_high_ms and snow_depth > th.correlation_wind_high_requires_snow_cm:
+            score += th.correlation_score_wind_high
+        elif max_wind > th.correlation_wind_medium_ms and snow_depth > th.correlation_wind_medium_requires_snow_cm:
+            score += th.correlation_score_wind_medium
 
         # Threshold for predicting plowing needed
-        needed = score > 0.4
+        needed = score > th.correlation_needed_score_min
 
         return needed, score
 
@@ -342,12 +352,12 @@ def main():
     # Load plowing data
     print("Laster brøytingsdata...")
     plowing_records = analyzer.load_plowing_data("Rapport 2022-2025.csv")
-    print(f"✓ Lastet {len(plowing_records)} brøytingsoperasjoner")
+    print(f"OK: Lastet {len(plowing_records)} brøytingsoperasjoner")
 
     # Analyze correlations
     print("Analyserer korrelasjoner...")
     correlations = analyzer.analyze_correlations()
-    print(f"✓ Analyserte {len(correlations)} korrelasjoner")
+    print(f"OK: Analyserte {len(correlations)} korrelasjoner")
 
     # Generate report
     print("Genererer rapport...")

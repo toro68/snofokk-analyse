@@ -22,6 +22,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from src.config import settings
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = PROJECT_ROOT / "data"
@@ -43,7 +45,7 @@ def parse_duration_to_minutes(duration_str: str) -> float | None:
             m, sec = (int(p) for p in parts)
             return m + sec / 60
         return None
-    except Exception:
+    except (TypeError, ValueError):
         return None
 
 
@@ -53,7 +55,7 @@ def parse_distance_km(distance_str: str) -> float | None:
         return None
     try:
         return float(s.replace(",", "."))
-    except Exception:
+    except (TypeError, ValueError):
         return None
 
 
@@ -90,10 +92,17 @@ def parse_norwegian_datetime_to_utc(date_str: str, time_str: str) -> datetime:
         import zoneinfo
 
         oslo_tz = zoneinfo.ZoneInfo("Europe/Oslo")
-        return local_dt.replace(tzinfo=oslo_tz).astimezone(UTC)
+    except ImportError:
+        oslo_tz = None
     except Exception:
+        # ZoneInfoNotFoundError eller lignende (mangler tzdata)
+        oslo_tz = None
+
+    if oslo_tz is None:
         # Fallback: antar UTC
         return local_dt.replace(tzinfo=UTC)
+
+    return local_dt.replace(tzinfo=oslo_tz).astimezone(UTC)
 
 
 def load_plowing_data(path: Path) -> pd.DataFrame:
@@ -251,15 +260,21 @@ def analyze_weather_vs_plowing(
         duration_minutes = out.get("duration_minutes")
         distance_km = out.get("distance_km")
 
-        out["short_run_45m"] = bool(duration_minutes is not None and duration_minutes <= 45)
-        out["short_run_30m"] = bool(duration_minutes is not None and duration_minutes <= 30)
+        script_thresholds = settings.scripts
+
+        out["short_run_45m"] = bool(
+            duration_minutes is not None and duration_minutes <= script_thresholds.short_run_45m_max_minutes
+        )
+        out["short_run_30m"] = bool(
+            duration_minutes is not None and duration_minutes <= script_thresholds.short_run_30m_max_minutes
+        )
 
         # Legacy/stricter inspection proxy (short + short distance)
         out["likely_inspection"] = bool(
             duration_minutes is not None
             and distance_km is not None
-            and duration_minutes <= 30
-            and distance_km <= 6
+            and duration_minutes <= script_thresholds.inspection_duration_max_minutes
+            and distance_km <= script_thresholds.inspection_distance_max_km
         )
 
         # Enkel scenario-heuristikk for sanity check
@@ -272,16 +287,27 @@ def analyze_weather_vs_plowing(
         snow_delta = out.get("snow_change")
 
         # Simple trigger flags (for separating quick "check" runs from weather-driven need)
-        out["trigger_fresh_snow"] = bool(snow_delta is not None and snow_delta >= 5.0)
-        out["trigger_slaps"] = bool(temp is not None and temp > 0 and precip >= 5.0)
-        out["trigger_freezing"] = bool(surface_temp is not None and surface_temp < 0 and temp is not None and temp > 0)
+        out["trigger_fresh_snow"] = bool(
+            snow_delta is not None and snow_delta >= script_thresholds.trigger_fresh_snow_min_cm
+        )
+        out["trigger_slaps"] = bool(
+            temp is not None
+            and temp > script_thresholds.trigger_slaps_air_temp_min_c
+            and precip >= script_thresholds.trigger_slaps_precip_total_min_mm
+        )
+        out["trigger_freezing"] = bool(
+            surface_temp is not None
+            and surface_temp < settings.slippery.surface_temp_freeze
+            and temp is not None
+            and temp > script_thresholds.trigger_freezing_air_temp_min_c
+        )
         out["trigger_snowdrift"] = bool(
             gust is not None
-            and gust >= 15.0
+            and gust >= script_thresholds.trigger_snowdrift_gust_min_ms
             and temp is not None
-            and temp < -1.0
+            and temp < script_thresholds.trigger_snowdrift_air_temp_max_c
             and wind is not None
-            and wind >= 8.0
+            and wind >= script_thresholds.trigger_snowdrift_wind_min_ms
         )
         out["has_weather_trigger"] = bool(
             out["trigger_fresh_snow"]
@@ -293,13 +319,21 @@ def analyze_weather_vs_plowing(
 
         if out["wx_rows"] == 0 or temp is None:
             out["scenario"] = "UKJENT"
-        elif temp > 0 and precip > 5:
+        elif temp > script_thresholds.trigger_slaps_air_temp_min_c and precip > script_thresholds.scenario_slaps_precip_total_min_mm:
             out["scenario"] = "SLAPS"
-        elif temp <= 0 and precip > 2:
+        elif temp <= settings.display.freezing_max and precip > script_thresholds.scenario_snow_precip_total_min_mm:
             out["scenario"] = "NYSNØ"
-        elif surface_temp is not None and surface_temp < 0 and temp > 0:
+        elif (
+            surface_temp is not None
+            and surface_temp < settings.slippery.surface_temp_freeze
+            and temp > script_thresholds.trigger_freezing_air_temp_min_c
+        ):
             out["scenario"] = "FRYSEFARE"
-        elif wind is not None and wind > 6 and temp < -1:
+        elif (
+            wind is not None
+            and wind > script_thresholds.scenario_snowdrift_wind_min_ms
+            and temp < script_thresholds.scenario_snowdrift_air_temp_max_c
+        ):
             out["scenario"] = "SNØFOKK"
         else:
             out["scenario"] = "ANNET"
@@ -332,7 +366,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Sjekk vær-CSV mot brøyteloggen")
     parser.add_argument("--weather", type=Path, default=DEFAULT_WEATHER_FILE, help="Værdata CSV")
     parser.add_argument("--plowing", type=Path, default=DEFAULT_PLOWING_FILE, help="Brøytelog CSV (Rapport 2022-2025)")
-    parser.add_argument("--hours", type=int, default=6, help="Antall timer før brøyting som analyseres")
+    parser.add_argument(
+        "--hours",
+        type=int,
+        default=settings.scripts.snow_change_window_hours,
+        help="Antall timer før brøyting som analyseres",
+    )
     parser.add_argument(
         "--out",
         type=Path,

@@ -20,8 +20,8 @@ class SlapsAnalyzer(BaseAnalyzer):
     Analyserer slaps-risiko.
 
     Hovedscenarier:
-    1. Regn på snø ved temp 0-4°C
-    2. Snøsmelting ved temp 0-4°C
+    1. Regn på snø ved mildvær (se `settings.slaps.temp_min/temp_max`)
+    2. Snøsmelting ved mildvær (se `settings.slaps.temp_min/temp_max`)
     3. Overgang fra snø til regn
 
     Validert mot 42 bekreftet slaps-episoder:
@@ -67,6 +67,9 @@ class SlapsAnalyzer(BaseAnalyzer):
         """Full vinteranalyse for slaps."""
         thresholds = settings.slaps
 
+        snow_change_hours = int(getattr(thresholds, "snow_change_hours", 6))
+        precip_hours = int(getattr(thresholds, "precipitation_accum_hours", 12))
+
         # Hent verdier
         latest = self._get_latest(df)
         temp = self._safe_get(latest, 'air_temperature')
@@ -82,9 +85,16 @@ class SlapsAnalyzer(BaseAnalyzer):
             )
 
         # Beregn snøendring (synkende = smelting = slaps)
-        snow_change = self._calculate_snow_change(df)
+        snow_change = self._calculate_snow_change(df, hours=snow_change_hours)
 
-        precip_12h = self._calculate_precip_total(df, hours=12)
+        precip_total = self._calculate_precip_total(df, hours=precip_hours)
+
+        # Nedbørterskler er historisk kalibrert for 12 timer (felt-navnene reflekterer dette).
+        # Når vi endrer akkumuleringstiden, skalerer vi tersklene proporsjonalt for å beholde
+        # omtrent samme "mm per time"-intensitet.
+        precip_scale = max(precip_hours / 12.0, 1.0)
+        precip_accum_min = thresholds.precipitation_12h_min * precip_scale
+        precip_accum_heavy = thresholds.precipitation_12h_heavy * precip_scale
 
         # Sjekk om nedbør er regn (ikke snø)
         is_rain = self._is_precipitation_rain(temp, dew_point)
@@ -93,9 +103,13 @@ class SlapsAnalyzer(BaseAnalyzer):
         details = {
             "temperature": round(temp, 1),
             "snow_depth_cm": round(snow, 1),
-            "snow_change_6h": round(snow_change, 1),
+            "snow_change_hours": snow_change_hours,
+            "snow_change_cm": round(snow_change, 1),
             "precipitation_mm": round(precip, 2),
-            "precipitation_12h_mm": round(precip_12h, 2),
+            "precipitation_hours": precip_hours,
+            "precipitation_total_mm": round(precip_total, 2),
+            "precipitation_min_mm": round(precip_accum_min, 2),
+            "precipitation_heavy_mm": round(precip_accum_heavy, 2),
             "dew_point": round(dew_point, 1) if dew_point else None,
             "is_rain": is_rain,
         }
@@ -126,7 +140,7 @@ class SlapsAnalyzer(BaseAnalyzer):
                 )
             else:  # temp > thresholds.temp_max
                 # Ikke varsle på varmegrader alene – krever tegn på aktiv smelting.
-                if snow_change < -2:
+                if snow_change < thresholds.snow_melt_change_threshold_cm:
                     return AnalysisResult(
                         risk_level=RiskLevel.MEDIUM,
                         message=f"Varm ({temp:.1f}°C) - snøsmelting pågår",
@@ -149,16 +163,16 @@ class SlapsAnalyzer(BaseAnalyzer):
         # Sjekk tegn på aktiv slaps
         slaps_indicators = []
 
-        # Bruk 12t akkumulert nedbør for å unngå varsling på små drypp.
-        rain_on_snow = is_rain and precip_12h >= thresholds.precipitation_12h_min
+        # Bruk akkumulert nedbør for å unngå varsling på små drypp (og for å fange nattnedbør).
+        rain_on_snow = is_rain and precip_total >= precip_accum_min
 
         if rain_on_snow:
             slaps_indicators.append("rain_on_snow")
             factors.append(f"Regn på snø: {precip:.1f} mm/t")
 
-        if snow_change < -2:
+        if snow_change < thresholds.snow_melt_change_threshold_cm:
             slaps_indicators.append("melting")
-            factors.append(f"Snø smelter: {abs(snow_change):.1f} cm siste 6t")
+            factors.append(f"Snø smelter: {abs(snow_change):.1f} cm siste {snow_change_hours}t")
 
         if len(slaps_indicators) >= 2:
             return AnalysisResult(
@@ -170,7 +184,7 @@ class SlapsAnalyzer(BaseAnalyzer):
             )
 
         if "rain_on_snow" in slaps_indicators:
-            if precip_12h >= thresholds.precipitation_12h_heavy:
+            if precip_total >= precip_accum_heavy:
                 return AnalysisResult(
                     risk_level=RiskLevel.HIGH,
                     message=f"Kraftig regn på snø ({precip:.1f} mm/t) - vanskelig fremkommelighet",
@@ -222,9 +236,12 @@ class SlapsAnalyzer(BaseAnalyzer):
         if 'reference_time' not in df.columns or 'precipitation_1h' not in df.columns or df.empty:
             return 0.0
 
-        now = datetime.now(UTC)
+        now = pd.to_datetime(df['reference_time']).max()
+        if pd.isna(now):
+            return 0.0
+
         cutoff = now - timedelta(hours=hours)
-        recent = df[df['reference_time'] >= cutoff].copy()
+        recent = df[pd.to_datetime(df['reference_time']) >= cutoff].copy()
         if recent.empty:
             return 0.0
 
@@ -236,10 +253,16 @@ class SlapsAnalyzer(BaseAnalyzer):
         if 'surface_snow_thickness' not in df.columns:
             return 0.0
 
-        now = datetime.now(UTC)
+        if df.empty or 'reference_time' not in df.columns:
+            return 0.0
+
+        now = pd.to_datetime(df['reference_time']).max()
+        if pd.isna(now):
+            return 0.0
+
         cutoff = now - timedelta(hours=hours)
 
-        recent = df[df['reference_time'] >= cutoff].copy()
+        recent = df[pd.to_datetime(df['reference_time']) >= cutoff].copy()
         if len(recent) < 2:
             return 0.0
 
@@ -264,13 +287,15 @@ class SlapsAnalyzer(BaseAnalyzer):
         Returns:
             True hvis nedbør sannsynligvis er regn
         """
+        thresholds = settings.fresh_snow
+
         # Primær metode: duggpunkt
         if dew_point is not None:
-            return dew_point >= 0.0  # Duggpunkt >= 0 = regn
+            return dew_point >= thresholds.dew_point_max
 
         # Sekundær metode: lufttemperatur
         if temp is not None:
-            return temp >= 1.0  # Temp >= 1°C = sannsynligvis regn
+            return temp >= thresholds.air_temp_max
 
         return False
 

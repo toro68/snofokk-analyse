@@ -108,18 +108,19 @@ class FrostClient:
                 "Streamlit Cloud: Legg til i secrets"
             )
 
-    def fetch_recent(self, hours_back: int = 24) -> WeatherData:
+    def fetch_recent(self, hours_back: int | None = None) -> WeatherData:
         """
         Hent data for siste N timer.
 
         Args:
-            hours_back: Antall timer tilbake i tid
+            hours_back: Antall timer tilbake i tid (default: `settings.api.default_hours_back`)
 
         Returns:
             WeatherData med målinger
         """
         end_time = datetime.now(UTC)
-        start_time = end_time - timedelta(hours=hours_back)
+        hours = settings.api.default_hours_back if hours_back is None else hours_back
+        start_time = end_time - timedelta(hours=hours)
         return self.fetch_period(start_time, end_time)
 
     def fetch_period(

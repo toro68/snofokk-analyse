@@ -6,17 +6,25 @@ from datetime import datetime
 
 import requests
 
+from src.config import get_secret
+
 
 def load_config():
-    """Laster konfigurasjon fra config/alert_config.json"""
-    config_path = os.path.join(
-        os.path.dirname(__file__),
-        '..',
-        'config',
-        'alert_config.json'
-    )
-    with open(config_path) as f:
-        return json.load(f)
+    """Laster Netatmo-konfigurasjon fra secrets/miljøvariabler.
+
+    Denne scriptet bruker ikke lenger legacy `config/alert_config.json`.
+    """
+    return {
+        "client_id": get_secret("NETATMO_CLIENT_ID", ""),
+        "client_secret": get_secret("NETATMO_CLIENT_SECRET", ""),
+        "username": get_secret("NETATMO_USERNAME", ""),
+        "password": get_secret("NETATMO_PASSWORD", ""),
+        "lat_ne": float(get_secret("NETATMO_LAT_NE", "0") or "0"),
+        "lon_ne": float(get_secret("NETATMO_LON_NE", "0") or "0"),
+        "lat_sw": float(get_secret("NETATMO_LAT_SW", "0") or "0"),
+        "lon_sw": float(get_secret("NETATMO_LON_SW", "0") or "0"),
+        "output_dir": get_secret("NETATMO_OUTPUT_DIR", "data/raw"),
+    }
 
 
 class NetatmoPublicClient:

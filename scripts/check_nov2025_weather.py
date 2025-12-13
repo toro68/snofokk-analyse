@@ -10,7 +10,7 @@ load_dotenv()
 
 client_id = os.getenv('FROST_CLIENT_ID')
 if not client_id:
-    print("❌ FROST_CLIENT_ID ikke funnet i .env")
+    print("FEIL: FROST_CLIENT_ID ikke funnet i .env")
     exit(1)
 
 # Hent værdata for 22-27 november 2025
@@ -119,13 +119,13 @@ if response.status_code == 200:
         if temps:
             avg_temp = sum(temps)/len(temps)
             if avg_temp > 0 and precips:
-                print("  ⚠️  SLAPS-RISIKO: Plusgrader + nedbør")
+                print("  ADVARSEL: SLAPS-RISIKO: Plusgrader + nedbør")
             elif avg_temp > 0:
-                print("  ⚠️  SMELTING: Plusgrader kan gi slaps")
+                print("  ADVARSEL: SMELTING: Plusgrader kan gi slaps")
         if dews and temps:
             if max(dews) < 0 and sum(precips) > 0 if precips else False:
-                print("  ❄️  NYSNØ: Duggpunkt under 0°C + nedbør")
+                print("  NYSNØ: Duggpunkt under 0°C + nedbør")
 
 else:
-    print(f"❌ API-feil: {response.status_code}")
+    print(f"FEIL: API-feil: {response.status_code}")
     print(response.text[:500])

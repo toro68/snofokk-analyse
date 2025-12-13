@@ -93,11 +93,15 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
     ) -> AnalysisResult:
         """Sommeranalyse - fokus på rimfrost og regn."""
         factors = []
+        thresholds = settings.slippery
 
         # Sjekk rimfrost (kan forekomme på kalde sommernetter)
         frost_risk = False
         if surface_temp is not None and dew_point is not None:
-            frost_risk = surface_temp <= 0 and abs(temp - dew_point) < 2
+            frost_risk = (
+                surface_temp <= thresholds.surface_temp_freeze
+                and abs(temp - dew_point) < thresholds.rimfrost_dewpoint_delta_max
+            )
             if frost_risk:
                 factors.append(f"Rimfrost-risiko (bakketemperatur: {surface_temp:.1f}°C)")
 
@@ -110,7 +114,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
                 details={"surface_temp": surface_temp, "dew_point": dew_point}
             )
 
-        if precip >= 0.5:
+        if precip >= thresholds.summer_rain_threshold_mm_per_h:
             return AnalysisResult(
                 risk_level=RiskLevel.LOW,
                 message=f"Sommerregn ({precip:.1f} mm/h) - normalt gode forhold",
@@ -198,15 +202,15 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
 
             # Vis temperaturforskjell
             temp_diff = temp - surface_temp
-            if temp_diff > 2:
+            if temp_diff > thresholds.surface_air_diff_notice_min_c:
                 factors.append(f"Bakke {temp_diff:.1f}°C kaldere enn luft")
 
         # Rimfrost-risiko
         frost_risk = False
         if surface_temp is not None and dew_point is not None:
             frost_risk = (
-                surface_temp <= 0
-                and abs(temp - dew_point) < 2
+                surface_temp <= thresholds.surface_temp_freeze
+                    and abs(temp - dew_point) < thresholds.rimfrost_dewpoint_delta_max
                 and (humidity is None or humidity >= thresholds.rimfrost_humidity_min)
                 and (wind is None or wind <= thresholds.rimfrost_wind_max)
             )
@@ -239,6 +243,44 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
 
         # SCENARIO 1: Regn på snø (KRITISK)
         if mild_weather and existing_snow and rain_now:
+            # Viktig: Snødybde måles i terreng og er ikke det samme som "snøkappe på vei".
+            # For å redusere falske positiver på vårføre, bruker vi bakketemperatur når mulig.
+            # Samtidig: etter en kuldeperiode kan mildvær + regn gi is/glatt føre selv om
+            # bakketemperaturen akkurat nå er mild (snøkappe/kompakt underlag + refrysing senere).
+            recent_hours = thresholds.rain_on_snow_recent_cold_hours
+            recent_cold_surface = self._recent_min_leq(
+                df,
+                column='surface_temperature',
+                hours=recent_hours,
+                max_value=thresholds.rain_on_snow_recent_surface_temp_freeze_max_c,
+            )
+            recent_cold_air = self._recent_min_leq(
+                df,
+                column='air_temperature',
+                hours=recent_hours,
+                max_value=thresholds.rain_on_snow_recent_air_temp_freeze_max_c,
+            )
+
+            surface_near_freeze_now = (
+                surface_temp is not None and surface_temp <= thresholds.rain_on_snow_surface_temp_max_c
+            )
+            cold_context = surface_near_freeze_now or recent_cold_surface or recent_cold_air
+
+            if recent_cold_surface:
+                factors.append(f"Kald bakke nylig (min siste {recent_hours}t ≤ {thresholds.rain_on_snow_recent_surface_temp_freeze_max_c:.0f}°C)")
+            elif recent_cold_air:
+                factors.append(f"Kuldeperiode nylig (min luft siste {recent_hours}t ≤ {thresholds.rain_on_snow_recent_air_temp_freeze_max_c:.0f}°C)")
+
+            # Ingen kald kontekst → sannsynlig vårføre/bar vei: varsle moderat (vått/slaps) heller enn høy isfare.
+            if not cold_context:
+                surface_label = f"{surface_temp:.1f}°C" if surface_temp is not None else "ukjent"
+                return AnalysisResult(
+                    risk_level=RiskLevel.MEDIUM,
+                    message=f"Regn ({precip:.1f} mm/h) på snø, men ingen nylig kulde (bakketemp {surface_label}) - vått/slaps",
+                    scenario="Regn på snø (uten kald kontekst)",
+                    factors=factors + ["Mild bakke uten nylig kulde reduserer is-risiko"],
+                    details=details
+                )
             if not self._recent_snow_absent(df):
                 return AnalysisResult(
                     risk_level=RiskLevel.MEDIUM,
@@ -318,7 +360,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
             )
 
         # SCENARIO 5: Stabilt kaldt (LAV RISIKO)
-        if temp < -5 and existing_snow:
+        if temp < thresholds.stable_cold_air_temp_max and existing_snow:
             return AnalysisResult(
                 risk_level=RiskLevel.LOW,
                 message=f"Stabile vinterforhold: Kaldt ({temp:.1f}°C) og tørt",
@@ -335,6 +377,23 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
             factors=factors if factors else ["Ingen kritiske kombinasjoner"],
             details=details
         )
+
+    def _recent_min_leq(self, df: pd.DataFrame, *, column: str, hours: int, max_value: float) -> bool:
+        """True hvis minimum i `column` siste `hours` er <= `max_value` (basert på dataens tidsakse)."""
+        if df.empty or 'reference_time' not in df.columns or column not in df.columns:
+            return False
+
+        now = self._analysis_now(df)
+        cutoff = now - timedelta(hours=hours)
+        recent = df[df['reference_time'] >= cutoff].copy()
+        if recent.empty:
+            return False
+
+        vals = pd.to_numeric(recent[column], errors='coerce').dropna()
+        if vals.empty:
+            return False
+
+        return float(vals.min()) <= float(max_value)
 
     def _check_recent_snow(self, df: pd.DataFrame) -> bool:
         """Sjekk om snødybden har økt nylig (naturlig strøing)."""

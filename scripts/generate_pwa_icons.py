@@ -90,7 +90,7 @@ def create_weather_icon(size: int, output_path: str):
 
     # Save the icon
     img.save(output_path, 'PNG')
-    print(f"✅ Created icon: {output_path} ({size}x{size})")
+    print(f"OK: Created icon: {output_path} ({size}x{size})")
 
 def create_favicon():
     """Create a simple favicon.ico"""
@@ -133,7 +133,7 @@ def main():
     favicon_path = os.path.join(static_dir, 'favicon.ico')
     favicon_img = create_favicon()
     favicon_img.save(favicon_path, 'ICO')
-    print(f"✅ Created favicon: {favicon_path}")
+    print(f"OK: Created favicon: {favicon_path}")
 
     # Create apple touch icon (180x180 is the standard size)
     apple_icon_path = os.path.join(static_dir, 'apple-touch-icon.png')

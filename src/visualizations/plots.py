@@ -317,7 +317,12 @@ class WeatherPlots:
             if not np.isfinite(t) or not np.isfinite(w):
                 invalid_mask.append(False)
             else:
-                invalid_mask.append(bool(t >= 10 or w < 1.34))
+                invalid_mask.append(
+                    bool(
+                        t >= settings.viz.wind_chill_valid_temp_max_c
+                        or w < settings.viz.wind_chill_valid_wind_min_ms
+                    )
+                )
         if any(invalid_mask):
             y_min, y_max = ax.get_ylim()
             ax.fill_between(
@@ -325,7 +330,7 @@ class WeatherPlots:
                 [y_min] * len(times),
                 [y_max] * len(times),
                 where=invalid_mask,
-                color='#B0BEC5',
+                color=settings.viz.color_invalid,
                 alpha=0.15,
                 label='Ikke gyldig (mildvær/lite vind)'
             )
@@ -400,7 +405,8 @@ class WeatherPlots:
             # Marker frysefare: luft > 0, bakke < 0
             if 'air_temperature' in df.columns:
                 temp = cls._numeric(df, 'air_temperature').ffill()
-                freeze_risk = (temp > 0) & (surface_temp < 0)
+                freeze_point = settings.slippery.surface_temp_freeze
+                freeze_risk = (temp > freeze_point) & (surface_temp < freeze_point)
                 if freeze_risk.any():
                     ax.fill_between(times, temp, surface_temp,
                                    where=freeze_risk, alpha=0.3,
@@ -413,7 +419,7 @@ class WeatherPlots:
                     linewidth=1.5, linestyle='--', label='Duggpunkt')
 
         # Frysepunkt-linje
-        ax.axhline(y=0, color='navy', linestyle='-', alpha=0.4, linewidth=1)
+        ax.axhline(y=settings.slippery.surface_temp_freeze, color='navy', linestyle='-', alpha=0.4, linewidth=1)
 
         ax.set_ylabel('°C')
         ax.legend(loc='upper right', fontsize=8)
@@ -591,7 +597,7 @@ class WeatherPlots:
 
     @classmethod
     def _plot_wind_direction(cls, ax, times, df, viz):
-        """Plot vindretning med kritisk sektor markert (SE-S 135-225°)."""
+        """Plot vindretning med kritisk sektor markert (fra settings)."""
         if 'wind_from_direction' not in df.columns:
             ax.text(0.5, 0.5, 'Ingen vindretningsdata', ha='center', va='center', transform=ax.transAxes)
             return
@@ -601,8 +607,15 @@ class WeatherPlots:
         # Plott vindretning
         ax.scatter(times, wind_dir, c=viz.color_wind, s=15, alpha=0.7, label='Vindretning')
 
-        # Marker kritisk sektor (SE-S: 135-225°) - spesielt utsatt for snøfokk
-        ax.axhspan(135, 225, alpha=0.2, color='#E53935', label='Kritisk sektor (SE-S)')
+        # Marker kritisk sektor (vindretning) - spesielt utsatt for snøfokk
+        sd = settings.snowdrift
+        ax.axhspan(
+            sd.critical_wind_dir_min,
+            sd.critical_wind_dir_max,
+            alpha=0.2,
+            color=viz.color_critical,
+            label=f"Kritisk sektor ({sd.critical_wind_dir_min:.0f}–{sd.critical_wind_dir_max:.0f}°)",
+        )
 
         # Horisontal linje for hovedretninger
         ax.axhline(y=0, color='gray', linestyle=':', alpha=0.5)

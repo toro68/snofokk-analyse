@@ -18,21 +18,26 @@ from bs4 import BeautifulSoup
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 
+from src.config import get_secret, settings
+
 # Sett opp logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
 
 def load_config():
-    """Last inn konfigurasjon fra JSON-fil."""
-    try:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        base_dir = os.path.dirname(script_dir)
-        config_path = os.path.join(base_dir, 'config', 'alert_config.json')
-        with open(config_path) as f:
-            return json.load(f)
-    except Exception as e:
-        logger.error(f"Kunne ikke laste konfigurasjonsfil: {str(e)}")
-        raise
+    """Bygg runtime-konfigurasjon.
+
+    Denne rapporten bruker `src/config.py` (settings.*) som kilde.
+    """
+    return {
+        "frost_client_id": settings.api.client_id,
+        "weather_station": settings.station.station_id,
+        "email_from": get_secret("ALERT_EMAIL_FROM", ""),
+        "email_to": get_secret("ALERT_EMAIL_TO", ""),
+        "smtp_server": get_secret("ALERT_SMTP_SERVER", "smtp.gmail.com"),
+        "smtp_username": get_secret("ALERT_SMTP_USERNAME", ""),
+        "smtp_password": get_secret("ALERT_SMTP_PASSWORD", ""),
+    }
 
 def get_weather_data(report_time):
     """Hent værdata for siste 24 timer."""
@@ -109,8 +114,10 @@ def get_weather_data(report_time):
         logger.error(f"Feil ved henting av værdata: {str(e)}")
         return None
 
-def smooth_snow_depth(df, window_size=3):
+def smooth_snow_depth(df, window_size=None):
     """Glatt ut snødybdemålinger med et glidende gjennomsnitt."""
+    if window_size is None:
+        window_size = settings.scripts.daily_report_snow_smooth_window_size
     df['smooth_snow_depth'] = df['surface_snow_thickness'].rolling(
         window=window_size, center=True, min_periods=1
     ).mean()
@@ -130,11 +137,12 @@ def create_graphs(df, report_time, output_dir):
         df['precip_type'] = None  # Start med ingen type
 
         # Definer masker for nedbør og snødybdeendring
-        has_precip = df['sum(precipitation_amount PT1H)'] > 0
-        snow_increasing = df['snow_depth_change'] > 0.2
-        snow_decreasing = df['snow_depth_change'] < -0.2
-        snow_stable = (df['snow_depth_change'].abs() <= 0.2)
-        temp_freezing = df['air_temperature'] < 0
+        change_th = settings.scripts.daily_report_snow_change_classification_threshold_cm
+        has_precip = df['sum(precipitation_amount PT1H)'] >= settings.fresh_snow.precipitation_min
+        snow_increasing = df['snow_depth_change'] > change_th
+        snow_decreasing = df['snow_depth_change'] < -change_th
+        snow_stable = (df['snow_depth_change'].abs() <= change_th)
+        temp_freezing = df['air_temperature'] < settings.display.freezing_max
 
         # Klassifiser nedbør:
         # 1. Nysnø: når det er nedbør og snødybden øker
@@ -207,7 +215,7 @@ def create_graphs(df, report_time, output_dir):
         # Lag én søyle per time med riktig farge
         colors = []
         for _idx, row in df.iterrows():
-            if row['sum(precipitation_amount PT1H)'] > 0:
+            if row['sum(precipitation_amount PT1H)'] >= settings.scripts.daily_report_hourly_precip_any_min_mm:
                 colors.append(color_map[row['precip_type']])
             else:
                 colors.append('none')
@@ -311,9 +319,11 @@ def analyze_precipitation_discrepancies(df):
     discrepancies = []
 
     # Definer terskelverdier for endringer
-    SNOW_INCREASE_THRESHOLD = 1.0  # cm
-    SNOW_DECREASE_THRESHOLD = -1.0  # cm
-    WIND_THRESHOLD = 5.0  # m/s
+    snow_change_th = settings.scripts.daily_report_discrepancy_snow_change_threshold_cm
+    snow_increase_th = snow_change_th
+    snow_decrease_th = -snow_change_th
+    wind_th = settings.scripts.daily_report_discrepancy_wind_threshold_ms
+    precip_th = settings.scripts.daily_report_discrepancy_precip_min_mm
 
     # Sjekk hver time i datasettet
     for i in range(1, len(df)):
@@ -334,8 +344,8 @@ def analyze_precipitation_discrepancies(df):
             continue
 
         # Sjekk for betydelige uoverensstemmelser
-        if precip > 0.5:  # Øk terskelen for nedbør
-            if temp < 0 and snow_change < SNOW_DECREASE_THRESHOLD:
+        if precip > precip_th:
+            if temp < settings.display.freezing_max and snow_change < snow_decrease_th:
                 discrepancies.append({
                     'time': time,
                     'issue': 'Minusgrader og nedbør, men betydelig synkende snødybde',
@@ -344,7 +354,7 @@ def analyze_precipitation_discrepancies(df):
                     'snow_change': snow_change,
                     'wind': wind
                 })
-            elif temp >= 2 and snow_change > SNOW_INCREASE_THRESHOLD:
+            elif temp >= settings.display.mild_max and snow_change > snow_increase_th:
                 discrepancies.append({
                     'time': time,
                     'issue': 'Plussgrader og nedbør, men betydelig økende snødybde',
@@ -353,7 +363,7 @@ def analyze_precipitation_discrepancies(df):
                     'snow_change': snow_change,
                     'wind': wind
                 })
-        elif snow_change > SNOW_INCREASE_THRESHOLD and temp >= 0:
+        elif snow_change > snow_increase_th and temp >= settings.display.freezing_max:
             discrepancies.append({
                 'time': time,
                 'issue': 'Betydelig økende snødybde uten registrert nedbør',
@@ -362,7 +372,7 @@ def analyze_precipitation_discrepancies(df):
                 'snow_change': snow_change,
                 'wind': wind
             })
-        elif snow_change < SNOW_DECREASE_THRESHOLD and wind < WIND_THRESHOLD and temp < 2:
+        elif snow_change < snow_decrease_th and wind < wind_th and temp < settings.display.mild_max:
             discrepancies.append({
                 'time': time,
                 'issue': 'Betydelig synkende snødybde uten sterk vind eller høy temperatur',
@@ -392,8 +402,8 @@ def get_last_plowing():
         soup = BeautifulSoup(response.text, 'html.parser')
         scripts = soup.find_all('script')
 
-        if len(scripts) >= 29:
-            script = scripts[28]
+        if len(scripts) >= settings.scripts.plowman_share_scripts_min_count:
+            script = scripts[settings.scripts.plowman_share_script_index]
             if script.string:
                 content = script.string.strip()
 
@@ -457,10 +467,10 @@ def analyze_conditions(df, report_time):
         total_precip = df['sum(precipitation_amount PT1H)'].sum()
 
         # Bestem nedbørtype basert på temperatur og snøendring
-        if total_precip > 0:
-            if current_temp < 0 and snow_change > 0:
+        if total_precip > settings.scripts.daily_report_total_precip_any_min_mm:
+            if current_temp < settings.display.freezing_max and snow_change > 0:
                 precip_type = "snø"
-            elif current_temp > 2:
+            elif current_temp > settings.display.mild_max:
                 precip_type = "regn"
             else:
                 precip_type = "sludd"

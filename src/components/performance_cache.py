@@ -10,6 +10,8 @@ from typing import Any
 import pandas as pd
 import streamlit as st
 
+from src.config import settings
+
 
 class DataCache:
     """Avansert data caching med TTL og kompresjon"""
@@ -89,20 +91,22 @@ class DataCache:
 
         # Finn utløpte nøkler
         expired_keys = []
+        cache_cfg = settings.performance_cache
         for key, item in cache.items():
             age = now - item['timestamp']
-            if age > item['ttl'] * 2:  # Behold dobbelt så lenge for fallback
+            if age > item['ttl'] * cache_cfg.ttl_fallback_multiplier:  # Behold lengre for fallback
                 expired_keys.append(key)
 
         # Fjern utløpte oppføringer
         for key in expired_keys:
             del cache[key]
 
-        # Begrens cache størrelse (max 20 oppføringer)
-        if len(cache) > 20:
+        # Begrens cache størrelse
+        if len(cache) > cache_cfg.max_entries:
             # Fjern eldste oppføringer
             sorted_items = sorted(cache.items(), key=lambda x: x[1]['timestamp'])
-            for key, _ in sorted_items[:-15]:  # Behold de 15 nyeste
+            keep_newest = min(cache_cfg.keep_newest_entries, cache_cfg.max_entries)
+            for key, _ in sorted_items[:-keep_newest]:
                 del cache[key]
 
     @staticmethod

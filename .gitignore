@@ -28,6 +28,7 @@ wheels/
 # Virtual Environment
 venv/
 ENV/
+.venv/
 
 # IDE
 .idea/
@@ -43,6 +44,8 @@ Thumbs.db
 .streamlit/secrets.toml
 .env
 *.env
+config/local_config.json
+config/local_*.json
 
 # Logs
 *.log

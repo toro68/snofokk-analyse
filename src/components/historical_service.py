@@ -9,11 +9,13 @@ from functools import lru_cache
 import pandas as pd
 import streamlit as st
 
+from src.config import settings
+
 
 class HistoricalWeatherService:
     """Service for håndtering av historisk værdata og brøyting-tracking"""
 
-    def __init__(self, frost_client_id: str, station_id: str = "SN46220"):
+    def __init__(self, frost_client_id: str, station_id: str = settings.station.station_id):
         self.frost_client_id = frost_client_id
         self.station_id = station_id
         self.cache_dir = "data/cache"
@@ -25,13 +27,15 @@ class HistoricalWeatherService:
     def validate_date_range(self, start_date: datetime, end_date: datetime) -> tuple[bool, str]:
         """Valider datorekkefølge og begrensninger"""
 
+        cfg = settings.historical
+
         # Sjekk kronologisk rekkefølge
         if start_date >= end_date:
             return False, "Startdato må være før sluttdato"
 
-        # Sjekk maksimal lengde (14 dager)
-        if (end_date - start_date).days > 14:
-            return False, "Maksimal periode er 14 dager"
+        # Sjekk maksimal lengde
+        if (end_date - start_date).days > cfg.date_range_max_days:
+            return False, f"Maksimal periode er {cfg.date_range_max_days} dager"
 
         # Sjekk at det ikke er fremtid
         now = datetime.now(UTC)
@@ -41,9 +45,9 @@ class HistoricalWeatherService:
         if end_date > now:
             return False, "Sluttdato kan ikke være i fremtiden"
 
-        # Sjekk minimum varighet (minst 1 time)
-        if (end_date - start_date).total_seconds() < 3600:
-            return False, "Minimum periode er 1 time"
+        # Sjekk minimum varighet
+        if end_date - start_date < timedelta(hours=cfg.date_range_min_hours):
+            return False, f"Minimum periode er {cfg.date_range_min_hours} time(r)"
 
         return True, "OK"
 
@@ -64,11 +68,11 @@ class HistoricalWeatherService:
             else:
                 return pd.DataFrame()
 
-        except Exception as e:
+        except (OSError, json.JSONDecodeError, ValueError, TypeError) as e:
             st.error(f"Feil ved lasting av februar-data: {e}")
             return pd.DataFrame()
 
-    @lru_cache(maxsize=20)  # noqa: B019 - bevisst caching
+    @lru_cache(maxsize=settings.historical.fetch_cache_maxsize)  # noqa: B019 - bevisst caching
     def fetch_historical_data(self, start_date: str, end_date: str) -> pd.DataFrame:
         """Hent historisk data fra API med caching"""
 
@@ -106,7 +110,7 @@ class HistoricalWeatherService:
                 url,
                 params=params,
                 auth=(self.frost_client_id, ''),
-                timeout=60  # Lengre timeout for historisk data
+                timeout=settings.historical.http_timeout_seconds,  # Lengre timeout for historiske data
             )
 
             if response.status_code == 200:
@@ -138,8 +142,11 @@ class HistoricalWeatherService:
                 st.error(f"API-feil: {response.status_code}")
                 return pd.DataFrame()
 
-        except Exception as e:
-            st.error(f"Feil ved henting av historisk data: {e}")
+        except requests.RequestException as e:
+            st.error(f"Feil ved henting av historisk data (HTTP): {e}")
+            return pd.DataFrame()
+        except (ValueError, KeyError, TypeError) as e:
+            st.error(f"Feil ved parsing av historisk data: {e}")
             return pd.DataFrame()
 
     def calculate_new_snow(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -153,7 +160,13 @@ class HistoricalWeatherService:
         # Konverter snødybde til cm hvis nødvendig
         snow_col = 'surface_snow_thickness'
         df['snow_depth_cm'] = df[snow_col] * 100
-        df.loc[df['snow_depth_cm'] > 10, 'snow_depth_cm'] = df.loc[df['snow_depth_cm'] > 10, snow_col]
+        df.loc[
+            df['snow_depth_cm'] > settings.historical.snow_depth_conversion_cutoff_cm,
+            'snow_depth_cm'
+        ] = df.loc[
+            df['snow_depth_cm'] > settings.historical.snow_depth_conversion_cutoff_cm,
+            snow_col
+        ]
 
         # Beregn snøendringer (diff)
         df['snow_change'] = df['snow_depth_cm'].diff()
@@ -161,8 +174,8 @@ class HistoricalWeatherService:
         # Identifiser nysnø-perioder
         # Nysnø = positiv snøendring + nedbør + kald temperatur
         df['new_snow_candidate'] = (
-            (df['snow_change'] > 0.5) &  # Minst 0.5cm økning
-            (df.get('air_temperature', 0) < 2)  # Under 2°C
+            (df['snow_change'] > settings.historical.new_snow_change_min_cm) &
+            (df.get('air_temperature', 0) < settings.historical.new_snow_air_temp_max)
         )
 
         # Beregn akkumulert nysnø siden sist brøyting
@@ -170,7 +183,7 @@ class HistoricalWeatherService:
         df.loc[df['new_snow_candidate'], 'new_snow_cm'] = df.loc[df['new_snow_candidate'], 'snow_change']
 
         # Smooth ut urealistiske verdier
-        df.loc[df['new_snow_cm'] > 20, 'new_snow_cm'] = 20  # Max 20cm per time
+        df.loc[df['new_snow_cm'] > settings.historical.new_snow_hourly_cap_cm, 'new_snow_cm'] = settings.historical.new_snow_hourly_cap_cm
         df.loc[df['new_snow_cm'] < 0, 'new_snow_cm'] = 0
 
         # Klassifiser nysnø-type basert på temperatur
@@ -179,22 +192,26 @@ class HistoricalWeatherService:
         temp_col = 'air_temperature'
         if temp_col in df.columns:
             df.loc[
-                (df['new_snow_cm'] > 0) & (df[temp_col] < -5),
+                (df['new_snow_cm'] > 0) & (df[temp_col] < settings.historical.snow_type_powder_air_temp_max),
                 'snow_type'
             ] = 'tørr_pudder'
 
             df.loc[
-                (df['new_snow_cm'] > 0) & (df[temp_col] >= -5) & (df[temp_col] < -1),
+                (df['new_snow_cm'] > 0) &
+                (df[temp_col] >= settings.historical.snow_type_powder_air_temp_max) &
+                (df[temp_col] < settings.historical.snow_type_dry_air_temp_max),
                 'snow_type'
             ] = 'tørr'
 
             df.loc[
-                (df['new_snow_cm'] > 0) & (df[temp_col] >= -1) & (df[temp_col] < 1),
+                (df['new_snow_cm'] > 0) &
+                (df[temp_col] >= settings.historical.snow_type_dry_air_temp_max) &
+                (df[temp_col] < settings.historical.snow_type_wet_air_temp_max),
                 'snow_type'
             ] = 'våt'
 
             df.loc[
-                (df['new_snow_cm'] > 0) & (df[temp_col] >= 1),
+                (df['new_snow_cm'] > 0) & (df[temp_col] >= settings.historical.snow_type_wet_air_temp_max),
                 'snow_type'
             ] = 'slaps'
 
@@ -238,13 +255,19 @@ class HistoricalWeatherService:
             dominant_type = 'ingen'
 
         # Vurder brøytebehov basert på empiriske terskler
-        if dominant_type == 'våt' and total_new_snow >= 6:
+        if dominant_type == 'våt' and total_new_snow >= settings.historical.plowing_threshold_wet_cm:
             plowing_needed = True
-            recommendation = f"Brøyting anbefalt: {total_new_snow:.1f}cm våt snø (terskel: 6cm)"
-        elif dominant_type in ['tørr', 'tørr_pudder'] and total_new_snow >= 12:
+            recommendation = (
+                f"Brøyting anbefalt: {total_new_snow:.1f}cm våt snø "
+                f"(terskel: {settings.historical.plowing_threshold_wet_cm:g}cm)"
+            )
+        elif dominant_type in ['tørr', 'tørr_pudder'] and total_new_snow >= settings.historical.plowing_threshold_dry_cm:
             plowing_needed = True
-            recommendation = f"Brøyting anbefalt: {total_new_snow:.1f}cm tørr snø (terskel: 12cm)"
-        elif total_new_snow >= 15:
+            recommendation = (
+                f"Brøyting anbefalt: {total_new_snow:.1f}cm tørr snø "
+                f"(terskel: {settings.historical.plowing_threshold_dry_cm:g}cm)"
+            )
+        elif total_new_snow >= settings.historical.plowing_threshold_total_cm:
             plowing_needed = True
             recommendation = f"Brøyting anbefalt: {total_new_snow:.1f}cm total snø"
         else:
@@ -308,11 +331,13 @@ class HistoricalWeatherService:
             data.sort(key=lambda x: x['timestamp'], reverse=True)
             return data[:limit]
 
-        except Exception:
+        except (OSError, json.JSONDecodeError, ValueError, TypeError):
             return []
 
     def create_february_sample_data(self):
         """Opprett eksempel-data for 1-15 februar"""
+
+        cfg = settings.historical
 
         # Generer realistisk vinterdata for Gullingen
         start_date = datetime(2024, 2, 1)
@@ -326,10 +351,10 @@ class HistoricalWeatherService:
             current += timedelta(hours=1)
 
         import numpy as np
-        np.random.seed(42)  # For konsistente resultater
+        np.random.seed(cfg.feb_sample_seed)  # For konsistente resultater
 
         records = []
-        base_snow_depth = 45  # Start snødybde
+        base_snow_depth = cfg.feb_sample_start_snow_depth_cm  # Start snødybde
         accumulated_precip = 0
 
         for i, ts in enumerate(timestamps):
@@ -337,58 +362,66 @@ class HistoricalWeatherService:
             day_of_period = (ts - start_date).days
 
             # Temperatur-variasjon (kaldere først i perioden)
-            base_temp = -8 + day_of_period * 0.5 + np.sin(i/24 * 2*np.pi) * 4
-            temp = base_temp + np.random.normal(0, 2)
+            base_temp = (
+                cfg.feb_sample_base_temp_start_c
+                + day_of_period * cfg.feb_sample_base_temp_daily_increase_c
+                + np.sin(i / 24 * 2 * np.pi) * cfg.feb_sample_base_temp_diurnal_amp_c
+            )
+            temp = base_temp + np.random.normal(0, cfg.feb_sample_temp_noise_sigma_c)
 
             # Vind med storm-episoder
-            if 3 <= day_of_period <= 5:  # Storm 3-5 februar
-                wind = 12 + np.random.exponential(3)
-            elif 9 <= day_of_period <= 10:  # Mindre storm 9-10 februar
-                wind = 8 + np.random.exponential(2)
+            if cfg.feb_sample_storm_main_day_start <= day_of_period <= cfg.feb_sample_storm_main_day_end:
+                wind = cfg.feb_sample_storm_main_wind_base_ms + np.random.exponential(cfg.feb_sample_storm_main_wind_exp_scale)
+            elif cfg.feb_sample_storm_minor_day_start <= day_of_period <= cfg.feb_sample_storm_minor_day_end:
+                wind = cfg.feb_sample_storm_minor_wind_base_ms + np.random.exponential(cfg.feb_sample_storm_minor_wind_exp_scale)
             else:
-                wind = 3 + np.random.exponential(2)
+                wind = cfg.feb_sample_wind_base_ms + np.random.exponential(cfg.feb_sample_wind_exp_scale)
 
-            wind = min(wind, 25)  # Max 25 m/s
+            wind = min(wind, cfg.feb_sample_wind_cap_ms)
 
             # Nedbør-episoder
             precip_hour = 0
-            if 2 <= day_of_period <= 3 and temp < 0:  # Snøfall 2-3 feb
-                precip_hour = np.random.exponential(0.8) if np.random.random() < 0.4 else 0
-            elif 7 <= day_of_period <= 8 and temp < 1:  # Snøfall 7-8 feb
-                precip_hour = np.random.exponential(1.2) if np.random.random() < 0.3 else 0
-            elif 12 <= day_of_period <= 13 and temp < 2:  # Lett snøfall 12-13 feb
-                precip_hour = np.random.exponential(0.5) if np.random.random() < 0.2 else 0
+            if cfg.feb_sample_precip_ep1_day_start <= day_of_period <= cfg.feb_sample_precip_ep1_day_end and temp < cfg.feb_sample_precip_ep1_temp_max_c:
+                precip_hour = np.random.exponential(cfg.feb_sample_precip_ep1_exp_scale) if np.random.random() < cfg.feb_sample_precip_ep1_prob else 0
+            elif cfg.feb_sample_precip_ep2_day_start <= day_of_period <= cfg.feb_sample_precip_ep2_day_end and temp < cfg.feb_sample_precip_ep2_temp_max_c:
+                precip_hour = np.random.exponential(cfg.feb_sample_precip_ep2_exp_scale) if np.random.random() < cfg.feb_sample_precip_ep2_prob else 0
+            elif cfg.feb_sample_precip_ep3_day_start <= day_of_period <= cfg.feb_sample_precip_ep3_day_end and temp < cfg.feb_sample_precip_ep3_temp_max_c:
+                precip_hour = np.random.exponential(cfg.feb_sample_precip_ep3_exp_scale) if np.random.random() < cfg.feb_sample_precip_ep3_prob else 0
 
             accumulated_precip += precip_hour
 
             # Snødybde (øker med snøfall, reduseres med vind og varme)
-            if precip_hour > 0 and temp < 1:
-                base_snow_depth += precip_hour * 2  # 2cm per mm nedbør
+            if precip_hour > 0 and temp < cfg.feb_sample_snow_accum_temp_max_c:
+                base_snow_depth += precip_hour * cfg.feb_sample_snow_accum_cm_per_mm
 
-            if wind > 10 and temp < -2:  # Vindblåst snø
-                base_snow_depth -= wind * 0.05
+            if wind > cfg.feb_sample_blowing_wind_min_ms and temp < cfg.feb_sample_blowing_temp_max_c:
+                base_snow_depth -= wind * cfg.feb_sample_blowing_snow_depth_reduction_coef
 
-            if temp > 3:  # Smelting
-                base_snow_depth -= (temp - 2) * 0.2
+            if temp > cfg.feb_sample_melt_temp_min_c:
+                base_snow_depth -= (temp - cfg.feb_sample_melt_offset_c) * cfg.feb_sample_melt_coef
 
-            base_snow_depth = max(base_snow_depth, 5)  # Minimum snødybde
+            base_snow_depth = max(base_snow_depth, cfg.feb_sample_snow_min_depth_cm)
 
             # Surface temperature litt kaldere enn lufttemperatur
-            surface_temp = temp - np.random.uniform(0.5, 2.0)
+            surface_temp = temp - np.random.uniform(cfg.feb_sample_surface_temp_drop_min_c, cfg.feb_sample_surface_temp_drop_max_c)
 
             record = {
                 'time': ts.isoformat(),
                 'air_temperature': round(temp, 1),
                 'wind_speed': round(wind, 1),
-                'wind_from_direction': 225 + np.random.normal(0, 30),  # Hovedsakelig SV
+                'wind_from_direction': cfg.feb_sample_wind_dir_base_deg + np.random.normal(0, cfg.feb_sample_wind_dir_sigma_deg),
                 'surface_snow_thickness': round(base_snow_depth, 1),
                 'sum(precipitation_amount PT1H)': round(precip_hour, 1),
                 'accumulated(precipitation_amount)': round(accumulated_precip, 1),
                 'surface_temperature': round(surface_temp, 1),
-                'relative_humidity': round(60 + np.random.normal(0, 15), 1),
-                'dew_point_temperature': round(temp - 5 + np.random.normal(0, 2), 1),
-                'max(wind_speed_of_gust PT1H)': round(wind * 1.4, 1),
-                'weather_symbol': 1 if precip_hour > 0 else (2 if wind > 8 else 3)
+                'relative_humidity': round(cfg.feb_sample_humidity_base_pct + np.random.normal(0, cfg.feb_sample_humidity_sigma_pct), 1),
+                'dew_point_temperature': round(temp + cfg.feb_sample_dew_point_offset_c + np.random.normal(0, cfg.feb_sample_dew_point_sigma_c), 1),
+                'max(wind_speed_of_gust PT1H)': round(wind * cfg.feb_sample_gust_multiplier, 1),
+                'weather_symbol': (
+                    cfg.feb_sample_weather_symbol_precip
+                    if precip_hour > 0
+                    else (cfg.feb_sample_weather_symbol_wind if wind > cfg.feb_sample_weather_symbol_wind_min_ms else cfg.feb_sample_weather_symbol_clear)
+                )
             }
 
             records.append(record)

@@ -35,6 +35,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from src.config import settings
+
 
 @dataclass(frozen=True)
 class Params:
@@ -139,27 +141,43 @@ def score(df: pd.DataFrame, pred: pd.Series, w_fn: float, w_fp: float, w_fp_no_n
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--report", type=Path, required=True, help="Event report CSV (from analyze_broyting_correlation.py)")
-    parser.add_argument("--need-duration", type=float, default=45.0, help="Minutes: > this implies need")
-    parser.add_argument("--need-distance", type=float, default=8.0, help="Km: > this implies need")
+    th = settings.scripts
+    parser.add_argument(
+        "--need-duration",
+        type=float,
+        default=th.calibrate_need_duration_min_default_minutes,
+        help="Minutes: > this implies need",
+    )
+    parser.add_argument(
+        "--need-distance",
+        type=float,
+        default=th.calibrate_need_distance_default_km,
+        help="Km: > this implies need",
+    )
 
-    parser.add_argument("--w-fn", type=float, default=3.0, help="Weight for false negatives")
-    parser.add_argument("--w-fp", type=float, default=1.0, help="Weight for false positives")
-    parser.add_argument("--w-fp-no-need", type=float, default=4.0, help="Extra weight for alerts on short/no-need runs")
+    parser.add_argument("--w-fn", type=float, default=th.calibrate_weight_false_negative, help="Weight for false negatives")
+    parser.add_argument("--w-fp", type=float, default=th.calibrate_weight_false_positive, help="Weight for false positives")
+    parser.add_argument(
+        "--w-fp-no-need",
+        type=float,
+        default=th.calibrate_weight_false_positive_no_need,
+        help="Extra weight for alerts on short/no-need runs",
+    )
 
     parser.add_argument(
         "--target-alert-rate",
         type=float,
-        default=30.0,
+        default=th.calibrate_target_alert_rate_default_pct,
         help="Preferred max alert rate (percent) across labeled events",
     )
     parser.add_argument(
         "--w-alert-rate",
         type=float,
-        default=6.0,
+        default=th.calibrate_weight_alert_rate,
         help="Penalty weight for exceeding target alert rate",
     )
 
-    parser.add_argument("--top", type=int, default=25, help="How many top parameter sets to write")
+    parser.add_argument("--top", type=int, default=th.calibrate_top_default, help="How many top parameter sets to write")
     parser.add_argument("--out", type=Path, default=None, help="Output CSV (default: alongside report)")
 
     args = parser.parse_args()
@@ -176,24 +194,24 @@ def main() -> None:
 
     candidates: list[dict] = []
 
-    for snow_change_cm in [3.0, 4.0, 5.0, 6.0, 7.0]:
-        for slaps_precip_mm in [3.0, 4.0, 5.0, 6.0, 7.0, 8.0]:
-            for slaps_temp_max in [2.0, 3.0, 4.0, 5.0]:
-                for gust_mps in [13.0, 15.0, 17.0, 19.0, 21.0]:
-                    for wind_mps in [6.0, 8.0, 10.0, 12.0]:
-                        for freeze_surface_max in [-0.5, -1.0, -1.5, -2.0]:
-                            for freeze_air_max in [1.0, 2.0, 3.0]:
-                                for freeze_precip_mm in [0.0, 0.5, 1.0, 2.0]:
+    for snow_change_cm in th.calibrate_grid_snow_change_cm:
+        for slaps_precip_mm in th.calibrate_grid_slaps_precip_mm:
+            for slaps_temp_max in th.calibrate_grid_slaps_temp_max_c:
+                for gust_mps in th.calibrate_grid_gust_mps:
+                    for wind_mps in th.calibrate_grid_wind_mps:
+                        for freeze_surface_max in th.calibrate_grid_freeze_surface_max_c:
+                            for freeze_air_max in th.calibrate_grid_freeze_air_max_c:
+                                for freeze_precip_mm in th.calibrate_grid_freeze_precip_mm:
                                     p = Params(
                                         snow_change_cm=snow_change_cm,
                                         slaps_precip_mm=slaps_precip_mm,
-                                        slaps_temp_min=-1.0,
+                                        slaps_temp_min=th.calibrate_slaps_temp_min_c,
                                         slaps_temp_max=slaps_temp_max,
                                         gust_mps=gust_mps,
                                         wind_mps=wind_mps,
-                                        drift_temp_max=-1.0,
+                                        drift_temp_max=th.calibrate_drift_temp_max_c,
                                         freeze_surface_max=freeze_surface_max,
-                                        freeze_air_min=0.0,
+                                        freeze_air_min=th.calibrate_freeze_air_min_c,
                                         freeze_air_max=freeze_air_max,
                                         freeze_precip_mm=freeze_precip_mm,
                                     )

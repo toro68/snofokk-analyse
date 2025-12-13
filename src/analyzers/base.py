@@ -172,7 +172,9 @@ class BaseAnalyzer(ABC):
         if temp is None or wind is None:
             return temp if temp is not None else 0.0
 
-        if temp >= 10 or wind < 1.34:
+        from src.config import settings
+
+        if temp >= settings.viz.wind_chill_valid_temp_max_c or wind < settings.viz.wind_chill_valid_wind_min_ms:
             return temp
 
         wind_kmh = wind * 3.6

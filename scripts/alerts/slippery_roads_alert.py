@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import smtplib
@@ -9,6 +8,8 @@ from email.mime.text import MIMEText
 import pandas as pd
 import requests
 
+from src.config import get_secret, settings
+
 # Sett opp logging
 logging.basicConfig(level=logging.INFO,
                    format='%(message)s')
@@ -18,16 +19,22 @@ logger = logging.getLogger(__name__)
 logger.info(f"\n=== KJØRING STARTET {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ===\n")
 
 def load_config():
-    """Last inn konfigurasjon fra JSON-fil."""
-    try:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        base_dir = os.path.dirname(script_dir)
-        config_path = os.path.join(base_dir, 'config', 'alert_config.json')
-        with open(config_path) as f:
-            return json.load(f)
-    except Exception as e:
-        logger.error(f"Kunne ikke laste konfigurasjonsfil: {str(e)}")
-        raise
+    """Bygg runtime-konfigurasjon.
+
+    Terskler hentes fra `src/config.py` (settings.*).
+    Secrets hentes fra Streamlit secrets eller miljøvariabler.
+    """
+    cooldown_hours = int(get_secret("ALERT_COOLDOWN_HOURS", os.getenv("ALERT_COOLDOWN_HOURS", "12")) or "12")
+    return {
+        "frost_client_id": settings.api.client_id,
+        "weather_station": settings.station.station_id,
+        "cooldown_hours": cooldown_hours,
+        "email_from": get_secret("ALERT_EMAIL_FROM", ""),
+        "email_to": get_secret("ALERT_EMAIL_TO", ""),
+        "smtp_server": get_secret("ALERT_SMTP_SERVER", "smtp.gmail.com"),
+        "smtp_username": get_secret("ALERT_SMTP_USERNAME", ""),
+        "smtp_password": get_secret("ALERT_SMTP_PASSWORD", ""),
+    }
 
 def get_last_alert_time():
     """Hent tidspunkt for siste varsel fra fil."""
@@ -137,11 +144,14 @@ def get_weather_data(config):
 def assess_slippery_conditions(weather_data, config):
     """Vurderer om forholdene tilsier glatte veier."""
     try:
+        th = settings.slippery
+        precip_3h_threshold = 3 * th.rain_threshold_mm
+
         conditions = {
-            'temp_ok': 0 <= weather_data['air_temperature'] <= 6,
-            'humidity_ok': weather_data['relative_humidity'] >= 80,
-            'precip_ok': weather_data['precip_3h'] >= 1.5,
-            'snow_ok': weather_data['surface_snow_thickness'] >= 10,
+            'temp_ok': th.mild_temp_min <= weather_data['air_temperature'] <= th.mild_temp_max,
+            'humidity_ok': weather_data['relative_humidity'] >= th.rimfrost_humidity_min,
+            'precip_ok': weather_data['precip_3h'] >= precip_3h_threshold,
+            'snow_ok': weather_data['surface_snow_thickness'] >= th.snow_depth_min_cm,
             'melting_ok': weather_data['snow_change'] < 0
         }
 
@@ -149,10 +159,10 @@ def assess_slippery_conditions(weather_data, config):
 
         logger.info("\n=== RISIKOVURDERING ===")
         logger.info("Kriterier for glatte veier:")
-        logger.info(f"- Temperatur mellom 0°C og +6°C: {conditions['temp_ok']}")
-        logger.info(f"- Høy luftfuktighet (>80%): {conditions['humidity_ok']}")
-        logger.info(f"- Tilstrekkelig nedbør (>1.5mm/3t): {conditions['precip_ok']}")
-        logger.info(f"- Nok snø på bakken (>10cm): {conditions['snow_ok']}")
+        logger.info(f"- Mildvær ({th.mild_temp_min:.1f}–{th.mild_temp_max:.1f}°C): {conditions['temp_ok']}")
+        logger.info(f"- Høy luftfuktighet (≥{th.rimfrost_humidity_min:.0f}%): {conditions['humidity_ok']}")
+        logger.info(f"- Tilstrekkelig nedbør (≥{precip_3h_threshold:.1f}mm/3t): {conditions['precip_ok']}")
+        logger.info(f"- Nok snø på bakken (≥{th.snow_depth_min_cm:.0f}cm): {conditions['snow_ok']}")
         logger.info(f"- Minkende snødybde: {conditions['melting_ok']}")
 
         if risk_present:
@@ -178,6 +188,9 @@ def send_alert(config, assessment):
         msg['To'] = config['email_to']
         msg['Subject'] = 'VARSEL: Risiko for glatte veier i Fjellbergsskardet'
 
+        th = settings.slippery
+        precip_3h_threshold = 3 * th.rain_threshold_mm
+
         body = f"""VARSEL: Risiko for glatte veier i Fjellbergsskardet
 
 Tid: {datetime.now().strftime('%Y-%m-%d %H:%M')}
@@ -190,11 +203,11 @@ VÆRFORHOLD:
 - Nedbør siste 3 timer: {assessment['weather_data']['precip_3h']:.1f} mm
 
 KRITERIER OPPFYLT:
-✓ Temperatur mellom 0°C og +6°C
-✓ Høy luftfuktighet (over 80%)
-✓ Tilstrekkelig nedbør (over 1.5mm/3t)
-✓ Nok snø på bakken (over 10cm)
-✓ Minkende snødybde (smelting)
+- Mildvær ({th.mild_temp_min:.1f}–{th.mild_temp_max:.1f}°C)
+- Høy luftfuktighet (≥{th.rimfrost_humidity_min:.0f}%)
+- Tilstrekkelig nedbør (≥{precip_3h_threshold:.1f}mm/3t)
+- Nok snø på bakken (≥{th.snow_depth_min_cm:.0f}cm)
+- Minkende snødybde (smelting)
 
 -------------------
 Dette er et automatisk varsel med værdata fra Gullingen værstasjon.
@@ -228,7 +241,7 @@ def main():
         last_alert = get_last_alert_time()
         if last_alert:
             hours_since_last = (datetime.now() - last_alert).total_seconds() / 3600
-            if hours_since_last < config.get('cooldown_hours', 12):
+            if hours_since_last < config['cooldown_hours']:
                 logger.info(f"For kort tid siden siste varsel ({hours_since_last:.1f} timer)")
                 return
 

@@ -9,6 +9,8 @@ import folium
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
+from src.config import settings
+
 
 def get_latest_data():
     """Henter nyeste data fra netatmo-filene."""
@@ -27,6 +29,7 @@ def get_latest_data():
 
 def create_weather_map(data):
     """Lager et kart med værstasjoner og deres målinger."""
+    td = settings.display
     # Finn senterpunkt for kartet
     stations = data['body']
     if not stations:
@@ -97,15 +100,15 @@ def create_weather_map(data):
 
         # Velg farge basert på temperatur
         if temp is not None:
-            if temp < -5:
+            if temp < td.cold_max:
                 color = '#0000FF'  # Mørkeblå
-            elif temp < -2:
+            elif temp < td.chilly_max:
                 color = '#4169E1'  # Kongeblå
-            elif temp < 0:
+            elif temp < td.freezing_max:
                 color = '#87CEEB'  # Himmelblå
-            elif temp < 2:
+            elif temp < td.mild_max:
                 color = '#98FB98'  # Lysegrønn
-            elif temp < 5:
+            elif temp < td.warm_max:
                 color = '#32CD32'  # Limegrønn
             else:
                 color = '#FF4500'  # Oransjerød
@@ -125,16 +128,16 @@ def create_weather_map(data):
         ).add_to(m)
 
     # Legg til fargeforklaring
-    legend_html = """
+    legend_html = f"""
     <div style="position: fixed; bottom: 50px; left: 50px; z-index: 1000; background-color: white;
     padding: 10px; border: 2px solid grey; border-radius: 5px;">
     <p><strong>Temperatur</strong></p>
-    <p><span style="color:#0000FF">■</span> Under -5°C</p>
-    <p><span style="color:#4169E1">■</span> -5°C til -2°C</p>
-    <p><span style="color:#87CEEB">■</span> -2°C til 0°C</p>
-    <p><span style="color:#98FB98">■</span> 0°C til 2°C</p>
-    <p><span style="color:#32CD32">■</span> 2°C til 5°C</p>
-    <p><span style="color:#FF4500">■</span> Over 5°C</p>
+    <p><span style="color:#0000FF">■</span> Under {td.cold_max:g}°C</p>
+    <p><span style="color:#4169E1">■</span> {td.cold_max:g}°C til {td.chilly_max:g}°C</p>
+    <p><span style="color:#87CEEB">■</span> {td.chilly_max:g}°C til {td.freezing_max:g}°C</p>
+    <p><span style="color:#98FB98">■</span> {td.freezing_max:g}°C til {td.mild_max:g}°C</p>
+    <p><span style="color:#32CD32">■</span> {td.mild_max:g}°C til {td.warm_max:g}°C</p>
+    <p><span style="color:#FF4500">■</span> Over {td.warm_max:g}°C</p>
     </div>
     """
     m.get_root().html.add_child(folium.Element(legend_html))

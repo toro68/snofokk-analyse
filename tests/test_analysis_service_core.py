@@ -8,6 +8,7 @@ import pandas as pd
 
 from snofokk.models import SnowAnalysis
 from snofokk.services.analysis import AnalysisService, analysis_service
+from src.config import settings as core_settings
 
 
 class TestAnalysisServiceCore:
@@ -224,6 +225,23 @@ class TestAnalysisServiceSettings:
         mock_settings.snow_change_threshold = 2.0
         mock_settings.wind_impact_threshold = 12.0
         mock_settings.temperature_snow_threshold = -8.0
+
+        # Øvrige parametre som brukes i scoring/vekting
+        mock_settings.wind_speed_high_threshold = core_settings.legacy_snofokk.wind_speed_high_threshold
+        mock_settings.temperature_cold_threshold = core_settings.legacy_snofokk.temperature_cold_threshold
+        mock_settings.snow_change_high_threshold = core_settings.legacy_snofokk.snow_change_high_threshold
+        mock_settings.risk_score_high_threshold = core_settings.legacy_snofokk.risk_score_high_threshold
+
+        mock_settings.wind_risk_high = core_settings.legacy_snofokk.wind_risk_high
+        mock_settings.wind_risk_medium = core_settings.legacy_snofokk.wind_risk_medium
+        mock_settings.temp_risk_high = core_settings.legacy_snofokk.temp_risk_high
+        mock_settings.temp_risk_medium = core_settings.legacy_snofokk.temp_risk_medium
+        mock_settings.snow_risk_high = core_settings.legacy_snofokk.snow_risk_high
+        mock_settings.snow_risk_medium = core_settings.legacy_snofokk.snow_risk_medium
+
+        mock_settings.wind_weight = core_settings.legacy_snofokk.wind_weight
+        mock_settings.temp_weight = core_settings.legacy_snofokk.temp_weight
+        mock_settings.snow_weight = core_settings.legacy_snofokk.snow_weight
 
         service = AnalysisService()
 

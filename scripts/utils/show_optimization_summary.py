@@ -5,25 +5,28 @@ Enkel sammenligning av optimaliserte parametere
 import json
 from pathlib import Path
 
+from src.config import settings
+
 
 def compare_parameters():
     """Sammenlign original vs optimaliserte parametere"""
 
-    config_file = Path(__file__).parent.parent.parent / 'config' / 'optimized_snowdrift_config.json'
+    config_file = Path(__file__).parent.parent.parent / 'archive' / 'legacy_config' / 'optimized_snowdrift_config.json'
 
     try:
         with open(config_file, encoding='utf-8') as f:
             optimized = json.load(f)
     except FileNotFoundError:
-        print("❌ Optimalisert konfigurasjon ikke funnet")
+        print("Optimalisert konfigurasjon ikke funnet")
         return
 
-    # Nåværende standardverdier
+    # Nåværende standardverdier (hentet fra src/config.py)
+    sd = settings.snowdrift
     current = {
-        'min_wind_speed': 6.0,
-        'max_temperature': -2.0,
-        'min_snow_depth': 3.0,
-        'min_duration': 2
+        'min_wind_speed': float(sd.wind_speed_warning),
+        'max_temperature': float(sd.temperature_max),
+        'min_snow_depth': float(sd.snow_depth_min_cm),
+        'min_duration': int(sd.interval_hours)
     }
 
     # Optimaliserte verdier
@@ -35,17 +38,17 @@ def compare_parameters():
         'min_duration': optimized['detection_rules']['min_duration_hours']
     }
 
-    print("🔧 PARAMETER-OPTIMALISERING SAMMENDRAG")
+    print("PARAMETER-OPTIMALISERING SAMMENDRAG")
     print("=" * 60)
     print("Basert på 246 historiske snøfokk-hendelser fra 3 vintre")
     print()
 
-    print("📊 PARAMETERE:")
+    print("PARAMETERE:")
     print()
 
     # Vind
     wind_change = ((opt_values['min_wind_speed'] - current['min_wind_speed']) / current['min_wind_speed']) * 100
-    print("💨 MINIMUM VINDSTYRKE:")
+    print("MINIMUM VINDSTYRKE:")
     print(f"   Original:     {current['min_wind_speed']} m/s")
     print(f"   Optimalisert: {opt_values['min_wind_speed']} m/s")
     print(f"   Endring:      {wind_change:+.1f}% (strengere krav)")
@@ -53,7 +56,7 @@ def compare_parameters():
 
     # Temperatur
     temp_change = opt_values['max_temperature'] - current['max_temperature']
-    print("🌡️ MAKSIMAL TEMPERATUR:")
+    print("MAKSIMAL TEMPERATUR:")
     print(f"   Original:     {current['max_temperature']}°C")
     print(f"   Optimalisert: {opt_values['max_temperature']}°C")
     print(f"   Endring:      {temp_change:+.1f}°C (kaldere krav)")
@@ -61,7 +64,7 @@ def compare_parameters():
 
     # Snødybde
     snow_change = ((opt_values['min_snow_depth'] - current['min_snow_depth']) / current['min_snow_depth']) * 100
-    print("❄️ MINIMUM SNØDYBDE:")
+    print("MINIMUM SNØDYBDE:")
     print(f"   Original:     {current['min_snow_depth']} cm")
     print(f"   Optimalisert: {opt_values['min_snow_depth']:.1f} cm")
     print(f"   Endring:      {snow_change:+.1f}% (krever mer snø)")
@@ -69,34 +72,34 @@ def compare_parameters():
 
     # Varighet
     duration_change = opt_values['min_duration'] - current['min_duration']
-    print("⏱️ MINIMUM VARIGHET:")
+    print("MINIMUM VARIGHET:")
     print(f"   Original:     {current['min_duration']} timer")
     print(f"   Optimalisert: {opt_values['min_duration']} timer")
     print(f"   Endring:      {duration_change:+d} timer")
     print()
 
-    print("💡 HOVEDFUNN:")
-    print("   • Snøfokk krever STERKERE vind enn antatt (9+ m/s)")
-    print("   • Snøfokk krever KALDERE temperaturer enn antatt (-3°C)")
-    print("   • Snøfokk krever MER snø enn antatt (8+ cm)")
+    print("HOVEDFUNN:")
+    print("   - Snøfokk krever sterkere vind enn antatt")
+    print("   - Snøfokk krever kaldere temperaturer enn antatt")
+    print("   - Snøfokk krever mer snø enn antatt")
     print("   • Kortere hendelser (1 time) kan være relevante")
     print()
 
-    print("🎯 ANBEFALING:")
-    print("   ✅ Implementer optimaliserte parametere gradvis")
-    print("   📊 Overvåk resultater og juster etter behov")
-    print("   🔄 Oppdater årlig basert på ny historisk data")
+    print("ANBEFALING:")
+    print("   - Implementer optimaliserte parametere gradvis")
+    print("   - Overvåk resultater og juster etter behov")
+    print("   - Oppdater årlig basert på ny historisk data")
     print()
 
     # Seasonjusteringer
     seasonal = optimized['seasonal_adjustments']
-    print("📅 SESONGMESSIGE JUSTERINGER:")
+    print("SESONGMESSIGE JUSTERINGER:")
     for season, config in seasonal.items():
         months = ', '.join(str(m) for m in config['months'])
         print(f"   {season}: Måneder {months} (faktor: {config['snow_depth_multiplier']})")
 
     print()
-    print(f"💾 Full konfigurasjon: {config_file}")
+    print(f"Full konfigurasjon: {config_file}")
 
 if __name__ == '__main__':
     compare_parameters()

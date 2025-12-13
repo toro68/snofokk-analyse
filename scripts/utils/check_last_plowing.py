@@ -45,8 +45,8 @@ try:
     soup = BeautifulSoup(response.text, 'html.parser')
     scripts = soup.find_all('script')
 
-    if len(scripts) >= 29:
-        script = scripts[28]
+    if len(scripts) >= settings.scripts.plowman_share_scripts_min_count:
+        script = scripts[settings.scripts.plowman_share_script_index]
         if script.string:
             content = script.string.strip()
 
@@ -101,7 +101,7 @@ try:
                             print(
                                 f"UTC:  {utc_time.strftime('%Y-%m-%d %H:%M:%S %Z')}"
                                 f"\nOslo: {oslo_time.strftime('%Y-%m-%d %H:%M:%S %Z')}"
-                                f"{' ⚠️ FREMTIDIG TIDSPUNKT!' if future else ''}\n"
+                                f"{' ADVARSEL: FREMTIDIG TIDSPUNKT!' if future else ''}\n"
                             )
 
                         # Finn siste gyldige tidspunkt (ikke i fremtiden)
@@ -116,15 +116,15 @@ try:
                             print(f"UTC:  {last_utc.strftime('%Y-%m-%d %H:%M:%S %Z')}")
                             print(f"Oslo: {last_oslo.strftime('%d.%m.%Y kl. %H:%M')}\n")
                         else:
-                            print("\n⚠️ ADVARSEL: Alle registrerte tidspunkt er i fremtiden!")
+                            print("\nADVARSEL: Alle registrerte tidspunkt er i fremtiden!")
                             print("Dette kan tyde på feil i dataene fra brøytetjenesten.\n")
 
                         exit(0)
 
-    print("\n❌ Fant ingen brøytedata\n")
+    print("\nFEIL: Fant ingen brøytedata\n")
 
 except Exception as e:
-    print(f"\n❌ Feil: {str(e)}\n")
+    print(f"\nFEIL: {str(e)}\n")
     print("\nDetaljer:")
     print(traceback.format_exc())
     exit(1)

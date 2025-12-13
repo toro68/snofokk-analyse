@@ -14,6 +14,8 @@ from datetime import UTC, datetime, timedelta
 
 import requests
 
+from src.config import settings
+
 logger = logging.getLogger(__name__)
 
 
@@ -111,14 +113,19 @@ class NetatmoClient:
         }
 
         try:
-            response = self._session.get(url, params=params, headers=headers, timeout=10)
+            response = self._session.get(
+                url,
+                params=params,
+                headers=headers,
+                timeout=settings.netatmo.http_timeout_seconds,
+            )
             response.raise_for_status()
             data = response.json()
 
             return self._parse_public_data(data)
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"Netatmo API-feil: {e}")
+            logger.error("Netatmo API-feil: %s", e)
             return []
 
     def get_fjellbergsskardet_area(self, radius_km: float = 5.0) -> list[NetatmoStation]:
@@ -190,7 +197,11 @@ class NetatmoClient:
         }
 
         try:
-            response = self._session.post(url, data=data, timeout=10)
+            response = self._session.post(
+                url,
+                data=data,
+                timeout=settings.netatmo.http_timeout_seconds,
+            )
             response.raise_for_status()
 
             token_data = response.json()
@@ -214,7 +225,7 @@ class NetatmoClient:
             return True
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"Netatmo autentisering feilet: {e}")
+            logger.error("Netatmo autentisering feilet: %s", e)
             return False
 
     def _parse_public_data(self, data: dict) -> list[NetatmoStation]:

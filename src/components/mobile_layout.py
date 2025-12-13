@@ -6,6 +6,8 @@ from typing import Any
 import pandas as pd
 import streamlit as st
 
+from src.config import settings
+
 
 class MobileLayout:
     """Mobil-first layout komponenter for weather app"""
@@ -28,7 +30,7 @@ class MobileLayout:
             snow_data = snow_data.where(snow_data >= 0, None)
             # Konverter fra meter til cm hvis verdiene ser ut til å være i meter
             df_prepared['surface_snow_thickness_cm'] = snow_data.apply(
-                lambda x: x * 100 if pd.notna(x) and x < 10 else x
+                lambda x: x * 100 if pd.notna(x) and x < settings.historical.snow_depth_conversion_cutoff_cm else x
             )
 
         return df_prepared
@@ -634,10 +636,12 @@ class MobileLayout:
         """
         is_mobile = MobileLayout.detect_mobile()
 
+        mobile = settings.mobile
+
         return {
             'is_mobile': is_mobile,
-            'columns_per_row': 2 if is_mobile else 4,
-            'chart_height': 300 if is_mobile else 400,
+            'columns_per_row': mobile.layout_columns_mobile if is_mobile else mobile.layout_columns_desktop,
+            'chart_height': mobile.chart_height_mobile_px if is_mobile else mobile.chart_height_desktop_px,
             'compact_metrics': is_mobile,
             'sidebar_collapsed': is_mobile
         }
@@ -656,9 +660,11 @@ class MobileLayout:
 
         quality_score = ((total_points - missing_temp - missing_wind) / (total_points * 2)) * 100
 
-        if quality_score >= 80:
+        mobile = settings.mobile
+
+        if quality_score >= mobile.data_quality_success_min_pct:
             st.success(f"Datakvalitet: {quality_score:.0f}%")
-        elif quality_score >= 50:
+        elif quality_score >= mobile.data_quality_warning_min_pct:
             st.warning(f"Datakvalitet: {quality_score:.0f}%")
         else:
             st.error(f"Datakvalitet: {quality_score:.0f}%")

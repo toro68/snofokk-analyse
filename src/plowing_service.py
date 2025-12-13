@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from src.config import get_secret
+from src.config import get_secret, settings
 from src.plowman_client import get_last_maintenance_result
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 CACHE_FILE = Path(__file__).parent.parent / "data" / "cache" / "plowing_cache.json"
 
 # Hvor lenge siden brøyting skal anses som "nylig" (timer)
-RECENT_PLOWING_HOURS = 24
+RECENT_PLOWING_HOURS = settings.plowing_service.recent_plowing_hours
 
 
 def _maintenance_keywords() -> set[str]:
@@ -116,15 +116,16 @@ class PlowingInfo:
         local_time = self.last_plowing.astimezone()
         now = datetime.now(UTC)
         diff = now - self.last_plowing
+        cfg = settings.plowing_service
 
         if diff.days == 0:
-            if diff.seconds < 3600:
+            if diff.seconds < cfg.formatted_recent_seconds:
                 return f"For {diff.seconds // 60} min siden"
             else:
                 return f"I dag kl. {local_time.strftime('%H:%M')}"
         elif diff.days == 1:
             return f"I går kl. {local_time.strftime('%H:%M')}"
-        elif diff.days < 7:
+        elif diff.days < cfg.formatted_week_days:
             dag_navn = ["man", "tir", "ons", "tor", "fre", "lør", "søn"]
             return f"{dag_navn[local_time.weekday()]} {local_time.strftime('%d.%m kl. %H:%M')}"
         else:
@@ -164,7 +165,7 @@ def parse_timestamps_from_html(html_content: str) -> list[datetime]:
     return timestamps
 
 
-def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int = 1) -> PlowingInfo:
+def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int | None = None) -> PlowingInfo:
     """
     Henter brøytingsinformasjon.
 
@@ -176,6 +177,9 @@ def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int = 1) -> Pl
         PlowingInfo med siste brøytingstidspunkt og status
     """
     now = datetime.now(UTC)
+
+    if max_cache_age_hours is None:
+        max_cache_age_hours = settings.plowing_service.default_max_cache_age_hours
 
     cache_data = _load_cache()
 
@@ -198,26 +202,7 @@ def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int = 1) -> Pl
 
     # Hent live data fra vedlikeholds-API
     try:
-        # På Streamlit Cloud er dette ofte årsaken når vedlikehold mangler.
-        # Vi bruker ikke Plowman-fallback som default, så uten disse secrets blir det ingen data.
-        base_url = get_secret("MAINTENANCE_API_BASE_URL", "")
-        token = get_secret("MAINTENANCE_API_TOKEN", "")
-        if not base_url or not token:
-            missing: list[str] = []
-            if not base_url:
-                missing.append("MAINTENANCE_API_BASE_URL")
-            if not token:
-                missing.append("MAINTENANCE_API_TOKEN")
-
-            return PlowingInfo(
-                last_plowing=None,
-                hours_since=None,
-                is_recent=False,
-                all_timestamps=cache_data['all_timestamps'] if cache_data else [],
-                source='none',
-                error=f"Mangler vedlikeholds-API secrets: {', '.join(missing)}",
-            )
-
+        # Merk: client håndterer manglende secrets og returnerer meningsfull error.
         event, event_error = get_last_maintenance_result()
 
         if not event and event_error:
@@ -349,7 +334,7 @@ def _save_cache(
 
         existing = existing_cache['all_timestamps'] if existing_cache else []
         merged = _dedupe_and_sort(existing + new_timestamps)
-        merged_limited = merged[:20]
+        merged_limited = merged[:settings.plowing_service.cache_max_entries]
 
         cache_payload = {
             'last_plowing': merged_limited[0].isoformat() if merged_limited else None,
@@ -384,31 +369,6 @@ def _dedupe_and_sort(timestamps: list[datetime]) -> list[datetime]:
     """Dedupliserer og sorterer tidsstempler synkende."""
     unique = {ts.isoformat(): ts for ts in timestamps if isinstance(ts, datetime)}
     return sorted(unique.values(), reverse=True)
-
-
-def should_show_snow_warning(plowing_info: PlowingInfo, snow_cm: float) -> bool:
-    """
-    Vurderer om snøvarsel bør vises basert på brøyting.
-
-    Logikk:
-    - Hvis brøytet siste 6 timer: Ignorer snømengder < 10cm
-    - Hvis brøytet siste 12 timer: Ignorer snømengder < 5cm
-    - Ellers: Vis alle varsler
-    """
-    if not plowing_info.is_recent or plowing_info.hours_since is None:
-        return True  # Vis alltid varsel hvis ingen brøytingsdata
-
-    if plowing_info.hours_since < 6:
-        # Nylig brøytet - høyere terskel
-        return snow_cm >= 10
-    elif plowing_info.hours_since < 12:
-        # Brøytet i dag - moderat terskel
-        return snow_cm >= 5
-    else:
-        # Mer enn 12 timer - normal terskel
-        return snow_cm >= 3
-
-
 def get_adjusted_risk_message(original_message: str, plowing_info: PlowingInfo) -> str:
     """
     Justerer risikomelding basert på brøyting.

@@ -1,6 +1,6 @@
 # Agent: Føreforhold Gullingen
 
-## 🎯 Formål
+## Formål
 
 Varslingssystem for **brøytemannskaper** og **hytteeiere** ved Gullingen Skisenter.
 
@@ -14,7 +14,7 @@ Systemet skal gi tidlig varsling om:
 
 ---
 
-## 🔗 Live ressurser
+## Live ressurser
 
 ### Brøytekart (sanntid)
 **URL**: https://plowman-new.snøbrøyting.net/nb/share/Y3VzdG9tZXItMTM=
@@ -34,22 +34,22 @@ Viser:
 ### Værstasjoner
 | Stasjon | Type | Koordinat | Høyde |
 |---------|------|-----------|-------|
-| SN46220 Gullingen | Frost API | 59.1822°N, 6.0789°Ø | 639 moh |
+| SN46220 Gullingen | Frost API | 59.4128°N, 6.4697°Ø | 639 moh |
 | Fjellbergsskardet | Netatmo | 59.39205°N, 6.42667°Ø | 607 moh |
 
 ---
 
-## 🎨 Designprinsipper
+## Designprinsipper
 
-### Emoji-bruk
-- ✅ Enkle statusikoner: 🟢 🟡 🔴 ⚠️ ✅ ❌
-- ✅ Enkle værikoner: ❄️ 🌬️ 🧊
-- ❌ Ikke bruk: Hytter, biler, komplekse symboler, flagg, figurer
-- Hold det profesjonelt og lesbart
+### Emoji
+- Ikke bruk emoji i app-UI, varsler eller analyseresultater.
+- Hold teksten profesjonell og lesbar.
 
 ---
 
-## 📊 Datagrunnlag for validering
+## Datagrunnlag for validering
+
+For metodikk og prinsipper for terskler (og hvorfor tallverdiene kun ligger i kode), se `docs/terskler_og_validering.md`.
 
 ### Brøytedata
 - **Kilde**: `data/analyzed/Rapport 2022-2025.csv`
@@ -80,12 +80,12 @@ Guiden i `data/analyzed/ANALYSIS_METHOD_GUIDE.md` beskriver hele kjøringen og o
 ### Vedlikeholdskategorier (166 episoder)
 | Type | Andel | Typisk scenario |
 |------|-------|-----------------|
-| Snøbrøyting | 46% | Nysnø > 5cm |
+| Snøbrøyting | 46% | Nysnø over terskel (se `settings.fresh_snow.snow_increase_*`) |
 | Slaps-skraping | 33% | Temp 0-2°C + nedbør |
 | Fryse/tine-strøing | 16% | Temperatursvingninger |
 | Inspeksjon | 4% | Rutinekontroll |
 
-### ⚠️ Viktig om brøytedata-kvalitet
+### Viktig om brøytedata-kvalitet
 
 Brøytedata reflekterer **faktisk aktivitet**, ikke nødvendigvis **faktisk behov**:
 
@@ -103,10 +103,10 @@ Brøytedata reflekterer **faktisk aktivitet**, ikke nødvendigvis **faktisk beho
 
 ---
 
-## 👥 Målgrupper
+## Målgrupper
 
 ### Brøytemannskaper
-- Trenger varsling om **nysnø > 5 cm** for å planlegge utrykning
+- Trenger varsling om **nysnø over terskel** (se `settings.fresh_snow.snow_increase_*`) for å planlegge utrykning
 - Må vite om **snøfokk** som blokkerer veier
 - Trenger varsling om **slaps** for å vurdere skraping/fresing
 
@@ -117,35 +117,42 @@ Brøytedata reflekterer **faktisk aktivitet**, ikke nødvendigvis **faktisk beho
 
 ---
 
-## 📊 Kritiske værsituasjoner
+## Kritiske værsituasjoner
 
-### 1. Nysnø ❄️
-**Når:** Snødybde øker med ≥ 5 cm over 6 timer
+### 1. Nysnø
+**Når:** Snødybde øker merkbart over 6 timer (terskler i `src/config.py` → `settings.fresh_snow`).
+
+Viktig ved vind:
+- Ved snøfokk/vindtransport kan snødybdemåleren gå ned selv om det snør (snø blåser vekk fra målepunktet).
+- Derfor brukes også nedbør som støtte/fallback for nysnø når det er vind og forholdene tilsier snø (se `settings.fresh_snow.precipitation_6h_*`).
 
 **Kriterier (forbedret):**
 
 | Metode | Kriterium | Forklaring |
 |--------|-----------|------------|
-| Primær | Duggpunkt < 0°C | Nedbør faller som snø selv ved +2°C lufttemp |
-| Sekundær | Lufttemp < 1°C | Brukes hvis duggpunkt mangler |
-| Snøøkning | ≥ 5 cm / 6 timer | Målt via `surface_snow_thickness` |
+| Primær | `settings.fresh_snow.dew_point_max` | Nedbør faller som snø selv ved mild lufttemp |
+| Sekundær | `settings.fresh_snow.air_temp_max` | Brukes hvis duggpunkt mangler |
+| Snøøkning | `settings.fresh_snow.snow_increase_warning` / `settings.fresh_snow.snow_increase_critical` | Målt via `surface_snow_thickness` |
 
 > **Hvorfor duggpunkt?** Ved +1.5°C lufttemperatur kan det like gjerne 
 > falle regn som snø. Men hvis duggpunktet er under 0°C, sublimerer 
 > fuktigheten til snøkrystaller - uavhengig av lufttemperatur opptil +2°C.
 
 **Tilgjengelige elementer fra Frost API:**
-- ✅ `dew_point_temperature` - Duggpunkt (PT10M, PT1H, P1D)
-- ✅ `surface_snow_thickness` - Snødybde (PT10M, PT1H)
-- ✅ `air_temperature` - Lufttemperatur
-- ❌ `precipitation_type` - Ikke tilgjengelig på SN46220
+- `dew_point_temperature` - Duggpunkt (PT10M, PT1H, P1D)
+- `surface_snow_thickness` - Snødybde (PT10M, PT1H)
+- `air_temperature` - Lufttemperatur
+- `precipitation_type` - Ikke tilgjengelig på SN46220
 
 **Logikk:**
 ```
-HVIS nedbør > 0 OG (duggpunkt < 0°C ELLER lufttemp < 1°C):
-    → Nedbør er snø
-    HVIS snødybde øker ≥ 5 cm over 6 timer:
-        → Varsle nysnø
+HVIS nedbør >= settings.fresh_snow.precipitation_min OG (duggpunkt < settings.fresh_snow.dew_point_max ELLER lufttemp < settings.fresh_snow.air_temp_max):
+    → Snøfall pågår
+
+HVIS snødybde øker >= settings.fresh_snow.snow_increase_critical over 6 timer:
+    → Varsle høy nysnø
+ELLERS HVIS snødybde øker >= settings.fresh_snow.snow_increase_warning over 6 timer:
+    → Varsle moderat nysnø
 ```
 
 **Varsel til:**
@@ -154,14 +161,14 @@ HVIS nedbør > 0 OG (duggpunkt < 0°C ELLER lufttemp < 1°C):
 
 ---
 
-### 2. Snøfokk 🌬️
+### 2. Snøfokk
 **Når:** Løs snø blåser og reduserer sikt/blokkerer veier
 
 > **KRITISK FUNN**: 100% av snøfokk-episoder på Gullingen er "usynlig snøfokk" - 
 > snø som blåser horisontalt uten å endre målt snødybde. Veier kan blokkeres 
 > uten at snøsensorer varsler!
 
-### ⚠️ Viktig om snømåling ved vind
+### Viktig om snømåling ved vind
 
 **Problem**: Snødybdemåleren på Gullingen måler ett punkt. Ved vind:
 - Snø blåser VEKK fra måleren → snødybde synker/uendret
@@ -170,7 +177,7 @@ HVIS nedbør > 0 OG (duggpunkt < 0°C ELLER lufttemp < 1°C):
 
 **Konsekvens**: Vi kan IKKE stole på snødybdeendring for snøfokk-varsling!
 
-### ⚠️ Krav om fersk løssnø
+### Krav om løssnø
 
 **Kritisk forutsetning**: Snøfokk krever FERSK, LØS SNØ som kan transporteres av vind.
 
@@ -180,37 +187,38 @@ HVIS nedbør > 0 OG (duggpunkt < 0°C ELLER lufttemp < 1°C):
 - Våt snø (temp > 0°C)
 - Snø eldre enn 24-48 timer uten ny nedbør
 
-**Fersk snø-kriterium:**
-| Faktor | Krav | Forklaring |
-|--------|------|------------|
-| Nysnø siste 24t | ≥ 2 cm | Tilgjengelig løs snø |
-| ELLER aktiv nedbør | > 0.1 mm/t | Snø faller nå |
-| OG temperatur | < -1°C | Snøen forblir tørr og løs |
+**Løssnø-tilgjengelighet (implementert):**
+- Basert på lufttemperatur siste 24t:
+    - Kontinuerlig frost (alle målinger ≤ -1°C) → løssnø antas tilgjengelig
+    - Mildvær (≥ 6 timer > 0°C) → løssnø antas ikke tilgjengelig
+    - Delvis mildvær → løssnø kan være tilgjengelig (usikkert)
 
 > **Fysisk forklaring**: Snøkrystaller binder seg sammen (sintrer) over tid. 
 > Etter 24-48 timer er overflaten ofte for hard til å blåse, selv i sterk vind.
 > Vind uten fersk snø = ingen snøfokk, bare kald vind.
 
 **Løsning i kode**: Snøfokk varsles basert på:
-1. Vindkast ≥ 15 m/s (primær trigger)
-2. Vindkjøling ≤ -12°C
-3. Eksisterende snødekke ≥ 3 cm (et sted i området)
-4. Temperatur < -1°C (løssnø bevares)
-5. **NY: Fersk snø** - nysnø siste 96t ≥ 2 cm ELLER aktiv nedbør
+1. Vindkast som primær trigger med vind-gating (`settings.snowdrift.wind_gust_warning` / `settings.snowdrift.wind_gust_critical`)
+2. Vindkjøling (`settings.snowdrift.wind_chill_warning` / `settings.snowdrift.wind_chill_critical`)
+3. Minimum snødekke (`settings.snowdrift.snow_depth_min_cm`)
+4. Temperatur (`settings.snowdrift.temperature_max`)
+5. Løssnø-tilgjengelighet (basert på temperatur siste 24t; langvarig mildvær reduserer risiko)
 
-**IKKE brukt**: Snødybdeendring - denne er upålitelig ved vind.
+**Snødybdeendring**: Brukes kun som støttefaktor (ikke som hovedtrigger), fordi den kan være upålitelig ved vind.
 
 **Validerte kriterier (sesong 2023-2024):**
 
 | Nivå | Vindkjøling | Vind | Vindkast | Snødybde | Fersk snø | Vindretning |
 |------|-------------|------|----------|----------|-----------|-------------|
-| Advarsel | ≤ -12°C | ≥ 8 m/s | ≥ 15 m/s | ≥ 3 cm | ≥ 2 cm/24t | Alle |
-| Kritisk | ≤ -15°C | ≥ 10 m/s | ≥ 20 m/s | ≥ 3 cm | ≥ 2 cm/24t | SE-S (135-225°) |
+| Advarsel | `settings.snowdrift.wind_chill_warning` | `settings.snowdrift.wind_speed_gust_warning_gate` (gate) | `settings.snowdrift.wind_gust_warning` | `settings.snowdrift.snow_depth_min_cm` | Løssnø tilgjengelig | Alle |
+| Kritisk | `settings.snowdrift.wind_chill_critical` | `settings.snowdrift.wind_speed_warning` (gate) | `settings.snowdrift.wind_gust_critical` | `settings.snowdrift.snow_depth_min_cm` | Løssnø tilgjengelig | SE-S (`settings.snowdrift.critical_wind_dir_min`–`settings.snowdrift.critical_wind_dir_max`) |
+
+Merk: `settings.snowdrift.wind_speed_median` finnes fortsatt som deprecated alias for bakoverkompatibilitet.
 
 **Ny innsikt: Vindkast er bedre trigger enn snittwind!**
 - Snøfokk-episoder: snittwind 10.3 m/s, vindkast **21.9 m/s**
 - 36 brøyteepisoder hadde vindkast > 15 m/s
-- Bruk `wind_speed_gust > 15` som primær snøfokk-indikator
+- Bruk vindkast som primær snøfokk-indikator
 
 **Kalibrering mot historikk:**
 - 447 snøfokk-perioder identifisert (nov 2023 - apr 2024)
@@ -224,7 +232,7 @@ HVIS nedbør > 0 OG (duggpunkt < 0°C ELLER lufttemp < 1°C):
 
 ---
 
-### 3. Slaps 🌧️❄️
+### 3. Slaps
 **Hva:** Tung blanding av snø og vann som gir dårlig fremkommelighet
 
 **Når slaps oppstår:**
@@ -240,9 +248,9 @@ HVIS nedbør > 0 OG (duggpunkt < 0°C ELLER lufttemp < 1°C):
 
 | Faktor | Terskel | Kilde |
 |--------|---------|-------|
-| Temperatur | -1°C til +4°C | ML-modell F1=0.98 |
-| Nedbør | > 1.0 mm/t | Korrelert med brøyting |
-| Snødekke | ≥ 5 cm | Fysisk forutsetning |
+| Temperatur | `settings.slaps.temp_min` til `settings.slaps.temp_max` | Kalibrert for slaps-detektor |
+| Nedbør | `settings.slaps.precipitation_12h_min` (12t akkumulert) | Brukes for å unngå varsling på små drypp |
+| Snødekke | `settings.slaps.snow_depth_min` | Fysisk forutsetning |
 
 **Historiske slaps-episoder (42 bekreftet):**
 - Gjennomsnittstemperatur: **1.2°C** (ideelt for slaps)
@@ -266,17 +274,17 @@ HVIS nedbør > 0 OG (duggpunkt < 0°C ELLER lufttemp < 1°C):
 
 ---
 
-### 4. Glatte veier 🧊
+### 4. Glatte veier
 **Når:** Is eller glatt føre på veien
 
 **Validerte scenarier (sesong 2023-2024):**
 
 | Type | Andel | Kriterier |
 |------|-------|-----------|
-| Underkjølt regn | 80% | Temp -1°C til +1°C + nedbør > 0.1 mm/t |
-| Rimfrost | 19% | Temp -2°C til 0°C + fuktighet ≥ 90% + vindstille + natt |
-| Is-dannelse | 0.2% | Temp ≤ -1°C + fuktighet ≥ 80% + tempfall > 1°C/t |
-| Refryzing | 0.7% | Tidligere smelting + temp ≤ 0°C + natt |
+| Regn på snø | Vanlig | `settings.slippery.mild_temp_min`–`settings.slippery.mild_temp_max` + `settings.slippery.rain_threshold_mm` + `settings.slippery.snow_depth_min_cm` |
+| Underkjølt regn / frysing | Vanlig | `settings.slippery.surface_temp_freeze` + `settings.slippery.freezing_precip_warning_mm`/`settings.slippery.freezing_precip_critical_mm` + nær frysepunkt (`settings.slippery.near_freezing_temp_min`–`settings.slippery.near_freezing_temp_max`) |
+| Rimfrost | Vanlig | `settings.slippery.rimfrost_humidity_min` og `settings.slippery.rimfrost_wind_max` + duggpunkt nær lufttemp |
+| Skjult frysefare | Viktig | `settings.slippery.hidden_freeze_surface_max` + `settings.slippery.hidden_freeze_air_min`–`settings.slippery.hidden_freeze_air_max` + `settings.slippery.hidden_freeze_precip_12h_min` |
 
 **Kalibrering mot historikk (nov 2023 - apr 2024):**
 - 420 glatt vei-perioder identifisert
@@ -312,20 +320,20 @@ HVIS nedbør > 0 OG (duggpunkt < 0°C ELLER lufttemp < 1°C):
 
 ---
 
-## 🔔 Varslingsnivåer
+## Varslingsnivåer
 
 | Nivå | Farge | Betydning |
 |------|-------|-----------|
-| 🟢 LAV | Grønn | Normale forhold - trygt å kjøre |
-| 🟡 MODERAT | Gul | Vær oppmerksom - mulig forverring |
-| 🔴 HØY | Rød | Kritiske forhold - vurder å utsette reisen |
+| LAV | Grønn | Normale forhold - trygt å kjøre |
+| MODERAT | Gul | Vær oppmerksom - mulig forverring |
+| HØY | Rød | Kritiske forhold - vurder å utsette reisen |
 
 ---
 
-## 📱 Varslingsfunksjoner (fremtidig)
+## Varslingsfunksjoner (fremtidig)
 
 ### Push-varsler
-- [ ] SMS til brøytemannskaper ved nysnø > 5 cm
+- [ ] SMS til brøytemannskaper ved kritisk nysnø (se `settings.fresh_snow.snow_increase_critical`)
 - [ ] Push-notifikasjon til app ved kritiske forhold
 - [ ] E-post sammendrag hver morgen
 
@@ -340,21 +348,21 @@ HVIS nedbør > 0 OG (duggpunkt < 0°C ELLER lufttemp < 1°C):
 
 ---
 
-## 🛠️ Teknisk implementasjon
+## Teknisk implementasjon
 
 ### Datakilder
 
 #### 1. Frost API (Meteorologisk institutt)
 - **Stasjon**: SN46220 Gullingen (639 moh)
 - **Dokumentasjon**: https://frost.met.no/
-- **Status**: ✅ Implementert
+- **Status**: Implementert
 
 #### 2. Netatmo Weather API (planlagt)
 - **Stasjon**: Fjellbergsskardet Hyttegrend
 - **Koordinat**: 59.39205°N, 6.42667°Ø
 - **Høyde**: 607 moh
 - **Dokumentasjon**: https://dev.netatmo.com/apidocumentation/weather
-- **Status**: ⏳ Ikke implementert
+- **Status**: Ikke implementert
 
 **Fordel med Netatmo**:
 - Gir temperaturdata fra et annet punkt i området
@@ -364,7 +372,7 @@ HVIS nedbør > 0 OG (duggpunkt < 0°C ELLER lufttemp < 1°C):
 #### 3. Brøytekart (live GPS)
 - **URL**: https://plowman-new.snøbrøyting.net/nb/share/Y3VzdG9tZXItMTM=
 - **Viser**: Brøytebilposisjon, brøytet/ubrøytet vei
-- **Status**: 🔗 Ekstern lenke (ikke integrert)
+- **Status**: Ekstern lenke (ikke integrert)
 
 ### Elementer som overvåkes (Frost API)
 ```
@@ -411,9 +419,9 @@ Analyse av 166 brøyteepisoder (2022-2025) viser:
 
 ---
 
-## 📋 Prioritert backlog
+## Prioritert backlog
 
-### Fase 1: MVP (Nå) ✅
+### Fase 1: MVP (Nå)
 - [x] Snøfokk-varsling med ML-terskler
 - [x] Glattføre-varsling (regn på snø, is, rimfrost)
 - [x] Streamlit dashboard
@@ -437,7 +445,7 @@ Analyse av 166 brøyteepisoder (2022-2025) viser:
 
 ---
 
-## 🧪 Testscenarier (validert mot historikk)
+## Testscenarier (validert mot historikk)
 
 ### Slaps - november 2025 (bekreftet)
 ```
@@ -478,7 +486,7 @@ Vindkjøling: -18°C
 Vind: 15.9 m/s
 Vindretning: SE (135°)
 Snødybde: 25 cm
-→ Resultat: 🔴 HØY risiko - 8 perioder, 80 timer med snøfokk
+→ Resultat: HØY risiko - 8 perioder, 80 timer med snøfokk
 ```
 
 ### Regn på snø - kritisk
@@ -487,7 +495,7 @@ Dato: 22. november 2023
 Temperatur: -0.2°C til -0.3°C
 Fuktighet: 97%
 Nedbør: 2.4 mm/t
-→ Resultat: 🔴 EKSTREM risiko - underkjølt regn
+→ Resultat: EKSTREM risiko - underkjølt regn
 ```
 
 ### Slaps (regn på snø / smelting)
@@ -495,14 +503,14 @@ Nedbør: 2.4 mm/t
 Temperatur: +3°C
 Nedbør: 1.2 mm/t (regn)
 Snødybde: 15 cm
-→ Forventet: 🔴 HØY risiko - vanskelig fremkommelighet
+→ Forventet: HØY risiko - vanskelig fremkommelighet
 ```
 
 ### Slaps → is (frysefare)
 ```
 Temperatur: +1°C → synkende mot 0°C
 Slaps på veien
-→ Forventet: 🟡 MODERAT risiko slaps + ⚠️ frysevarsel
+→ Forventet: MODERAT risiko slaps + frysevarsel
 ```
 
 ### Stabile vinterforhold
@@ -511,7 +519,7 @@ Temperatur: -12°C
 Vind: 3 m/s
 Snødybde: 40 cm
 Ingen nedbør
-→ Forventet: 🟢 LAV risiko
+→ Forventet: LAV risiko
 ```
 
 ### Brøytemønster (typisk)
@@ -536,13 +544,13 @@ Travle perioder:
 
 ---
 
-## 📞 Kontakt
+## Kontakt
 
 For spørsmål om systemet eller tilgang til varsler, kontakt administrator.
 
 ---
 
-## 📁 Datakilder
+## Datakilder
 
 ### Analyserapporter (oppdatert 29. november 2025)
 - `data/analyzed/broyting_weather_correlation_2025.csv` – Vær + brøyting (166 episoder, 2022-2025)

@@ -236,14 +236,16 @@ def main():
         local_tz = local_now.tzinfo or UTC
 
         if "period_start_local" not in st.session_state:
-            st.session_state["period_start_local"] = (local_now - timedelta(hours=24)).replace(second=0, microsecond=0)
+            st.session_state["period_start_local"] = (
+                local_now - timedelta(hours=settings.dashboard.default_period_hours)
+            ).replace(second=0, microsecond=0)
         if "period_end_local" not in st.session_state:
             st.session_state["period_end_local"] = local_now.replace(second=0, microsecond=0)
 
         active_start = st.session_state["period_start_local"].astimezone(local_tz)
         active_end = st.session_state["period_end_local"].astimezone(local_tz)
 
-        min_date = (local_now - timedelta(days=7)).date()
+        min_date = (local_now - timedelta(days=settings.dashboard.max_period_days)).date()
         max_date = local_now.date()
 
         start_date = st.date_input(
@@ -278,8 +280,8 @@ def main():
 
             if candidate_end <= candidate_start:
                 st.error("Slutttid må være etter starttid")
-            elif candidate_end - candidate_start > timedelta(days=7):
-                st.error("Velg en periode på maks 7 dager")
+            elif candidate_end - candidate_start > timedelta(days=settings.dashboard.max_period_days):
+                st.error(f"Velg en periode på maks {settings.dashboard.max_period_days} dager")
             else:
                 st.session_state["period_start_local"] = candidate_start
                 st.session_state["period_end_local"] = candidate_end
@@ -290,7 +292,7 @@ def main():
 
         # Info-seksjon
         with st.expander("Om appen", expanded=False):
-            st.markdown("""
+            st.markdown(f"""
             ### Føreforhold Gullingen
 
             Varslingssystem for **brøytemannskaper** og **hytteeiere**
@@ -298,7 +300,7 @@ def main():
 
             #### Datagrunnlag
             - **Værdata**: Frost API (Meteorologisk institutt)
-            - **Stasjon**: SN46220 Gullingen (637 moh)
+            - **Stasjon**: {settings.station.station_id} {settings.station.name} ({settings.station.altitude_m} moh)
             - **Netatmo**: Private værstasjoner i området
             - **Validering**: 166 brøyteepisoder 2022-2025
 
@@ -308,10 +310,10 @@ def main():
 
             | Kategori | Kriterium | Kilde |
             |----------|-----------|-------|
-            | **Nysnø** | ≥5 cm/6t | Korrelasjon 0.20 |
-            | **Snøfokk** | Vindkast ≥15 m/s | Snitt 21.9 m/s ved brøyting |
-            | **Slaps** | -1 til +4°C + nedbør | 33% av brøytinger |
-            | **Glatte veier** | Bakke <0°C | 28 episoder med skjult is |
+            | **Nysnø** | ≥{settings.fresh_snow.snow_increase_warning:.0f} cm/{settings.fresh_snow.lookback_hours}t (moderat) / ≥{settings.fresh_snow.snow_increase_critical:.0f} cm/{settings.fresh_snow.lookback_hours}t (høy) | Kalibrert mot brøyting + vær |
+            | **Snøfokk** | Vindkast ≥{settings.snowdrift.wind_gust_warning:.0f} m/s (advarsel) / ≥{settings.snowdrift.wind_gust_critical:.0f} m/s (kritisk) | Vindkast er primær trigger |
+            | **Slaps** | {settings.slaps.temp_min:.0f} til {settings.slaps.temp_max:.0f}°C + {settings.slaps.precipitation_accum_hours}t nedbør ≥{settings.slaps.precipitation_12h_min:.0f} mm | Kalibrert mot slaps-episoder |
+            | **Glatte veier** | Bakke ≤{settings.slippery.surface_temp_freeze:.0f}°C (is) | Bakketemperatur er primær indikator |
 
             #### Snøgrense-beregning
 
@@ -332,9 +334,9 @@ def main():
         st.divider()
 
         st.subheader("Målgrupper")
-        st.markdown("""
+        st.markdown(f"""
         **Brøytemannskaper**
-        - Nysnø > 5cm → brøyting
+        - Nysnø ≥ {settings.fresh_snow.snow_increase_warning:.0f} cm/{settings.fresh_snow.lookback_hours}t → brøyting
         - Snøfokk → veier blokkeres
         - Slaps → skraping/fresing
 
@@ -481,7 +483,7 @@ def main():
     with temp_tab:
         fig = WeatherPlots.create_temperature_plot(df)
         st.pyplot(fig)
-        st.caption("Duggpunkt < 0°C: Nedbør faller som snø")
+        st.caption(f"Duggpunkt < {settings.fresh_snow.dew_point_max:.0f}°C: Nedbør faller som snø")
         plt.close(fig)
 
     with wind_tab:
@@ -492,7 +494,9 @@ def main():
     with wind_dir_tab:
         fig = WeatherPlots.create_wind_direction_plot(df)
         st.pyplot(fig)
-        st.caption("SE-S (135-225°) er kritisk retning for snøfokk på Gullingen")
+        st.caption(
+            f"SE-S ({settings.snowdrift.critical_wind_dir_min:.0f}-{settings.snowdrift.critical_wind_dir_max:.0f}°) er kritisk retning for snøfokk"
+        )
         plt.close(fig)
 
     # Detailed data (collapsed by default)
@@ -513,33 +517,33 @@ def main():
             )
 
         with tab2:
-            st.markdown("""
+            st.markdown(f"""
             ### Validerte terskler (2025)
 
             | Kategori | Kriterium | Terskel |
             |----------|-----------|---------|
-            | **Nysnø** | Snøøkning 6t | ≥ 5 cm |
-            | **Nysnø** | Duggpunkt | < 0°C (snø) |
-            | **Snøfokk** | Vindkast | ≥ 15 m/s |
-            | **Snøfokk** | Vindkjøling | ≤ -12°C |
-            | **Slaps** | Temperatur | -1 til +4°C |
-            | **Slaps** | Nedbør | ≥ 1 mm/t |
-            | **Glatte veier** | Bakketemperatur | < 0°C |
-            | **Glatte veier** | Skjult frysefare | Luft > 0, bakke < 0 |
+            | **Nysnø** | Snøøkning {settings.fresh_snow.lookback_hours}t | ≥ {settings.fresh_snow.snow_increase_warning:.0f} cm (moderat) / ≥ {settings.fresh_snow.snow_increase_critical:.0f} cm (høy) |
+            | **Nysnø** | Duggpunkt | < {settings.fresh_snow.dew_point_max:.0f}°C (snø) |
+            | **Snøfokk** | Vindkast | ≥ {settings.snowdrift.wind_gust_warning:.0f} m/s (advarsel) / ≥ {settings.snowdrift.wind_gust_critical:.0f} m/s (kritisk) |
+            | **Snøfokk** | Vindkjøling | ≤ {settings.snowdrift.wind_chill_warning:.0f}°C (advarsel) / ≤ {settings.snowdrift.wind_chill_critical:.0f}°C (kritisk) |
+            | **Slaps** | Temperatur | {settings.slaps.temp_min:.0f} til {settings.slaps.temp_max:.0f}°C |
+            | **Slaps** | Nedbør ({settings.slaps.precipitation_accum_hours}t) | ≥ {settings.slaps.precipitation_12h_min:.0f} mm |
+            | **Glatte veier** | Bakketemperatur | ≤ {settings.slippery.surface_temp_freeze:.0f}°C |
+            | **Glatte veier** | Skjult frysefare | Luft {settings.slippery.hidden_freeze_air_min:.0f}-{settings.slippery.hidden_freeze_air_max:.0f}°C og bakke ≤ {settings.slippery.hidden_freeze_surface_max:.1f}°C |
             """)
 
     # Footer
     st.divider()
     st.caption(
         f"Data: {weather_data.record_count} målinger fra Meteorologisk institutt | "
-        f"Stasjon: SN46220 Gullingen"
+        f"Stasjon: {settings.station.station_id} {settings.station.name}"
     )
 
     # Netatmo temperaturkart
     render_netatmo_map()
 
 
-@st.cache_data(ttl=300)  # Cache i 5 minutter
+@st.cache_data(ttl=settings.netatmo.cache_ttl_seconds)
 def fetch_netatmo_stations():
     """Hent Netatmo-stasjoner (cached).
 
@@ -549,7 +553,7 @@ def fetch_netatmo_stations():
     try:
         client = get_netatmo_client()
         if client.authenticate():
-            stations = client.get_fjellbergsskardet_area(radius_km=10)
+            stations = client.get_fjellbergsskardet_area(radius_km=settings.netatmo.search_radius_km)
             rows: list[dict] = []
             for s in stations:
                 rows.append({
@@ -640,8 +644,8 @@ def render_netatmo_map():
     map_df = pd.DataFrame(map_data)
 
     # Beregn kartsentrum (midt mellom Gullingen og Fjellbergsskardet)
-    center_lat = (59.41172 + 59.39205) / 2
-    center_lon = (6.47204 + 6.42667) / 2
+    center_lat = (settings.station.lat + settings.netatmo.fjellberg_lat) / 2
+    center_lon = (settings.station.lon + settings.netatmo.fjellberg_lon) / 2
 
     # Pydeck kart med interaktive tooltips
     # Bruker radius_min_pixels og radius_max_pixels for å begrense størrelse ved zoom
@@ -650,9 +654,9 @@ def render_netatmo_map():
         data=map_df,
         get_position=["lon", "lat"],
         get_fill_color="color",
-        get_radius=300,  # Radius i meter
-        radius_min_pixels=10,   # Litt større for synlighet
-        radius_max_pixels=30,  # Maximum 30 piksler
+        get_radius=settings.netatmo.map_point_radius_m,
+        radius_min_pixels=settings.netatmo.map_point_radius_min_px,
+        radius_max_pixels=settings.netatmo.map_point_radius_max_px,
         pickable=True,
         auto_highlight=True,
     )
@@ -663,7 +667,7 @@ def render_netatmo_map():
     view_state = pdk.ViewState(
         latitude=center_lat,
         longitude=center_lon,
-        zoom=10,  # Litt nærmere for bedre oversikt
+        zoom=settings.netatmo.map_zoom,
         pitch=0,
     )
 
@@ -719,8 +723,9 @@ def render_netatmo_map():
     max_temp = max(temps)
 
     # Finn høyfjell vs dal
-    high_stations = [s for s in temp_stations if s.altitude >= 500]
-    low_stations = [s for s in temp_stations if s.altitude < 200]
+    thresholds = settings.snow_limit
+    high_stations = [s for s in temp_stations if s.altitude >= thresholds.high_station_min_altitude_m]
+    low_stations = [s for s in temp_stations if s.altitude < thresholds.low_station_max_altitude_m]
 
     # Beregn snøgrense
     snow_limit = estimate_snow_limit(temp_stations)
@@ -756,7 +761,7 @@ def render_netatmo_map():
         )
 
 
-@st.cache_data(ttl=900)  # Cache plowing info for 15 minutter
+@st.cache_data(ttl=settings.plowing_service.streamlit_cache_ttl_seconds)
 def get_cached_plowing_info() -> PlowingInfo:
     """Henter brøyteinformasjon fra service (cached)."""
     return get_plowing_info()
@@ -773,7 +778,9 @@ def estimate_snow_limit(stations) -> dict:
 
     Normal gradient: -0.65°C per 100m (tørr luft: -1°C, fuktig: -0.5°C)
     """
-    if len(stations) < 2:
+    thresholds = settings.snow_limit
+
+    if len(stations) < thresholds.min_stations:
         return {"snow_limit": None, "slaps_limit": None, "gradient": None, "confidence": "lav"}
 
     # Sorter etter høyde
@@ -786,7 +793,7 @@ def estimate_snow_limit(stations) -> dict:
     alt_diff = high.altitude - low.altitude
     temp_diff = high.temperature - low.temperature
 
-    if alt_diff < 100:
+    if alt_diff < thresholds.min_alt_diff_m:
         return {"snow_limit": None, "slaps_limit": None, "gradient": None, "confidence": "lav"}
 
     # Gradient i °C per 100m
@@ -795,34 +802,34 @@ def estimate_snow_limit(stations) -> dict:
     # Bruk lineær interpolasjon for å finne høyde der temp = 0°C
     # Formel: høyde = lav_høyde + (0 - lav_temp) / gradient * 100
 
-    if gradient >= 0:
+    if gradient >= thresholds.inversion_gradient_min:
         # Inversjon - varmere høyere opp
-        if high.temperature <= 0:
+        if high.temperature <= thresholds.snow_temp_c:
             snow_limit = 0  # Snø helt ned
         else:
             snow_limit = None  # Ingen snøgrense (inversjon)
     else:
         # Normal gradient (kaldere høyere opp)
-        if low.temperature <= 0:
+        if low.temperature <= thresholds.snow_temp_c:
             snow_limit = 0  # Snø helt ned til sjøen
-        elif high.temperature >= 0:
+        elif high.temperature >= thresholds.snow_temp_c:
             snow_limit = None  # Ingen snø selv på toppen
         else:
             # Interpoler: hvor er 0°C?
-            snow_limit = low.altitude + ((0 - low.temperature) / gradient) * 100
-            snow_limit = max(0, min(snow_limit, 1500))  # Begrens til rimelige verdier
+            snow_limit = low.altitude + ((thresholds.snow_temp_c - low.temperature) / gradient) * 100
+            snow_limit = max(0, min(snow_limit, thresholds.max_altitude_m))
 
     # Slaps-grense (+1°C)
-    if gradient < 0 and low.temperature > 1:
-        slaps_limit = low.altitude + ((1 - low.temperature) / gradient) * 100
-        slaps_limit = max(0, min(slaps_limit, 1500))
+    if gradient < 0 and low.temperature > thresholds.slaps_temp_c:
+        slaps_limit = low.altitude + ((thresholds.slaps_temp_c - low.temperature) / gradient) * 100
+        slaps_limit = max(0, min(slaps_limit, thresholds.max_altitude_m))
     else:
         slaps_limit = snow_limit
 
     # Vurder konfidens
-    if alt_diff >= 400 and len(stations) >= 5:
+    if alt_diff >= thresholds.confidence_high_alt_diff_m and len(stations) >= thresholds.confidence_high_station_count:
         confidence = "høy"
-    elif alt_diff >= 200 and len(stations) >= 3:
+    elif alt_diff >= thresholds.confidence_medium_alt_diff_m and len(stations) >= thresholds.confidence_medium_station_count:
         confidence = "middels"
     else:
         confidence = "lav"
@@ -848,7 +855,9 @@ def render_snow_limit_info(snow_limit: dict, all_stations, high_stations, low_st
             high_avg = sum(s.temperature for s in high_stations) / len(high_stations)
             low_avg = sum(s.temperature for s in low_stations) / len(low_stations)
 
-            if high_avg > low_avg + 1:
+            thresholds = settings.snow_limit
+
+            if high_avg > low_avg + thresholds.inversion_delta_c:
                 # Ekte inversjon - varmere på fjellet
                 st.warning(f"**Inversjon**: Høyfjell {high_avg:.1f}°C, dal {low_avg:.1f}°C (uvanlig!)")
             else:
@@ -863,11 +872,13 @@ def render_snow_limit_info(snow_limit: dict, all_stations, high_stations, low_st
             gradient = snow_limit.get("gradient", 0)
             snow_limit.get("confidence", "lav")
 
+            thresholds = settings.snow_limit
+
             if limit <= 0:
                 st.success("**Snø til sjøen**")
-            elif limit < 300:
+            elif limit < thresholds.display_low_m:
                 st.success(f"**Snøgrense ~{int(limit)} moh**")
-            elif limit < 600:
+            elif limit < thresholds.display_medium_m:
                 st.warning(f"**Snøgrense ~{int(limit)} moh**")
             else:
                 st.error(f"**Snøgrense ~{int(limit)} moh**")
@@ -875,14 +886,16 @@ def render_snow_limit_info(snow_limit: dict, all_stations, high_stations, low_st
             # Gradient-info
             if gradient:
                 grad_text = f"{gradient:.1f}°C/100m"
-                if gradient > -0.4:
+                if gradient > thresholds.gradient_weak_min:
                     st.caption(f"Svak gradient ({grad_text}) - ustabil")
-                elif gradient < -0.8:
+                elif gradient < thresholds.gradient_steep_max:
                     st.caption(f"Bratt gradient ({grad_text})")
                 else:
                     st.caption(f"Normal gradient ({grad_text})")
         else:
-            if snow_limit.get("gradient") and snow_limit["gradient"] >= 0:
+            thresholds = settings.snow_limit
+
+            if snow_limit.get("gradient") and snow_limit["gradient"] >= thresholds.inversion_gradient_min:
                 st.warning("Inversjon - snøgrense uklar")
             else:
                 st.info("Snøgrense ikke beregnet")
@@ -890,17 +903,19 @@ def render_snow_limit_info(snow_limit: dict, all_stations, high_stations, low_st
 
 def get_temp_rgb(temp: float) -> tuple:
     """Returner RGB-farge basert på temperatur."""
-    if temp <= -10:
+    thresholds = settings.display
+
+    if temp <= thresholds.very_cold_max:
         return (0, 0, 180)      # Mørk blå
-    elif temp <= -5:
+    elif temp <= thresholds.cold_max:
         return (50, 100, 255)   # Blå
-    elif temp <= -2:
+    elif temp <= thresholds.chilly_max:
         return (100, 150, 255)  # Lys blå
-    elif temp <= 0:
+    elif temp <= thresholds.freezing_max:
         return (150, 200, 255)  # Veldig lys blå
-    elif temp <= 2:
+    elif temp <= thresholds.mild_max:
         return (255, 220, 50)   # Gul
-    elif temp <= 5:
+    elif temp <= thresholds.warm_max:
         return (255, 150, 0)    # Oransje
     else:
         return (255, 80, 80)    # Rød

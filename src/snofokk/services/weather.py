@@ -10,6 +10,7 @@ import requests
 
 from ..config import settings
 from ..models import WeatherData
+from src.config import settings as core_settings
 
 logger = logging.getLogger(__name__)
 
@@ -107,16 +108,22 @@ class WeatherService:
         df = df.copy()
 
         # Replace invalid values
-        df['surface_snow_thickness'] = df['surface_snow_thickness'].replace(-1, np.nan)
+        df['surface_snow_thickness'] = df['surface_snow_thickness'].replace(
+            core_settings.legacy_snofokk.snow_invalid_sentinel,
+            np.nan,
+        )
 
         # Remove outliers (negative values except -1, extremely high values)
-        mask = (df['surface_snow_thickness'] < 0) | (df['surface_snow_thickness'] > 1000)
+        mask = (
+            (df['surface_snow_thickness'] < 0)
+            | (df['surface_snow_thickness'] > core_settings.legacy_snofokk.snow_depth_outlier_max)
+        )
         df.loc[mask, 'surface_snow_thickness'] = np.nan
 
         # Interpolate missing values
         df['surface_snow_thickness'] = df['surface_snow_thickness'].interpolate(
             method='linear',
-            limit=24  # Max 24 timer interpolering
+            limit=core_settings.legacy_snofokk.snow_interpolation_limit_hours
         )
 
         # Apply rolling average to smooth data

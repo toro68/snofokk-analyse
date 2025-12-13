@@ -30,6 +30,7 @@ def create_weather_dataframe(
     wind_from_direction: float | None = None,
     surface_snow_thickness: float = 30.0,
     surface_snow_thickness_6h_ago: float | None = None,
+    snow_thickness_lookback_hours: int = 12,
     precipitation_1h: float = 0.0,
     dew_point_temperature: float | None = None,
     surface_temperature: float | None = None,
@@ -45,7 +46,8 @@ def create_weather_dataframe(
         wind_gust: Vindkast i m/s
         wind_from_direction: Vindretning i grader
         surface_snow_thickness: Nåværende snødybde i cm
-        surface_snow_thickness_6h_ago: Snødybde for 6 timer siden (for å simulere endring)
+        surface_snow_thickness_6h_ago: Snødybde ved lookback-vinduets start (for å simulere endring)
+        snow_thickness_lookback_hours: Hvor mange timer bakover snøendring simuleres (default 12)
         precipitation_1h: Nedbør siste time i mm
         dew_point_temperature: Duggpunkt i °C
         surface_temperature: Bakketemperatur i °C
@@ -58,20 +60,22 @@ def create_weather_dataframe(
     now = datetime.now(UTC)
 
     # Generer tidsstempler
-    timestamps = [now - timedelta(hours=i) for i in range(hours, 0, -1)]
+    # Inkluderer "nå" som siste punkt for å gjøre lookback-endring/akkumulering intuitiv i testene.
+    timestamps = [now - timedelta(hours=i) for i in range(hours - 1, -1, -1)]
 
     # Beregn snødybde-serie
     if surface_snow_thickness_6h_ago is not None:
-        # Gradvis endring fra 6h_ago til nå
+        # Gradvis endring fra lookback-start til nå
+        lookback = float(snow_thickness_lookback_hours)
         snow_diff = surface_snow_thickness - surface_snow_thickness_6h_ago
         snow_values = []
         for _i, ts in enumerate(timestamps):
             hours_ago = (now - ts).total_seconds() / 3600
-            if hours_ago >= 6:
+            if hours_ago >= lookback:
                 snow_values.append(surface_snow_thickness_6h_ago)
             else:
                 # Lineær interpolering
-                progress = (6 - hours_ago) / 6
+                progress = (lookback - hours_ago) / lookback
                 snow_values.append(surface_snow_thickness_6h_ago + snow_diff * progress)
     else:
         snow_values = [surface_snow_thickness] * hours
@@ -80,12 +84,12 @@ def create_weather_dataframe(
         'reference_time': timestamps,
         'air_temperature': [air_temperature] * hours,
         'wind_speed': [wind_speed] * hours,
-        'max_wind_gust': [wind_gust] * hours if wind_gust else [None] * hours,
-        'wind_from_direction': [wind_from_direction] * hours if wind_from_direction else [None] * hours,
+        'max_wind_gust': [wind_gust] * hours if wind_gust is not None else [None] * hours,
+        'wind_from_direction': [wind_from_direction] * hours if wind_from_direction is not None else [None] * hours,
         'surface_snow_thickness': snow_values,
         'precipitation_1h': [precipitation_1h] * hours,
-        'dew_point_temperature': [dew_point_temperature] * hours if dew_point_temperature else [None] * hours,
-        'surface_temperature': [surface_temperature] * hours if surface_temperature else [None] * hours,
+        'dew_point_temperature': [dew_point_temperature] * hours if dew_point_temperature is not None else [None] * hours,
+        'surface_temperature': [surface_temperature] * hours if surface_temperature is not None else [None] * hours,
         'relative_humidity': [relative_humidity] * hours,
     }
 
@@ -110,6 +114,7 @@ class TestFreshSnowAnalyzer:
             air_temperature=-5.0,
             surface_snow_thickness=30.0,
             surface_snow_thickness_6h_ago=30.0,
+            hours=13,
         )
         result = analyzer.analyze(df)
         assert result.risk_level == RiskLevel.LOW
@@ -117,13 +122,15 @@ class TestFreshSnowAnalyzer:
 
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_moderate_snow_increase_returns_medium(self, mock_winter, analyzer):
-        """7+ cm snøøkning på 6 timer gir MODERAT risiko."""
+        """Moderat snøøkning over lookback-vinduet gir MODERAT risiko."""
         # Bruker større endring for å sikre at analyser beregner ≥5cm
         df = create_weather_dataframe(
-            air_temperature=-5.0,
-            dew_point_temperature=-6.0,  # < 0 = snø
-            surface_snow_thickness=42.0,
-            surface_snow_thickness_6h_ago=30.0,  # ~8 cm beregnet økning → medium
+            air_temperature=0.2,
+            surface_temperature=0.0,
+            dew_point_temperature=-0.2,  # < 0 = snø
+            surface_snow_thickness=36.0,
+            surface_snow_thickness_6h_ago=30.0,  # +6 cm (våt snø) → medium
+            hours=13,
         )
         result = analyzer.analyze(df)
         assert result.risk_level == RiskLevel.MEDIUM
@@ -131,13 +138,15 @@ class TestFreshSnowAnalyzer:
 
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_heavy_snow_increase_returns_high(self, mock_winter, analyzer):
-        """15+ cm snøøkning på 6 timer gir HØY risiko."""
+        """Stor snøøkning over lookback-vinduet gir HØY risiko."""
         # Bruker større endring for å sikre at analyser beregner ≥10cm
         df = create_weather_dataframe(
-            air_temperature=-5.0,
-            dew_point_temperature=-6.0,
+            air_temperature=0.2,
+            surface_temperature=0.0,
+            dew_point_temperature=-0.2,
             surface_snow_thickness=50.0,
             surface_snow_thickness_6h_ago=30.0,  # +20 cm, gir ca 13cm målt endring
+            hours=13,
         )
         result = analyzer.analyze(df)
         assert result.risk_level == RiskLevel.HIGH
@@ -156,6 +165,38 @@ class TestFreshSnowAnalyzer:
         assert result.risk_level in (RiskLevel.MEDIUM, RiskLevel.LOW)
 
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
+    def test_wind_can_reduce_snow_depth_during_snowfall(self, mock_winter, analyzer):
+        """Ved vind kan snødybden synke selv om det snør; bruk nedbør som fallback."""
+        df = create_weather_dataframe(
+            air_temperature=-4.0,
+            dew_point_temperature=-5.0,  # < 0 = snø
+            wind_speed=10.0,
+            surface_snow_thickness=28.0,
+            surface_snow_thickness_6h_ago=30.0,  # negativ nettoendring
+            precipitation_1h=2.0,  # 6t akkumulert ~12 mm
+            hours=13,
+        )
+        result = analyzer.analyze(df)
+        assert result.risk_level == RiskLevel.HIGH
+        assert "nedbør" in result.message.lower()
+
+    @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
+    def test_precip_6h_warning_can_trigger_nysno_even_without_snow_increase(self, mock_winter, analyzer):
+        """Hvis snødybden ikke øker, kan 6t-nedbør likevel indikere nysnø."""
+        df = create_weather_dataframe(
+            air_temperature=-3.0,
+            dew_point_temperature=-4.0,
+            wind_speed=9.0,
+            surface_snow_thickness=30.0,
+            surface_snow_thickness_6h_ago=30.0,
+            precipitation_1h=0.7,  # 12t akkumulert ~8.4 mm (mellom warning/critical)
+            hours=13,
+        )
+        result = analyzer.analyze(df)
+        assert result.risk_level == RiskLevel.MEDIUM
+        assert "nysnø" in result.message.lower() or "nedbør" in result.message.lower()
+
+    @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_rain_not_counted_as_snow(self, mock_winter, analyzer):
         """Regn (duggpunkt > 0) skal ikke gi snøvarsel."""
         df = create_weather_dataframe(
@@ -167,6 +208,19 @@ class TestFreshSnowAnalyzer:
         result = analyzer.analyze(df)
         # Skal ikke klassifiseres som nysnø
         assert "snøfall" not in result.message.lower() or result.risk_level == RiskLevel.LOW
+
+    @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
+    def test_snow_precip_on_mild_surface_returns_low(self, mock_winter, analyzer):
+        """Hvis bakken er mild, kan nedbør gi våt vei selv om duggpunkt tilsier snø."""
+        df = create_weather_dataframe(
+            air_temperature=0.5,
+            surface_temperature=1.5,
+            dew_point_temperature=-1.0,
+            surface_snow_thickness=30.0,
+            precipitation_1h=2.0,
+        )
+        result = analyzer.analyze(df)
+        assert result.risk_level == RiskLevel.LOW
 
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=False)
     def test_summer_returns_low(self, mock_winter, analyzer):
@@ -462,6 +516,44 @@ class TestSlipperyRoadAnalyzer:
         assert result.risk_level in (RiskLevel.MEDIUM, RiskLevel.HIGH)
 
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
+    def test_rain_on_snow_with_mild_surface_returns_medium(self, mock_winter, analyzer):
+        """På vårføre kan det være bar vei selv om stasjonen måler snø i terrenget; mild bakke skal ikke gi HØY."""
+        df = create_weather_dataframe(
+            air_temperature=2.0,
+            dew_point_temperature=1.5,  # > 0 = regn
+            surface_snow_thickness=20.0,
+            precipitation_1h=3.0,
+            surface_temperature=1.5,  # tydelig mild bakke
+        )
+        result = analyzer.analyze(df)
+        assert result.risk_level == RiskLevel.MEDIUM
+
+    @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
+    def test_rain_on_snow_after_cold_spell_can_be_high_even_if_surface_is_mild(self, mock_winter, analyzer):
+        """Kuldeperiode etterfulgt av mildvær+regn kan gi glatte veier selv om bakke nå er mild."""
+        now = datetime.now(UTC)
+        timestamps = [now - timedelta(hours=i) for i in range(12, 0, -1)]
+
+        # Lufttemp fra -5 til +2 over 12 timer
+        temps = [-5 + (7 * i / 11) for i in range(12)]
+        # Bakke fra -6 til +1.5 (mild nå, men tydelig frost nylig)
+        surface_temps = [-6 + (7.5 * i / 11) for i in range(12)]
+
+        df = pd.DataFrame({
+            'reference_time': timestamps,
+            'air_temperature': temps,
+            'wind_speed': [5.0] * 12,
+            'surface_snow_thickness': [20.0] * 12,
+            'precipitation_1h': [3.0] * 12,
+            'dew_point_temperature': [t - 0.2 for t in temps],  # > 0 i siste del → regn
+            'surface_temperature': surface_temps,
+            'relative_humidity': [80.0] * 12,
+        })
+
+        result = analyzer.analyze(df)
+        assert result.risk_level in (RiskLevel.MEDIUM, RiskLevel.HIGH)
+
+    @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
     def test_temperature_rise_detected(self, mock_winter, analyzer):
         """Rask temperaturstigning (mildvær) øker risiko."""
         # Simuler temperaturstigning
@@ -582,6 +674,7 @@ class TestIntegration:
             surface_snow_thickness_6h_ago=35.0,  # +15 cm
             precipitation_1h=5.0,
             surface_temperature=-10.0,
+            hours=13,
         )
 
         fresh_snow = FreshSnowAnalyzer()
