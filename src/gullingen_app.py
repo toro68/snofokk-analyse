@@ -166,19 +166,14 @@ def render_maintenance_top(plowing_info: PlowingInfo, suppress_alerts: bool) -> 
 
     if plowing_info.last_plowing:
         value = plowing_info.formatted_time
-        if plowing_info.last_event_type:
-            value = f"{value} – {plowing_info.last_event_type}"
+        # Vis work_types (f.eks. "skraping") i header, ikke event_type (f.eks. "SCRAPE")
+        if plowing_info.last_work_types:
+            value = f"{value} – {', '.join(plowing_info.last_work_types)}"
 
         st.metric("Siste vedlikehold", value)
 
         details_parts: list[str] = []
-        if plowing_info.last_work_types:
-            details_parts.append(f"Arbeid: {', '.join(plowing_info.last_work_types)}")
-        if plowing_info.last_event_type:
-            details_parts.append(f"Type: {plowing_info.last_event_type}")
-        if plowing_info.last_operator_id:
-            details_parts.append(f"Operatør: {plowing_info.last_operator_id}")
-
+        # Vis kun nullstillings-info, ikke redundant type/operatør
         if suppress_alerts and plowing_info.hours_since is not None:
             remaining = max(0.0, suppress_hours - float(plowing_info.hours_since))
             details_parts.append(
