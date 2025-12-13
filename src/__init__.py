@@ -3,13 +3,7 @@
 __version__ = "2.0.0"
 __author__ = "Alarm System"
 
-from .config import get_secret, settings
-from .frost_client import FrostAPIError, FrostClient, WeatherData
-
-__all__ = [
-    'settings',
-    'get_secret',
-    'FrostClient',
-    'FrostAPIError',
-    'WeatherData',
-]
+# NOTE:
+# Keep this module import-light.
+# Streamlit Cloud may import the app while dependencies are being (re)installed.
+# Importing submodules here (e.g. pandas via frost_client) can cause startup failures.
