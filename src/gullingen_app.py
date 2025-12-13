@@ -188,11 +188,11 @@ def render_maintenance_top(plowing_info: PlowingInfo, suppress_alerts: bool) -> 
         if suppress_alerts and plowing_info.hours_since is not None:
             remaining = max(0.0, suppress_hours - float(plowing_info.hours_since))
             details_parts.append(
-                f"Farevarsler nullstilles i {suppress_hours:.1f}t etter ferdig brøyting/strøing (telles fra tidspunktet over, {remaining:.1f}t igjen)"
+                f"Nullstilling etter ferdig brøyting/strøing: {suppress_hours:.1f}t (telles fra tidspunktet over, {remaining:.1f}t igjen)"
             )
         else:
             details_parts.append(
-                f"Ved brøyting/strøing nullstilles farevarsler i {suppress_hours:.1f}t etter ferdig vedlikehold (telles fra tidspunktet over)"
+                f"Nullstilling etter ferdig vedlikehold (brøyting/strøing): {suppress_hours:.1f}t (telles fra tidspunktet over)"
             )
 
         if details_parts:
