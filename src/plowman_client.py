@@ -120,18 +120,28 @@ class MaintenanceApiClient:
         if not ts:
             return None
 
-        work_types = payload.get("work_types")
-        if not isinstance(work_types, list):
-            work_types = None
+        event_type = (
+            payload.get("event_type")
+            or payload.get("type")
+            or payload.get("maintenance_type")
+        )
+
+        work_types_raw = payload.get("work_types")
+        if work_types_raw is None:
+            work_types_raw = payload.get("workTypes")
+        if work_types_raw is None:
+            work_types_raw = payload.get("work_type")
+
+        work_types = _coerce_str_list(work_types_raw)
 
         return PlowingEvent(
             timestamp=ts,
             vehicle_id=str(payload.get("session_id") or payload.get("event_id") or "") or None,
             vehicle_name=payload.get("operator_id"),
-            sector_name=payload.get("event_type"),
+            sector_name=event_type,
             distance_km=None,
             event_id=str(payload.get("event_id") or payload.get("session_id") or "") or None,
-            event_type=payload.get("event_type"),
+            event_type=event_type,
             status=payload.get("status"),
             work_types=work_types,
             operator_id=payload.get("operator_id"),
@@ -186,6 +196,20 @@ def _parse_iso_utc(value: str | None) -> datetime | None:
         return dt
     except ValueError:
         return None
+
+
+def _coerce_str_list(value: object) -> list[str] | None:
+    if value is None:
+        return None
+    if isinstance(value, list):
+        items: list[str] = []
+        for v in value:
+            if isinstance(v, str) and v.strip():
+                items.append(v.strip())
+        return items or None
+    if isinstance(value, str) and value.strip():
+        return [value.strip()]
+    return None
 
 
 def _sanitize_base_url(value: str | None) -> str:

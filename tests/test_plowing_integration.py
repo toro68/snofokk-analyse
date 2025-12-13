@@ -76,6 +76,29 @@ class TestMaintenanceApiClient:
         assert event.event_type == "SCRAPE"
         assert event.work_types == ["skraping"]
 
+    @patch('src.plowman_client.requests.Session.get')
+    def test_get_latest_accepts_type_alias(self, mock_get):
+        """Tester at `type` aksepteres som alias for `event_type` fra API."""
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "event_id": "abc123",
+            "session_id": "abc123",
+            "operator_id": "operator_42",
+            "timestamp_utc": "2025-11-27T10:55:38.911Z",
+            "type": "SCRAPE",
+            "status": "COMPLETED",
+            "work_types": ["skraping"],
+        }
+        mock_get.return_value = mock_response
+
+        client = MaintenanceApiClient(base_url="https://example.web.app", token="token")
+        event = client.get_last_maintenance_time()
+
+        assert event is not None
+        assert event.event_type == "SCRAPE"
+        assert event.work_types == ["skraping"]
+
 
 class TestPlowingService:
     """Tester for PlowingService som håndterer brøytedata med caching."""
