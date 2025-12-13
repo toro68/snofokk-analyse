@@ -227,6 +227,14 @@ def render_key_metrics(df):
 def render_wax_guide(df):
     """Render en kompakt smøreguide under nåværende forhold."""
 
+    # Ikke vis smøreguide når det ikke er snø (da er det ikke skiforhold).
+    if df is not None and not df.empty and "surface_snow_thickness" in df.columns:
+        snow_series = df["surface_snow_thickness"].dropna()
+        if not snow_series.empty:
+            snow_depth = float(snow_series.iloc[-1])
+            if snow_depth <= 0.5:
+                return
+
     st.subheader("Smøreguide")
 
     try:

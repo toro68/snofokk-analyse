@@ -236,13 +236,20 @@ def generate_wax_recommendation(df: pd.DataFrame) -> WaxRecommendation | None:
         return None
 
     # Bruk siste rad som faktisk har temperaturdata. I praksis kan siste måling
-    # mangle både luft- og bakketemperatur, og da skal ikke hele smøreguiden
-    # "forsvinne".
+    # mangle både luft- og bakketemperatur (og noen ganger kun ha min/max), og da
+    # skal ikke hele smøreguiden "forsvinne".
     latest = None
     for _, row in df.iloc[::-1].iterrows():
         air_temp_candidate = _safe_float(row, "air_temperature")
         surface_temp_candidate = _safe_float(row, "surface_temperature")
-        if air_temp_candidate is not None or surface_temp_candidate is not None:
+        temp_min_candidate = _safe_float(row, "temp_min_1h")
+        temp_max_candidate = _safe_float(row, "temp_max_1h")
+
+        has_any_temp = any(
+            x is not None
+            for x in (air_temp_candidate, surface_temp_candidate, temp_min_candidate, temp_max_candidate)
+        )
+        if has_any_temp:
             latest = row
             break
 
@@ -251,9 +258,20 @@ def generate_wax_recommendation(df: pd.DataFrame) -> WaxRecommendation | None:
 
     air_temp = _safe_float(latest, "air_temperature")
     surface_temp = _safe_float(latest, "surface_temperature")
+    temp_min_1h = _safe_float(latest, "temp_min_1h")
+    temp_max_1h = _safe_float(latest, "temp_max_1h")
     humidity = _safe_float(latest, "relative_humidity")
     dew_point = _safe_float(latest, "dew_point_temperature")
     snow_depth = _safe_float(latest, "surface_snow_thickness")
+
+    # Fallback: hvis lufttemp mangler, forsøk å estimere fra min/max siste time.
+    if air_temp is None:
+        if temp_min_1h is not None and temp_max_1h is not None:
+            air_temp = (temp_min_1h + temp_max_1h) / 2.0
+        elif temp_min_1h is not None:
+            air_temp = temp_min_1h
+        elif temp_max_1h is not None:
+            air_temp = temp_max_1h
 
     effective_temp = surface_temp if surface_temp is not None else air_temp
     if effective_temp is None:
@@ -280,6 +298,8 @@ def generate_wax_recommendation(df: pd.DataFrame) -> WaxRecommendation | None:
     metrics = {
         "air_temperature": air_temp,
         "surface_temperature": surface_temp,
+        "temp_min_1h": temp_min_1h,
+        "temp_max_1h": temp_max_1h,
         "relative_humidity": humidity,
         "dew_point": dew_point,
         "precipitation_recent": recent_precip,

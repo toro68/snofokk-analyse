@@ -163,6 +163,15 @@ def render_key_metrics(df, plowing_info: PlowingInfo):
 def render_wax_guide(df: pd.DataFrame) -> None:
     """Vis en kompakt smøreguide under værdata."""
 
+    # Ikke vis smøreguide når det ikke er snø (da er det ikke skiforhold).
+    # Bruk siste tilgjengelige (ikke-NaN) snødybde hvis vi har den.
+    if df is not None and not df.empty and "surface_snow_thickness" in df.columns:
+        snow_series = df["surface_snow_thickness"].dropna()
+        if not snow_series.empty:
+            snow_depth = float(snow_series.iloc[-1])
+            if snow_depth <= 0.5:
+                return
+
     st.markdown("#### Smøreguide")
 
     try:
