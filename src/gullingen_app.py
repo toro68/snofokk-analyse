@@ -171,7 +171,11 @@ def render_maintenance_top(plowing_info: PlowingInfo, suppress_alerts: bool) -> 
     suppress_hours = get_maintenance_suppress_hours()
 
     if plowing_info.last_plowing:
-        st.metric(f"{plowing_info.status_emoji} Siste vedlikehold", plowing_info.formatted_time)
+        value = plowing_info.formatted_time
+        if plowing_info.last_event_type:
+            value = f"{value} – {plowing_info.last_event_type}"
+
+        st.metric(f"{plowing_info.status_emoji} Siste vedlikehold", value)
 
         details_parts: list[str] = []
         if plowing_info.last_work_types:

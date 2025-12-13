@@ -6,6 +6,9 @@ from src.plowman_client import _extract_latest_timestamp_from_share_html, _sanit
 def test_fallback_used_when_maintenance_api_returns_no_payload(monkeypatch):
   from src.plowman_client import MaintenanceApiClient
 
+  # Fallback til Plowman share er nå opt-in for driftssikkerhet.
+  monkeypatch.setenv("ALLOW_PLOWMAN_FALLBACK", "true")
+
   class FakeResponse:
     def __init__(self, status_code: int, text: str = ""):
       self.status_code = status_code
