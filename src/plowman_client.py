@@ -25,6 +25,18 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
+class MaintenanceFetchResult:
+    """Resultat av fetch mot vedlikeholds-API.
+
+    Brukes for å kunne vise gode feilmeldinger i UI når API-et f.eks. svarer 401.
+    """
+
+    payload: dict | None
+    status_code: int | None
+    error: str | None = None
+
+
+@dataclass
 class PlowingEvent:
     """Representerer en brøytehendelse."""
     timestamp: datetime
@@ -72,9 +84,17 @@ class MaintenanceApiClient:
 
     def get_latest(self) -> dict | None:
         """Returner rå JSON fra `/v1/maintenance/latest`, eller None hvis ikke funnet."""
+        result = self.get_latest_with_status()
+        return result.payload
+
+    def get_latest_with_status(self) -> MaintenanceFetchResult:
+        """Returner rå JSON + HTTP-status for `/v1/maintenance/latest`.
+
+        Vi trenger status for å kunne skille mellom "ingen data" og "Unauthorized".
+        """
         if not self.base_url:
             logger.info("MAINTENANCE_API_BASE_URL er ikke satt")
-            return None
+            return MaintenanceFetchResult(payload=None, status_code=None, error="MAINTENANCE_API_BASE_URL er ikke satt")
 
         url = f"{self.base_url}/v1/maintenance/latest"
 
@@ -86,26 +106,30 @@ class MaintenanceApiClient:
             r = self.session.get(url, headers=headers, timeout=10)
         except requests.RequestException as e:
             logger.warning("Vedlikeholds-API utilgjengelig: %s", e)
-            return None
+            return MaintenanceFetchResult(payload=None, status_code=None, error=f"Vedlikeholds-API utilgjengelig: {e}")
 
         if r.status_code == 404:
-            return None
+            return MaintenanceFetchResult(payload=None, status_code=404, error="Ingen vedlikehold registrert (404)")
 
         if r.status_code in (401, 403):
             logger.warning("Vedlikeholds-API auth-feil (%s)", r.status_code)
-            return None
+            return MaintenanceFetchResult(
+                payload=None,
+                status_code=r.status_code,
+                error=f"Vedlikeholds-API: Unauthorized ({r.status_code}). Sjekk MAINTENANCE_API_TOKEN.",
+            )
 
         try:
             r.raise_for_status()
         except requests.HTTPError as e:
             logger.warning("Vedlikeholds-API HTTP-feil: %s", e)
-            return None
+            return MaintenanceFetchResult(payload=None, status_code=r.status_code, error=f"Vedlikeholds-API HTTP-feil ({r.status_code})")
 
         try:
-            return r.json()
+            return MaintenanceFetchResult(payload=r.json(), status_code=r.status_code)
         except ValueError as e:
             logger.warning("Vedlikeholds-API returnerte ikke gyldig JSON: %s", e)
-            return None
+            return MaintenanceFetchResult(payload=None, status_code=r.status_code, error="Vedlikeholds-API returnerte ikke gyldig JSON")
 
     def get_last_maintenance_time(self) -> PlowingEvent | None:
         """Hent siste vedlikeholdstidspunkt som PlowingEvent."""
@@ -200,6 +224,27 @@ class MaintenanceApiClient:
             work_types=None,
             operator_id=None,
         )
+
+
+def get_last_maintenance_result() -> tuple[PlowingEvent | None, str | None]:
+    """Hent siste vedlikehold som (event, error).
+
+    Brukes av UI for å kunne vise meningsfull feilmelding når API svarer 401/403.
+    """
+    client = MaintenanceApiClient()
+    fetch = client.get_latest_with_status()
+
+    if not fetch.payload:
+        if fetch.error:
+            return None, fetch.error
+
+        # Ingen payload uten tydelig feil
+        return None, None
+
+    event = client.get_last_maintenance_time()
+    if not event:
+        return None, "Vedlikeholds-API: Kunne ikke tolke tidspunkt fra payload"
+    return event, None
 
 
 def _parse_iso_utc(value: str | None) -> datetime | None:

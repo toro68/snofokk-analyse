@@ -13,7 +13,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from src.config import get_secret
-from src.plowman_client import get_last_plowing_time
+from src.plowman_client import get_last_maintenance_result
 
 logger = logging.getLogger(__name__)
 
@@ -218,7 +218,17 @@ def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int = 1) -> Pl
                 error=f"Mangler vedlikeholds-API secrets: {', '.join(missing)}",
             )
 
-        event = get_last_plowing_time()
+        event, event_error = get_last_maintenance_result()
+
+        if not event and event_error:
+            return PlowingInfo(
+                last_plowing=None,
+                hours_since=None,
+                is_recent=False,
+                all_timestamps=cache_data['all_timestamps'] if cache_data else [],
+                source='none',
+                error=event_error,
+            )
 
         if event and event.timestamp:
             newest_cached = cache_data['last_plowing'] if cache_data else None

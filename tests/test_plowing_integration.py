@@ -200,13 +200,13 @@ class TestPlowingService:
         assert info.formatted_time == "Ukjent"
         assert info.status_emoji == ""
 
-    @patch('src.plowing_service.get_last_plowing_time')
+    @patch('src.plowing_service.get_last_maintenance_result')
     def test_get_plowing_info_uses_plowman_client(self, mock_get_last):
         """Tester at get_plowing_info bruker PlowmanClient."""
         mock_event = PlowingEvent(
             timestamp=datetime.now(UTC) - timedelta(hours=5)
         )
-        mock_get_last.return_value = mock_event
+        mock_get_last.return_value = (mock_event, None)
 
         # Hent uten cache
         info = get_plowing_info(use_cache=False)
