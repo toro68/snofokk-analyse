@@ -17,12 +17,8 @@ from sklearn.preprocessing import StandardScaler
 from xgboost import XGBRegressor
 
 # Lokale imports
-try:
-    from .config import DEFAULT_PARAMS
-    from .snofokk import calculate_snow_drift_risk
-except ImportError:
-    from data.src.snofokk.config import DEFAULT_PARAMS
-    from data.src.snofokk.snofokk import calculate_snow_drift_risk
+from .config import DEFAULT_PARAMS
+from .snofokk import calculate_snow_drift_risk
 
 # Type aliases
 T = TypeVar("T")

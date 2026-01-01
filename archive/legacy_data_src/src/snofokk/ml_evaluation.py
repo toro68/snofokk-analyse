@@ -355,7 +355,7 @@ class MLEvaluator:
                 'snow_depth_min': 10.0,   # Minimum snødybde
                 'risk_threshold': 0.7     # Risikogrense
             }
-            from snofokk import calculate_snow_drift_risk
+            from .snofokk import calculate_snow_drift_risk
 
             # Beregn risiko med standardparametre
             original_df, original_periods = calculate_snow_drift_risk(df, snow_params)

@@ -21,9 +21,8 @@ from pandas import DataFrame
 from plotly.subplots import make_subplots
 
 # Lokale imports
-from data.src.snofokk.snow_constants import SnowDepthConfig, enforce_snow_processing, get_risk_level
-
 from .config import DEFAULT_PARAMS, FROST_CLIENT_ID
+from .snow_constants import SnowDepthConfig, enforce_snow_processing, get_risk_level
 
 # Logging oppsett
 logging.basicConfig(level=logging.INFO)
@@ -1741,4 +1740,3 @@ if __name__ == "__main__":
             logger.error("API-kall feilet - ingen data mottatt")
     except Exception as e:
         logger.error(f"Feil under testing: {str(e)}")
-
