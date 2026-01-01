@@ -112,7 +112,9 @@ class SnowdriftThresholds:
     """
     # Vindkjøling-baserte terskler
     wind_chill_critical: float = -15.0  # Høy risiko
-    wind_chill_warning: float = -12.0   # Moderat risiko
+    # Kalibrert mot brøyte-/vær-kobling (`data/analyzed/broyting_weather_correlation_2025.csv`)
+    # for å øke sensitivitet uten å øke falske treff i evalueringssettet.
+    wind_chill_warning: float = -10.0   # Moderat risiko
 
     # Vindstyrke-terskler (snitt)
     wind_speed_critical: float = 10.0   # Høy risiko
@@ -141,6 +143,8 @@ class SnowdriftThresholds:
     snow_depth_min_cm: float = 3.0      # Minimum snødekke (spesifikasjon ≥3 cm)
     fresh_snow_threshold: float = 0.3   # cm/h for nysnø
     wind_transport_snow_change_threshold_cm_per_h: float = -0.2  # cm/h (negativ endring indikerer vindtransport)
+    # Snøfokk er et akutt fenomen; vi evaluerer maksimum risiko over et kortere vindu enn
+    # f.eks. slaps/nysnø for å fange perioder som kan blokkere vei raskt.
     interval_hours: int = 6             # Evaluer maksimum risiko siste N timer
 
     # Sommersesong: terskel for å si "ingen snø" i enklere analyse
@@ -193,7 +197,9 @@ class SlipperyRoadThresholds:
     freezing_precip_critical_mm: float = 0.3
 
     # Skjult frysefare (luft > 0 men kald bakke) - strengere gating for å redusere støy.
-    hidden_freeze_surface_max: float = -1.5
+    # Kalibrert mot brøyte-/vær-kobling (`data/analyzed/broyting_weather_correlation_2025.csv`)
+    # for å øke treffrate uten å øke falske treff i evalueringssettet.
+    hidden_freeze_surface_max: float = -1.0
     hidden_freeze_air_min: float = 0.0
     hidden_freeze_air_max: float = 1.0
     hidden_freeze_precip_12h_min: float = 0.5

@@ -371,7 +371,9 @@ def get_last_plowing_time(sector_name: str = None) -> PlowingEvent | None:
 
 if __name__ == "__main__":
     # Test
-    logging.basicConfig(level=logging.DEBUG)
+    from src.logging_config import configure_logging
+
+    configure_logging(level="DEBUG")
 
     print("Tester vedlikeholds-API...")
     test_event = get_last_plowing_time()

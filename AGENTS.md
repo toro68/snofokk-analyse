@@ -81,7 +81,7 @@ Guiden i `data/analyzed/ANALYSIS_METHOD_GUIDE.md` beskriver hele kjøringen og o
 | Type | Andel | Typisk scenario |
 |------|-------|-----------------|
 | Snøbrøyting | 46% | Nysnø over terskel (se `settings.fresh_snow.snow_increase_*`) |
-| Slaps-skraping | 33% | Temp 0-2°C + nedbør |
+| Slaps-skraping | 33% | Mildvær i slaps-området + nedbør (se `settings.slaps.temp_min/temp_max` og `settings.slaps.precipitation_12h_*`) |
 | Fryse/tine-strøing | 16% | Temperatursvingninger |
 | Inspeksjon | 4% | Rutinekontroll |
 
@@ -120,7 +120,7 @@ Brøytedata reflekterer **faktisk aktivitet**, ikke nødvendigvis **faktisk beho
 ## Kritiske værsituasjoner
 
 ### 1. Nysnø
-**Når:** Snødybde øker merkbart over 6 timer (terskler i `src/config.py` → `settings.fresh_snow`).
+**Når:** Snødybde øker merkbart over et definert vindu (styres av `settings.fresh_snow.lookback_hours` i `src/config.py`).
 
 Viktig ved vind:
 - Ved snøfokk/vindtransport kan snødybdemåleren gå ned selv om det snør (snø blåser vekk fra målepunktet).
@@ -134,9 +134,8 @@ Viktig ved vind:
 | Sekundær | `settings.fresh_snow.air_temp_max` | Brukes hvis duggpunkt mangler |
 | Snøøkning | `settings.fresh_snow.snow_increase_warning` / `settings.fresh_snow.snow_increase_critical` | Målt via `surface_snow_thickness` |
 
-> **Hvorfor duggpunkt?** Ved +1.5°C lufttemperatur kan det like gjerne 
-> falle regn som snø. Men hvis duggpunktet er under 0°C, sublimerer 
-> fuktigheten til snøkrystaller - uavhengig av lufttemperatur opptil +2°C.
+> **Hvorfor duggpunkt?** Duggpunkt brukes som primær indikator for snø vs regn.
+> Se `settings.fresh_snow.dew_point_max` og fallback `settings.fresh_snow.air_temp_max`.
 
 **Tilgjengelige elementer fra Frost API:**
 - `dew_point_temperature` - Duggpunkt (PT10M, PT1H, P1D)
@@ -149,9 +148,9 @@ Viktig ved vind:
 HVIS nedbør >= settings.fresh_snow.precipitation_min OG (duggpunkt < settings.fresh_snow.dew_point_max ELLER lufttemp < settings.fresh_snow.air_temp_max):
     → Snøfall pågår
 
-HVIS snødybde øker >= settings.fresh_snow.snow_increase_critical over 6 timer:
+HVIS snødybde øker >= settings.fresh_snow.snow_increase_critical over settings.fresh_snow.lookback_hours timer:
     → Varsle høy nysnø
-ELLERS HVIS snødybde øker >= settings.fresh_snow.snow_increase_warning over 6 timer:
+ELLERS HVIS snødybde øker >= settings.fresh_snow.snow_increase_warning over settings.fresh_snow.lookback_hours timer:
     → Varsle moderat nysnø
 ```
 
@@ -184,17 +183,17 @@ ELLERS HVIS snødybde øker >= settings.fresh_snow.snow_increase_warning over 6 
 **Når snø IKKE kan blåse:**
 - Gammel, pakket snø (sintrert/sammenbundet)
 - Snø med isskorpe på toppen
-- Våt snø (temp > 0°C)
-- Snø eldre enn 24-48 timer uten ny nedbør
+- Våt snø (mildvær; se `settings.snowdrift.loose_snow_mild_temp_min_c`)
+- Snø eldre enn definert løssnø-vindu uten ny nedbør (se `settings.snowdrift.loose_snow_lookback_hours`)
 
 **Løssnø-tilgjengelighet (implementert):**
-- Basert på lufttemperatur siste 24t:
-    - Kontinuerlig frost (alle målinger ≤ -1°C) → løssnø antas tilgjengelig
-    - Mildvær (≥ 6 timer > 0°C) → løssnø antas ikke tilgjengelig
+- Basert på lufttemperatur over `settings.snowdrift.loose_snow_lookback_hours` timer:
+    - Kontinuerlig frost (alle målinger ≤ `settings.snowdrift.loose_snow_continuous_frost_temp_max_c`) → løssnø antas tilgjengelig
+    - Mildvær (≥ `settings.snowdrift.loose_snow_mild_hours_min` timer over `settings.snowdrift.loose_snow_mild_temp_min_c`) → løssnø antas ikke tilgjengelig
     - Delvis mildvær → løssnø kan være tilgjengelig (usikkert)
 
 > **Fysisk forklaring**: Snøkrystaller binder seg sammen (sintrer) over tid. 
-> Etter 24-48 timer er overflaten ofte for hard til å blåse, selv i sterk vind.
+> Etter en periode uten ny snø (se `settings.snowdrift.loose_snow_lookback_hours`) er overflaten ofte for hard til å blåse, selv i sterk vind.
 > Vind uten fersk snø = ingen snøfokk, bare kald vind.
 
 **Løsning i kode**: Snøfokk varsles basert på:
@@ -202,7 +201,7 @@ ELLERS HVIS snødybde øker >= settings.fresh_snow.snow_increase_warning over 6 
 2. Vindkjøling (`settings.snowdrift.wind_chill_warning` / `settings.snowdrift.wind_chill_critical`)
 3. Minimum snødekke (`settings.snowdrift.snow_depth_min_cm`)
 4. Temperatur (`settings.snowdrift.temperature_max`)
-5. Løssnø-tilgjengelighet (basert på temperatur siste 24t; langvarig mildvær reduserer risiko)
+5. Løssnø-tilgjengelighet (basert på temperatur over `settings.snowdrift.loose_snow_lookback_hours`; langvarig mildvær reduserer risiko)
 
 **Snødybdeendring**: Brukes kun som støttefaktor (ikke som hovedtrigger), fordi den kan være upålitelig ved vind.
 
@@ -222,7 +221,7 @@ Merk: `settings.snowdrift.wind_speed_median` finnes fortsatt som deprecated alia
 
 **Kalibrering mot historikk:**
 - 447 snøfokk-perioder identifisert (nov 2023 - apr 2024)
-- **73% fra SE-S vindretninger** (135-225°) - spesielt kritisk for Gullingen
+- **73% fra kritisk vindsektor** (se `settings.snowdrift.critical_wind_dir_min` og `settings.snowdrift.critical_wind_dir_max`) - spesielt kritisk for Gullingen
 - **92.2% klassifisert som høy faregrad**
 - Mest aktive måneder: Desember (27%), Februar (26%), Januar (20%)
 
@@ -236,7 +235,7 @@ Merk: `settings.snowdrift.wind_speed_median` finnes fortsatt som deprecated alia
 **Hva:** Tung blanding av snø og vann som gir dårlig fremkommelighet
 
 **Når slaps oppstår:**
-- Snø smelter ved varmegrader (temperatur > 0°C)
+- Snø smelter ved mildvær (se `settings.slaps.temp_min` og `settings.slaps.temp_max`)
 - Regn faller på eksisterende snødekke
 
 **Problemet med slaps:**
@@ -263,7 +262,7 @@ Merk: `settings.snowdrift.wind_speed_median` finnes fortsatt som deprecated alia
 - 15. des 2024: 1.6°C, 77.4mm nedbør
 
 **Beskyttende faktor:**
-- Nysnø > 2mm ved temp < 1°C fungerer som "naturlig strøing"
+- Fersk nysnø kan gi økt friksjon ("naturlig strøing"), se `settings.slippery.recent_snow_relief_hours` og `settings.slippery.recent_snow_relief_cm`
 - Reduserer slaps-risiko betydelig
 
 **Varsel til:**
@@ -293,8 +292,8 @@ Merk: `settings.snowdrift.wind_speed_median` finnes fortsatt som deprecated alia
 - ML-modell F1-score: 1.0 (svært høy presisjon)
 
 **Ny innsikt: Bakketemperatur er nøkkelen!**
-- 28 av 166 brøyteepisoder hadde luft > 0°C men bakke < 0°C
-- Bruk `surface_temperature < 0` som primær is-indikator
+- 28 av 166 brøyteepisoder hadde luft over frysepunktet men bakke under frysepunktet (se `settings.slippery.hidden_freeze_*`)
+- Bruk `surface_temperature <= settings.slippery.surface_temp_freeze` som primær is-indikator
 - Luft-bakke differanse snitt: 2.1°C
 
 **Regn på snø-episoder (15 bekreftet):**
@@ -311,7 +310,7 @@ Merk: `settings.snowdrift.wind_speed_median` finnes fortsatt som deprecated alia
 - 28. jan 2025: -1.3°C til 2.2°C
 
 **Beskyttende faktor:**
-- Nysnø > 2mm ved temp < 1°C = "naturlig strøing"
+- Fersk nysnø kan gi økt friksjon (se `settings.slippery.recent_snow_relief_hours` og `settings.slippery.recent_snow_relief_cm`)
 - Strøing kun effektivt på klink is, IKKE på snø
 
 **Varsel til:**
@@ -391,7 +390,7 @@ relative_humidity          - Luftfuktighet
 ### Ny innsikt: Bakketemperatur vs lufttemperatur
 Analyse av 166 brøyteepisoder (2022-2025) viser:
 - **Bakke er i snitt 2.1°C kaldere enn luft**
-- **28 episoder** med luft > 0°C men bakke < 0°C = FRYSEFARE
+- **28 episoder** med luft over frysepunktet men bakke under frysepunktet = FRYSEFARE (se `settings.slippery.hidden_freeze_*`)
 - Bakketemperatur er bedre indikator for isdannelse enn lufttemperatur
 
 ### Ny innsikt: Vindkast vs snittwind  
@@ -453,7 +452,7 @@ Dato: 22. november 2025
 Temperatur: 0.7 til 2.4°C (snitt 1.6°C)
 Nedbør: 20.4mm regn
 Snødybde: Sank fra 15cm → 7cm
-Duggpunkt: 0.6 til 2.5°C (over 0 = regn, ikke snø)
+Duggpunkt: 0.6 til 2.5°C (over frysepunktet = regn, ikke snø)
 → Resultat: Skraping 6t + Strøing 46m
 → SLAPS bekreftet: Regn på snø ved plusgrader
 ```

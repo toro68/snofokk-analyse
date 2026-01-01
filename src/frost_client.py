@@ -12,6 +12,13 @@ from functools import lru_cache
 
 import pandas as pd
 import requests
+from tenacity import (
+    before_sleep_log,
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from src.config import settings
 
@@ -21,6 +28,10 @@ logger = logging.getLogger(__name__)
 class FrostAPIError(Exception):
     """Custom exception for API-feil."""
     pass
+
+
+class _FrostAPIRetryableError(Exception):
+    """Internal exception used to trigger retries."""
 
 
 @dataclass
@@ -170,12 +181,15 @@ class FrostClient:
             Liste med element-IDer
         """
         try:
-            response = requests.get(
-                settings.api.sources_url,
-                params={'ids': self.station_id},
-                auth=(settings.api.client_id, ''),
-                timeout=settings.api.timeout
+            response = self._request_with_retry(
+                settings.api.sources_url, params={"ids": self.station_id}
             )
+
+            if response.status_code == 401:
+                raise FrostAPIError("Ugyldig API-nøkkel (401)")
+            if response.status_code == 403:
+                raise FrostAPIError("Ingen tilgang til API (403). Sjekk at IP er godkjent.")
+
             response.raise_for_status()
 
             data = response.json()
@@ -186,6 +200,29 @@ class FrostClient:
         except Exception as e:
             logger.warning(f"Kunne ikke hente elementer: {e}")
             return []
+
+    @retry(
+        reraise=True,
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=0.5, min=0.5, max=6),
+        retry=retry_if_exception_type(_FrostAPIRetryableError),
+        before_sleep=before_sleep_log(logger, logging.WARNING),
+    )
+    def _request_with_retry(self, url: str, *, params: dict[str, str]) -> requests.Response:
+        try:
+            response = requests.get(
+                url,
+                params=params,
+                auth=(settings.api.client_id, ""),
+                timeout=settings.api.timeout,
+            )
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+            raise _FrostAPIRetryableError(str(e)) from e
+
+        if response.status_code in {429, 500, 502, 503, 504}:
+            raise _FrostAPIRetryableError(f"Frost API svarte {response.status_code}")
+
+        return response
 
     @lru_cache(maxsize=100)  # noqa: B019 - bevisst caching
     def _fetch_observations(
@@ -215,12 +252,10 @@ class FrostClient:
         logger.info(f"Henter data: {self.station_id}, {start_iso} til {end_iso}")
 
         try:
-            response = requests.get(
-                settings.api.base_url,
-                params=params,
-                auth=(settings.api.client_id, ''),
-                timeout=settings.api.timeout
-            )
+            try:
+                response = self._request_with_retry(settings.api.base_url, params=params)
+            except _FrostAPIRetryableError as e:
+                raise FrostAPIError("Midlertidig feil mot Frost API. Prøv igjen om litt.") from e
 
             # Håndter spesifikke feilkoder
             if response.status_code == 401:
@@ -236,10 +271,6 @@ class FrostClient:
 
             response.raise_for_status()
 
-        except requests.exceptions.Timeout as e:
-            raise FrostAPIError("Tidsavbrudd mot Frost API (30s)") from e
-        except requests.exceptions.ConnectionError as e:
-            raise FrostAPIError("Kunne ikke koble til Frost API. Sjekk internettforbindelse.") from e
         except requests.exceptions.HTTPError as e:
             raise FrostAPIError(f"HTTP-feil: {e}") from e
 

@@ -15,6 +15,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import streamlit as st
 
+from src.logging_config import configure_logging
 from src.analyzers import RiskLevel, SlipperyRoadAnalyzer, SnowdriftAnalyzer
 from src.components.smoreguide import (
     generate_wax_recommendation,
@@ -27,6 +28,7 @@ from src.visualizations import WeatherPlots
 
 def main():
     """Hovedfunksjon for Streamlit-app."""
+    configure_logging()
 
     # Sidekonfigurasjon
     st.set_page_config(

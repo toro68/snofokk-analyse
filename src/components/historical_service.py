@@ -10,6 +10,12 @@ import pandas as pd
 import streamlit as st
 
 from src.config import settings
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 
 class HistoricalWeatherService:
@@ -106,12 +112,32 @@ class HistoricalWeatherService:
                 'maxage': 'PT168H'  # 7 dager max age for historisk data
             }
 
-            response = requests.get(
-                url,
-                params=params,
-                auth=(self.frost_client_id, ''),
-                timeout=settings.historical.http_timeout_seconds,  # Lengre timeout for historiske data
+            class _RetryableRequestError(Exception):
+                pass
+
+            @retry(
+                reraise=True,
+                stop=stop_after_attempt(3),
+                wait=wait_exponential(multiplier=0.5, min=0.5, max=6),
+                retry=retry_if_exception_type(_RetryableRequestError),
             )
+            def _get_with_retry() -> requests.Response:
+                try:
+                    resp = requests.get(
+                        url,
+                        params=params,
+                        auth=(self.frost_client_id, ''),
+                        timeout=settings.historical.http_timeout_seconds,  # Lengre timeout for historiske data
+                    )
+                except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+                    raise _RetryableRequestError(str(e)) from e
+
+                if resp.status_code in {429, 500, 502, 503, 504}:
+                    raise _RetryableRequestError(f"Frost API svarte {resp.status_code}")
+
+                return resp
+
+            response = _get_with_retry()
 
             if response.status_code == 200:
                 data = response.json()
@@ -147,6 +173,9 @@ class HistoricalWeatherService:
             return pd.DataFrame()
         except (ValueError, KeyError, TypeError) as e:
             st.error(f"Feil ved parsing av historisk data: {e}")
+            return pd.DataFrame()
+        except Exception as e:
+            st.error(f"Feil ved henting av historisk data: {e}")
             return pd.DataFrame()
 
     def calculate_new_snow(self, df: pd.DataFrame) -> pd.DataFrame:
