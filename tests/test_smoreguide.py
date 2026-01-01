@@ -26,3 +26,4 @@ def test_smoreguide_does_not_jump_to_v55_on_humidity_only() -> None:
 
     assert not any("V55" in product for product in rec.swix_products)
     assert any("V45" in product for product in rec.swix_products)
+    assert rec.metrics["surface_temperature"] == -2.5

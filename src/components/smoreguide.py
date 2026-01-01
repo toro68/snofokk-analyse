@@ -150,27 +150,50 @@ _KX_SERIES: list[_KlisterSpec] = [
 def _select_v_series(temp_c: float, *, snow_is_new: bool, humidity_pct: float | None) -> _WaxSpec:
     """Velg voks fra V-serien basert på temp + snøtype, med enkel fuktighetskorreksjon."""
 
+    def band_for(wax: _WaxSpec) -> _TempBand:
+        return wax.new_snow if snow_is_new else wax.transformed
+
+    def clamp_not_warmer_than_temp(wax: _WaxSpec) -> _WaxSpec:
+        """Sikkerhetsregel: anbefal aldri voks som er "varmere" enn faktisk temperatur.
+
+        Tolkning: Hvis voksens nedre grense er høyere enn faktisk temp (f.eks. V55 (0–1°C) ved -2.4°C),
+        så flytt ett hakk kaldere til vi er innenfor.
+        """
+
+        band = band_for(wax)
+        if band.min_c <= temp_c:
+            return wax
+
+        ordered = _V_SERIES  # kald -> varm
+        idx = ordered.index(wax)
+        while idx > 0:
+            idx -= 1
+            candidate = ordered[idx]
+            if band_for(candidate).min_c <= temp_c:
+                return candidate
+        return ordered[0]
+
     candidates: list[_WaxSpec] = []
     for wax in _V_SERIES:
-        band = wax.new_snow if snow_is_new else wax.transformed
+        band = band_for(wax)
         if band.contains(temp_c):
             candidates.append(wax)
 
     # Fallback hvis temp faller utenfor alle intervaller: bruk nærmeste voks.
     if not candidates:
         def dist(w: _WaxSpec) -> float:
-            band = w.new_snow if snow_is_new else w.transformed
+            band = band_for(w)
             if temp_c < band.min_c:
                 return band.min_c - temp_c
             if temp_c > band.max_c:
                 return temp_c - band.max_c
             return 0.0
 
-        return min(_V_SERIES, key=dist)
+        return clamp_not_warmer_than_temp(min(_V_SERIES, key=dist))
 
     # Velg voks hvis midtpunkt er nærmest temperaturen.
     def midpoint_dist(w: _WaxSpec) -> float:
-        band = w.new_snow if snow_is_new else w.transformed
+        band = band_for(w)
         return abs(temp_c - band.midpoint())
 
     candidates = sorted(candidates, key=midpoint_dist)
@@ -187,19 +210,19 @@ def _select_v_series(temp_c: float, *, snow_is_new: bool, humidity_pct: float | 
         humidity_step = -1
 
     if humidity_step == 0:
-        return base
+        return clamp_not_warmer_than_temp(base)
 
     # Viktig: Fuktighetsjustering må aldri flytte oss til en voks som ikke
     # faktisk matcher temperaturen (ellers kan vi anbefale altfor varm voks
     # ved minusgrader, f.eks. V55 ved -2.5°C).
     def band_midpoint(w: _WaxSpec) -> float:
-        band = w.new_snow if snow_is_new else w.transformed
+        band = band_for(w)
         return band.midpoint()
 
     ordered_candidates = sorted(candidates, key=band_midpoint)  # kald -> varm, men kun gyldige
     base_index = ordered_candidates.index(base)
     target_index = max(0, min(len(ordered_candidates) - 1, base_index + humidity_step))
-    return ordered_candidates[target_index]
+    return clamp_not_warmer_than_temp(ordered_candidates[target_index])
 
 
 def _select_klister(temp_c: float) -> _KlisterSpec:
@@ -421,4 +444,3 @@ def _klister_instructions(topcoat: str | None) -> list[str]:
         steps.append(f"Legg et tynt lag {topcoat} over klisteret for å redusere ising.")
     steps.append("Bruk skrape for å fjerne gammel klister før ny påføring.")
     return steps
-

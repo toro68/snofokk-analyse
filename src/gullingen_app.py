@@ -47,6 +47,31 @@ from src.visualizations import WeatherPlots
 configure_logging()
 logger = logging.getLogger(__name__)
 
+def _app_version() -> str | None:
+    """Best effort app-versjon for feilsøking (vises i sidebar)."""
+
+    env_sha = st.secrets.get("APP_GIT_SHA") if hasattr(st, "secrets") else None
+    if env_sha:
+        return str(env_sha)[:12]
+
+    # Streamlit Cloud har ofte repo-checkout tilgjengelig; prøv å lese .git uten å kalle git.
+    try:
+        root = Path(__file__).parent.parent
+        head_path = root / ".git" / "HEAD"
+        if not head_path.exists():
+            return None
+
+        head = head_path.read_text(encoding="utf-8").strip()
+        if head.startswith("ref:"):
+            ref = head.split(":", 1)[1].strip()
+            ref_path = root / ".git" / ref
+            if ref_path.exists():
+                return ref_path.read_text(encoding="utf-8").strip()[:12]
+            return None
+        return head[:12]
+    except Exception:
+        return None
+
 
 # Page config
 st.set_page_config(
@@ -280,6 +305,9 @@ def main():
     # Sidebar settings
     with st.sidebar:
         st.header("Innstillinger")
+        version = _app_version()
+        if version:
+            st.caption(f"Versjon: {version}")
 
         local_now = datetime.now().astimezone()
         local_tz = local_now.tzinfo or UTC
