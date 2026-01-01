@@ -189,10 +189,17 @@ def _select_v_series(temp_c: float, *, snow_is_new: bool, humidity_pct: float | 
     if humidity_step == 0:
         return base
 
-    ordered = _V_SERIES  # kald -> varm
-    base_index = ordered.index(base)
-    target_index = max(0, min(len(ordered) - 1, base_index + humidity_step))
-    return ordered[target_index]
+    # Viktig: Fuktighetsjustering må aldri flytte oss til en voks som ikke
+    # faktisk matcher temperaturen (ellers kan vi anbefale altfor varm voks
+    # ved minusgrader, f.eks. V55 ved -2.5°C).
+    def band_midpoint(w: _WaxSpec) -> float:
+        band = w.new_snow if snow_is_new else w.transformed
+        return band.midpoint()
+
+    ordered_candidates = sorted(candidates, key=band_midpoint)  # kald -> varm, men kun gyldige
+    base_index = ordered_candidates.index(base)
+    target_index = max(0, min(len(ordered_candidates) - 1, base_index + humidity_step))
+    return ordered_candidates[target_index]
 
 
 def _select_klister(temp_c: float) -> _KlisterSpec:
