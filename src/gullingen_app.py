@@ -1003,7 +1003,6 @@ def main():
     if not isinstance(reference_time_utc, datetime):
         reference_time_utc = datetime.now(UTC)
     results = apply_alert_stability(results, reference_time_utc)
-    confidence_map = _compute_confidence_map(results, quality_metrics, suppress_alerts)
 
     # Behold usupprimerte resultater for operasjonell logging/audit.
     results_before_suppression = dict(results)
@@ -1039,6 +1038,8 @@ def main():
             else:
                 suppressed[name] = r
         results = suppressed
+
+    confidence_map = _compute_confidence_map(results, quality_metrics, suppress_alerts)
 
     # Overall status banner
     status_title, status_msg, overall_risk = get_overall_status(results)
