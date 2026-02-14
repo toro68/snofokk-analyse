@@ -749,8 +749,21 @@ class WeatherPlots:
     @classmethod
     def _format_time_axis(cls, ax):
         """Formater tidsakse."""
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%d.%m %H:%M'))
-        ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+        locator = mdates.AutoDateLocator(minticks=4, maxticks=8)
+        ax.xaxis.set_major_locator(locator)
+
+        x_min, x_max = ax.get_xlim()
+        span_days = max(0.0, x_max - x_min)
+        span_hours = span_days * 24
+
+        if span_hours >= 72:
+            formatter = mdates.DateFormatter('%d.%m')
+        elif span_hours >= 24:
+            formatter = mdates.DateFormatter('%d.%m %H')
+        else:
+            formatter = mdates.DateFormatter('%H:%M')
+
+        ax.xaxis.set_major_formatter(formatter)
         plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right')
         ax.set_xlabel('Tid')
 

@@ -249,6 +249,40 @@ def render_period_summary(df: pd.DataFrame, selected_start_utc: datetime, select
         f"Målinger i datasettet: {measured_start.strftime('%d.%m %H:%M')}–{measured_end.strftime('%d.%m %H:%M')}"
     )
 
+    if latest_age_min > 90:
+        st.warning("Værdata er eldre enn 90 minutter. Vurder å oppdatere perioden.")
+
+
+def render_alert_overview(results: dict[str, AnalysisResult]) -> None:
+    """Vis kort oppsummering av aktive varsler."""
+    level_counts = {
+        RiskLevel.HIGH: 0,
+        RiskLevel.MEDIUM: 0,
+        RiskLevel.UNKNOWN: 0,
+        RiskLevel.LOW: 0,
+    }
+    active_categories: list[str] = []
+
+    for category, result in results.items():
+        level_counts[result.risk_level] = level_counts.get(result.risk_level, 0) + 1
+        if result.risk_level in (RiskLevel.HIGH, RiskLevel.MEDIUM):
+            active_categories.append(category)
+
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Høy", str(level_counts.get(RiskLevel.HIGH, 0)))
+    with col2:
+        st.metric("Moderat", str(level_counts.get(RiskLevel.MEDIUM, 0)))
+    with col3:
+        st.metric("Ukjent", str(level_counts.get(RiskLevel.UNKNOWN, 0)))
+    with col4:
+        st.metric("Lav", str(level_counts.get(RiskLevel.LOW, 0)))
+
+    if active_categories:
+        st.caption("Aktive varsler: " + ", ".join(active_categories))
+    else:
+        st.caption("Ingen aktive høy/moderat-varsler i valgt periode")
+
 
 def render_wax_guide(df: pd.DataFrame) -> None:
     """Vis en kompakt smøreguide under værdata."""
@@ -403,6 +437,27 @@ def main():
             ).replace(second=0, microsecond=0)
         if "period_end_local" not in st.session_state:
             st.session_state["period_end_local"] = local_now.replace(second=0, microsecond=0)
+
+        st.caption("Hurtigvalg")
+        quick1, quick2, quick3, quick4 = st.columns(4)
+        if quick1.button("6t", width='stretch'):
+            st.session_state["period_end_local"] = local_now.replace(second=0, microsecond=0)
+            st.session_state["period_start_local"] = (local_now - timedelta(hours=6)).replace(second=0, microsecond=0)
+            st.rerun()
+        if quick2.button("24t", width='stretch'):
+            st.session_state["period_end_local"] = local_now.replace(second=0, microsecond=0)
+            st.session_state["period_start_local"] = (local_now - timedelta(hours=24)).replace(second=0, microsecond=0)
+            st.rerun()
+        if quick3.button("72t", width='stretch'):
+            st.session_state["period_end_local"] = local_now.replace(second=0, microsecond=0)
+            st.session_state["period_start_local"] = (local_now - timedelta(hours=72)).replace(second=0, microsecond=0)
+            st.rerun()
+        if quick4.button("7d", width='stretch'):
+            st.session_state["period_end_local"] = local_now.replace(second=0, microsecond=0)
+            st.session_state["period_start_local"] = (local_now - timedelta(days=7)).replace(second=0, microsecond=0)
+            st.rerun()
+
+        st.divider()
 
         active_start = st.session_state["period_start_local"].astimezone(local_tz)
         active_end = st.session_state["period_end_local"].astimezone(local_tz)
@@ -620,6 +675,8 @@ def main():
 
     # Compact status summary
     st.subheader("Varsler nå")
+    render_alert_overview(results)
+
     col1, col2 = st.columns(2)
     with col1:
         render_compact_risk_card("Nysnø", results["Nysnø"])
