@@ -2,6 +2,15 @@
 
 # Endringer
 
+## 2026-02-14: UI/UX og grafforbedringer i dashboard
+
+- La til periodeoversikt øverst med valgt tidsrom, datadekning og tid siden siste måling.
+- Forbedret nøkkeltall med trendvisning (ca. 3 timer) for temperatur, vind, snø og nedbør.
+- Utvidet grafseksjonen med egen fane for vindkjøling.
+- Gjorde snøgrafer konfigurasjonsstyrte for nysnø-vindu (`fresh_snow.lookback_hours`) i stedet for fast 6t.
+- Forbedret nedbørsgraf med rullerende akkumulering over slaps-vindu og terskellinjer for slaps/kraftig nedbør.
+- Markerte perioder med vindkast over varselterskel direkte i vindgrafen.
+
 ## 2026-02-14: Mindre varslingsstøy og tydeligere vedlikeholdslogikk
 
 - Strammet inn varselterskler for nysnø, snøfokk, slaps og glattføre for å redusere over-sensitive varsler.
