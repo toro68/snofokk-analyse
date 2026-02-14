@@ -2,6 +2,17 @@
 
 # Endringer
 
+## 2026-02-14: Mindre varslingsstøy og tydeligere vedlikeholdslogikk
+
+- Strammet inn varselterskler for nysnø, snøfokk, slaps og glattføre for å redusere over-sensitive varsler.
+- La til caching for henting av værdata fra Frost i Streamlit-flyt for bedre respons i appen.
+- Forbedret håndtering av ukjent datagrunnlag i samlet statusvisning.
+- Utvidet vedlikeholdsdeteksjon (bl.a. skraping/fresing) slik at varsler undertrykkes mer korrekt etter reelt vedlikehold.
+- Synliggjorde aktiv varselundertrykking i UI med årsak og tid siden vedlikehold.
+- Utvidet operasjonell logging med feltene `suppressed_by_maintenance` og `suppression_reason` for audit/sporbarhet.
+- Oppdaterte tester for vedlikeholdsundertrykking og ryddet opp i plotting-smoke-test for dtype/advarsler.
+
+
 ## 2025-08-12: KRITISK VINDTERSKEL-RETTELSE
 
 ### 🚨 Empirisk validering avdekket stort avvik
