@@ -9,6 +9,7 @@ Fire varslingskategorier for brøytemannskaper og hytteeiere:
 """
 
 import sys
+import json
 from pathlib import Path
 
 # Legg til prosjektrot i path for imports
@@ -31,7 +32,7 @@ from src.analyzers import (
     SlipperyRoadAnalyzer,
     SnowdriftAnalyzer,
 )
-from src.config import settings
+from src.config import get_secret, settings
 from src.components.smoreguide import generate_wax_recommendation, get_sources_section_markdown
 from src.forecast_client import ForecastClient, ForecastClientError
 from src.frost_client import FrostAPIError, FrostClient
@@ -544,9 +545,36 @@ def render_operational_kpis() -> None:
     """Vis KPI-panel for operasjonelle varsler (proxy-mål)."""
     st.subheader("Operasjonelle KPI-er (14 dager)")
 
-    log_path = Path(__file__).parent.parent / "data" / "logs" / "operational_alerts.csv"
+    root = Path(__file__).parent.parent
+    log_rel = get_secret("OPERATIONAL_LOG_PATH", "data/logs/operational_alerts.csv")
+    state_rel = get_secret("OPERATIONAL_LOG_STATE_PATH", "data/logs/operational_alerts_state.json")
+    enabled = str(get_secret("OPERATIONAL_LOG_ENABLED", "true")).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+    log_path = (root / log_rel).resolve()
+    state_path = (root / state_rel).resolve()
+
+    if not enabled:
+        st.info("Operasjonell logging er slått av (OPERATIONAL_LOG_ENABLED=false).")
+        st.caption("Aktiver logging for å få KPI-er over tid.")
+        return
+
     if not log_path.exists():
+        state_entries = 0
+        if state_path.exists():
+            try:
+                raw = json.loads(state_path.read_text(encoding="utf-8"))
+                if isinstance(raw, dict):
+                    state_entries = len(raw)
+            except (OSError, ValueError, TypeError):
+                state_entries = 0
+
         st.info("Ingen operasjonell logg tilgjengelig ennå.")
+        st.caption(
+            f"Forventer logg på: {log_rel}. "
+            "CSV opprettes først når minst ett MEDIUM/HIGH-varsel logges."
+        )
+        if state_entries > 0:
+            st.caption(f"Det finnes dedupliseringsstate med {state_entries} nøkler i {state_rel}.")
         return
 
     try:
