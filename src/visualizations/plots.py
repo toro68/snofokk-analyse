@@ -460,6 +460,18 @@ class WeatherPlots:
                 ax.plot(times, gust, color=viz.color_wind,
                         linewidth=1, alpha=0.6, linestyle='--', label='Vindkast')
 
+                high_gust = gust >= thresholds.wind_gust_warning
+                if high_gust.any():
+                    ax.fill_between(
+                        times,
+                        0,
+                        gust,
+                        where=high_gust,
+                        color=viz.color_warning,
+                        alpha=0.12,
+                        label=f"Vindkast over {thresholds.wind_gust_warning:.0f} m/s",
+                    )
+
                 ax.axhline(
                     thresholds.wind_gust_warning,
                     color=viz.color_warning,
@@ -495,10 +507,10 @@ class WeatherPlots:
                            alpha=0.3, label='Snødybde')
             ax.plot(times, snow, color=viz.color_snow, linewidth=2)
 
-            # Vis seks-timers snøøkning direkte i figuren
-            snow_change_6h = snow.diff(periods=6).fillna(0)
-            significant = snow_change_6h >= thresholds.snow_increase_warning
-            critical = snow_change_6h >= thresholds.snow_increase_critical
+            lookback = max(1, int(settings.fresh_snow.lookback_hours))
+            snow_change_lookback = snow.diff(periods=lookback).fillna(0)
+            significant = snow_change_lookback >= thresholds.snow_increase_warning
+            critical = snow_change_lookback >= thresholds.snow_increase_critical
             if significant.any():
                 ax.scatter(
                     times[significant],
@@ -506,7 +518,7 @@ class WeatherPlots:
                     color=viz.color_warning,
                     marker='^',
                     s=40,
-                    label=f"≥{thresholds.snow_increase_warning:.0f} cm (6t)",
+                    label=f"≥{thresholds.snow_increase_warning:.0f} cm ({lookback}t)",
                 )
             if critical.any():
                 ax.scatter(
@@ -516,7 +528,7 @@ class WeatherPlots:
                     marker='^',
                     s=80,
                     linewidth=1.5,
-                    label=f"≥{thresholds.snow_increase_critical:.0f} cm (6t)",
+                    label=f"≥{thresholds.snow_increase_critical:.0f} cm ({lookback}t)",
                 )
 
 
@@ -551,14 +563,15 @@ class WeatherPlots:
                         alpha=0.3)
         ax.plot(times, snow, color=viz.color_snow, linewidth=2, label='Snødybde')
 
-        # Beregn snøendring siste 6 timer (nysnø-indikator)
+        # Beregn snøendring siste N timer (nysnø-indikator)
         ax2 = ax.twinx()
-        snow_change_6h = snow.diff(periods=6).fillna(0)  # 6 timers endring
+        lookback = max(1, int(settings.fresh_snow.lookback_hours))
+        snow_change_lookback = snow.diff(periods=lookback).fillna(0)
 
         # Vis bare positive endringer (nysnø)
-        new_snow = snow_change_6h.clip(lower=0)
+        new_snow = snow_change_lookback.clip(lower=0)
         ax2.bar(times, new_snow, width=0.02, alpha=0.6,
-                color='#43A047', label='Nysnø (6t)')
+            color='#43A047', label=f'Nysnø ({lookback}t)')
 
         # Marker signifikant nysnø (terskel fra config)
         thresholds = settings.fresh_snow
@@ -566,9 +579,9 @@ class WeatherPlots:
         if significant.any():
             ax2.scatter(times[significant], new_snow[significant],
                        color=viz.color_warning, s=50, zorder=5, marker='v',
-                       label=f"≥{thresholds.snow_increase_warning:.0f} cm (6t)")
+                       label=f"≥{thresholds.snow_increase_warning:.0f} cm ({lookback}t)")
 
-        ax2.set_ylabel('Nysnø siste 6t (cm)', color='#43A047')
+        ax2.set_ylabel(f'Nysnø siste {lookback}t (cm)', color='#43A047')
         ax2.tick_params(axis='y', labelcolor='#43A047')
         ax2.set_ylim(bottom=0)
 
@@ -590,9 +603,40 @@ class WeatherPlots:
         ax.bar(times, precip, width=0.03, alpha=0.6,
                color=viz.color_precip, label='Nedbør (mm/h)')
 
+        # Vis akkumulert nedbør siste 12 timer for slaps-vurdering
+        accum_window = max(1, int(settings.slaps.precipitation_accum_hours))
+        precip_accum = precip.rolling(window=accum_window, min_periods=1).sum()
+        ax2 = ax.twinx()
+        ax2.plot(
+            times,
+            precip_accum,
+            color=viz.color_warning,
+            linewidth=1.8,
+            label=f'Nedbør siste {accum_window}t',
+        )
+        ax2.axhline(
+            settings.slaps.precipitation_12h_min,
+            color=viz.color_warning,
+            linestyle=':',
+            linewidth=1,
+            alpha=0.8,
+            label=f"Slaps terskel ({settings.slaps.precipitation_12h_min:.0f} mm)",
+        )
+        ax2.axhline(
+            settings.slaps.precipitation_12h_heavy,
+            color=viz.color_critical,
+            linestyle='--',
+            linewidth=1,
+            alpha=0.8,
+            label=f"Kraftig nedbør ({settings.slaps.precipitation_12h_heavy:.0f} mm)",
+        )
+        ax2.set_ylabel(f'Nedbør {accum_window}t (mm)', color=viz.color_warning)
+        ax2.tick_params(axis='y', labelcolor=viz.color_warning)
 
         ax.set_ylabel('Nedbør (mm/h)')
-        ax.legend(loc='upper right', fontsize=8)
+        lines1, labels1 = ax.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax.legend(lines1 + lines2, labels1 + labels2, loc='upper right', fontsize=8)
         ax.grid(True, alpha=0.3)
 
     @classmethod

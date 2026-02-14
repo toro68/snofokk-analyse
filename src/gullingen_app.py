@@ -147,39 +147,107 @@ def render_risk_details(result):
 
 def render_key_metrics(df):
     """Render current weather metrics."""
+    if df is None or df.empty:
+        st.info("Ingen værdata tilgjengelig")
+        return
+
+    def _to_float(value) -> float | None:
+        try:
+            if value is None or pd.isna(value):
+                return None
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    def _delta_text(series_name: str, unit: str, decimals: int = 1) -> str | None:
+        if series_name not in df.columns:
+            return None
+
+        series = pd.to_numeric(df[series_name], errors='coerce').dropna()
+        if len(series) < 2:
+            return None
+
+        latest_value = float(series.iloc[-1])
+        prev_index = max(0, len(series) - 4)
+        previous_value = float(series.iloc[prev_index])
+        delta = latest_value - previous_value
+        sign = "+" if delta > 0 else ""
+        return f"3t: {sign}{delta:.{decimals}f}{unit}"
+
     latest = df.iloc[-1]
 
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        temp = latest.get('air_temperature')
-        surface_temp = latest.get('surface_temperature')
+        temp = _to_float(latest.get('air_temperature'))
+        surface_temp = _to_float(latest.get('surface_temperature'))
         if temp is not None:
-            delta = None
+            metric_delta = _delta_text('air_temperature', '°C')
             if surface_temp is not None:
-                delta = f"Bakke: {surface_temp:.1f}°C"
-            st.metric("Temp", f"{temp:.1f}°C", delta=delta)
+                surface_text = f"Bakke: {surface_temp:.1f}°C"
+                metric_delta = f"{metric_delta} | {surface_text}" if metric_delta else surface_text
+            st.metric("Temp", f"{temp:.1f}°C", delta=metric_delta)
         else:
             st.metric("Temp", "N/A")
 
     with col2:
-        wind = latest.get('wind_speed')
-        gust = latest.get('max_wind_gust')
+        wind = _to_float(latest.get('wind_speed'))
+        gust = _to_float(latest.get('max_wind_gust'))
         if wind is not None:
-            delta = None
+            metric_delta = _delta_text('wind_speed', ' m/s')
             if gust is not None:
-                delta = f"Kast: {gust:.1f} m/s"
-            st.metric("Vind", f"{wind:.1f} m/s", delta=delta)
+                gust_text = f"Kast: {gust:.1f} m/s"
+                metric_delta = f"{metric_delta} | {gust_text}" if metric_delta else gust_text
+            st.metric("Vind", f"{wind:.1f} m/s", delta=metric_delta)
         else:
             st.metric("Vind", "N/A")
 
     with col3:
-        snow = latest.get('surface_snow_thickness', 0)
-        st.metric("Snø", f"{snow:.0f} cm")
+        snow = _to_float(latest.get('surface_snow_thickness'))
+        if snow is not None:
+            snow_delta = _delta_text('surface_snow_thickness', ' cm', decimals=1)
+            st.metric("Snø", f"{snow:.0f} cm", delta=snow_delta)
+        else:
+            st.metric("Snø", "N/A")
 
     with col4:
-        precip = latest.get('precipitation_1h', 0)
-        st.metric("Nedbør", f"{precip:.1f} mm/h")
+        precip = _to_float(latest.get('precipitation_1h'))
+        if precip is not None:
+            precip_delta = _delta_text('precipitation_1h', ' mm/h')
+            st.metric("Nedbør", f"{precip:.1f} mm/h", delta=precip_delta)
+        else:
+            st.metric("Nedbør", "N/A")
+
+
+def render_period_summary(df: pd.DataFrame, selected_start_utc: datetime, selected_end_utc: datetime) -> None:
+    """Vis kompakt periodestatus for bedre situasjonsforståelse."""
+    if df is None or df.empty:
+        return
+
+    times = pd.to_datetime(df.get("reference_time"), errors="coerce", utc=True).dropna()
+    if times.empty:
+        return
+
+    measured_start = times.iloc[0]
+    measured_end = times.iloc[-1]
+    latest_age = datetime.now(UTC) - measured_end.to_pydatetime().astimezone(UTC)
+    latest_age_min = max(0, int(latest_age.total_seconds() // 60))
+
+    selected_hours = max(1.0, (selected_end_utc - selected_start_utc).total_seconds() / 3600)
+    expected_points = max(1, int(round(selected_hours)) + 1)
+    coverage_pct = min(100.0, (len(times) / expected_points) * 100.0)
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Valgt periode", f"{selected_hours:.1f} timer")
+    with col2:
+        st.metric("Datadekning", f"{coverage_pct:.0f}%", delta=f"{len(times)} målinger")
+    with col3:
+        st.metric("Siste måling", f"{latest_age_min} min siden")
+
+    st.caption(
+        f"Målinger i datasettet: {measured_start.strftime('%d.%m %H:%M')}–{measured_end.strftime('%d.%m %H:%M')}"
+    )
 
 
 def render_wax_guide(df: pd.DataFrame) -> None:
@@ -458,6 +526,9 @@ def main():
         st.warning("Ingen data tilgjengelig for valgt periode")
         st.stop()
 
+    render_period_summary(df, selected_start_utc, selected_end_utc)
+    st.divider()
+
     # Fetch plowing/maintenance info (available via vedlikeholds-endepunkt)
     try:
         plowing_info = get_cached_plowing_info()
@@ -583,17 +654,19 @@ def main():
     st.divider()
 
     st.subheader("Værgrafer")
-    snow_tab, precip_tab, temp_tab, wind_tab, wind_dir_tab = st.tabs([
+    snow_tab, precip_tab, temp_tab, wind_tab, wind_chill_tab, wind_dir_tab = st.tabs([
         "Snødybde",
         "Nedbør",
         "Temperatur",
         "Vindstyrke",
+        "Vindkjøling",
         "Vindretning",
     ])
 
     with snow_tab:
         fig = WeatherPlots.create_snow_depth_plot(df)
         st.pyplot(fig)
+        st.caption(f"Nysnø vises som endring siste {settings.fresh_snow.lookback_hours} timer")
         plt.close(fig)
 
     with precip_tab:
@@ -601,10 +674,14 @@ def main():
         with col1:
             fig = WeatherPlots.create_precip_plot(df)
             st.pyplot(fig)
+            st.caption(
+                f"12t akkumulert linje og slaps-terskel ({settings.slaps.precipitation_12h_min:.0f} mm)"
+            )
             plt.close(fig)
         with col2:
             fig = WeatherPlots.create_accumulated_precip_plot(df)
             st.pyplot(fig)
+            st.caption("Total nedbør i valgt periode")
             plt.close(fig)
 
     with temp_tab:
@@ -616,6 +693,18 @@ def main():
     with wind_tab:
         fig = WeatherPlots.create_wind_plot(df)
         st.pyplot(fig)
+        st.caption(
+            f"Markering når vindkast overstiger {settings.snowdrift.wind_gust_warning:.0f} m/s"
+        )
+        plt.close(fig)
+
+    with wind_chill_tab:
+        fig = WeatherPlots.create_wind_chill_plot(df)
+        st.pyplot(fig)
+        st.caption(
+            f"Vindkjøling advarsel/kritisk: {settings.snowdrift.wind_chill_warning:.0f}°C / "
+            f"{settings.snowdrift.wind_chill_critical:.0f}°C"
+        )
         plt.close(fig)
 
     with wind_dir_tab:
