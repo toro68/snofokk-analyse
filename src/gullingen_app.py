@@ -33,6 +33,7 @@ from src.analyzers import (
 )
 from src.config import settings
 from src.components.smoreguide import generate_wax_recommendation, get_sources_section_markdown
+from src.forecast_client import ForecastClient, ForecastClientError
 from src.frost_client import FrostAPIError, FrostClient
 from src.netatmo_client import NetatmoClient, NetatmoStation
 from src.plowing_service import (
@@ -109,7 +110,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-def render_compact_risk_card(title: str, result: AnalysisResult) -> None:
+def render_compact_risk_card(title: str, result: AnalysisResult, confidence: int | None = None) -> None:
     """Render a compact risk card (Streamlit-native styling)."""
     if result.risk_level == RiskLevel.HIGH:
         st.error(f"**{title}**: {result.message}")
@@ -130,6 +131,8 @@ def render_compact_risk_card(title: str, result: AnalysisResult) -> None:
             caption_parts.append(" | ".join(top_factors))
     if caption_parts:
         st.caption(" • ".join(caption_parts))
+    if confidence is not None:
+        st.caption(f"Tillit: {confidence}%")
 
 
 def render_risk_details(result):
@@ -492,6 +495,181 @@ def render_alert_overview(results: dict[str, AnalysisResult]) -> None:
         st.caption("Ingen aktive høy/moderat-varsler i valgt periode")
 
 
+def _calculate_confidence(
+    result: AnalysisResult,
+    quality_metrics: dict[str, object],
+    suppress_alerts: bool,
+) -> int:
+    """Beregn enkel usikkerhetsscore (0-100) per varsel."""
+    base = {
+        RiskLevel.HIGH: 82,
+        RiskLevel.MEDIUM: 74,
+        RiskLevel.LOW: 86,
+        RiskLevel.UNKNOWN: 35,
+    }[result.risk_level]
+
+    score = float(base)
+
+    if suppress_alerts:
+        score -= 10
+
+    if quality_metrics.get("valid", False):
+        coverage = float(quality_metrics.get("coverage_pct", 100.0))
+        latest_age = float(quality_metrics.get("latest_age_min", 0.0))
+        score -= max(0.0, (100.0 - coverage) * 0.35)
+        score -= max(0.0, (latest_age - 30.0) * 0.08)
+    else:
+        score -= 30
+
+    if (result.details or {}).get("data_quality_guard") in {"unknown", "invalid"}:
+        score -= 25
+    elif (result.details or {}).get("data_quality_guard") == "warning":
+        score -= 12
+
+    return max(0, min(100, int(round(score))))
+
+
+def _compute_confidence_map(
+    results: dict[str, AnalysisResult],
+    quality_metrics: dict[str, object],
+    suppress_alerts: bool,
+) -> dict[str, int]:
+    return {
+        name: _calculate_confidence(result, quality_metrics, suppress_alerts)
+        for name, result in results.items()
+    }
+
+
+def render_operational_kpis() -> None:
+    """Vis KPI-panel for operasjonelle varsler (proxy-mål)."""
+    st.subheader("Operasjonelle KPI-er (14 dager)")
+
+    log_path = Path(__file__).parent.parent / "data" / "logs" / "operational_alerts.csv"
+    if not log_path.exists():
+        st.info("Ingen operasjonell logg tilgjengelig ennå.")
+        return
+
+    try:
+        df = pd.read_csv(log_path)
+    except (OSError, ValueError, pd.errors.EmptyDataError):
+        st.info("Kunne ikke lese operasjonell logg.")
+        return
+
+    if df.empty or "logged_at_utc" not in df.columns:
+        st.info("Operasjonell logg mangler data for KPI-beregning.")
+        return
+
+    logged = pd.to_datetime(df["logged_at_utc"], errors="coerce", utc=True)
+    recent_mask = logged >= (datetime.now(UTC) - timedelta(days=14))
+    recent = df.loc[recent_mask].copy()
+
+    if recent.empty:
+        st.info("Ingen varsler logget siste 14 dager.")
+        return
+
+    total = len(recent)
+    high_share = float((recent.get("risk_level") == "HIGH").sum()) / total * 100 if "risk_level" in recent.columns else 0.0
+    suppressed_share = (
+        pd.to_numeric(recent.get("suppressed_by_maintenance"), errors="coerce").fillna(0).astype(int).clip(0, 1).mean() * 100
+        if "suppressed_by_maintenance" in recent.columns
+        else 0.0
+    )
+
+    maint_hours = pd.to_numeric(recent.get("maintenance_hours_since"), errors="coerce")
+    tp_proxy = int((maint_hours <= 6).sum())
+    fp_proxy = int(((maint_hours > 24) | maint_hours.isna()).sum())
+    precision_proxy = (tp_proxy / (tp_proxy + fp_proxy) * 100) if (tp_proxy + fp_proxy) > 0 else 0.0
+
+    maintenance_events = recent.get("maintenance_last_utc")
+    if maintenance_events is not None:
+        unique_events = maintenance_events.dropna().astype(str).unique()
+        denom = len(unique_events)
+        recall_proxy = (tp_proxy / denom * 100) if denom > 0 else 0.0
+    else:
+        recall_proxy = 0.0
+
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Varsler (14d)", str(total))
+    with col2:
+        st.metric("Høy-andel", f"{high_share:.0f}%")
+    with col3:
+        st.metric("Presisjon (proxy)", f"{precision_proxy:.0f}%")
+    with col4:
+        st.metric("Recall (proxy)", f"{recall_proxy:.0f}%")
+
+    st.caption(
+        f"Undertrykket andel: {suppressed_share:.0f}%. "
+        "Presisjon/recall er proxy basert på vedlikeholdstid, ikke full sannhetstabell."
+    )
+
+
+@st.cache_resource
+def get_forecast_client() -> ForecastClient:
+    """Gjenbruk prognoseklient mellom reruns."""
+    return ForecastClient()
+
+
+@st.cache_data(ttl=settings.api.streamlit_cache_ttl_seconds)
+def fetch_forecast_cached(lat: float, lon: float, hours: int) -> pd.DataFrame:
+    """Hent prognosedata med cache."""
+    client = get_forecast_client()
+    points = client.fetch_hourly_forecast(lat=lat, lon=lon, hours=hours)
+    rows = []
+    for p in points:
+        rows.append(
+            {
+                "reference_time": p.reference_time,
+                "air_temperature": p.air_temperature,
+                "wind_speed": p.wind_speed,
+                "max_wind_gust": p.wind_gust,
+                "precipitation_1h": p.precipitation_1h,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def render_forecast_section() -> None:
+    """Vis korttidsprognose for neste timer."""
+    st.subheader("Prognose neste 24 timer")
+    try:
+        forecast_df = fetch_forecast_cached(
+            settings.station.lat,
+            settings.station.lon,
+            settings.api.forecast_hours,
+        )
+    except ForecastClientError as e:
+        st.info(f"Prognose utilgjengelig: {e}")
+        return
+
+    if forecast_df is None or forecast_df.empty:
+        st.info("Ingen prognosedata tilgjengelig akkurat nå.")
+        return
+
+    temp_series = pd.to_numeric(forecast_df.get("air_temperature"), errors="coerce")
+    wind_series = pd.to_numeric(forecast_df.get("wind_speed"), errors="coerce")
+    precip_series = pd.to_numeric(forecast_df.get("precipitation_1h"), errors="coerce").fillna(0)
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        if temp_series.notna().any():
+            st.metric("Temp min/maks", f"{temp_series.min():.1f} / {temp_series.max():.1f}°C")
+        else:
+            st.metric("Temp min/maks", "N/A")
+    with col2:
+        if wind_series.notna().any():
+            st.metric("Maks vind", f"{wind_series.max():.1f} m/s")
+        else:
+            st.metric("Maks vind", "N/A")
+    with col3:
+        st.metric("Nedbør sum", f"{precip_series.sum():.1f} mm")
+
+    fig = WeatherPlots.create_compact_plot(forecast_df, title="Prognose: temperatur, vind og nedbør")
+    st.pyplot(fig)
+    plt.close(fig)
+    st.caption("Kilde: MET Locationforecast (kompakt prognose)")
+
+
 def render_wax_guide(df: pd.DataFrame) -> None:
     """Vis en kompakt smøreguide under værdata."""
 
@@ -825,6 +1003,7 @@ def main():
     if not isinstance(reference_time_utc, datetime):
         reference_time_utc = datetime.now(UTC)
     results = apply_alert_stability(results, reference_time_utc)
+    confidence_map = _compute_confidence_map(results, quality_metrics, suppress_alerts)
 
     # Behold usupprimerte resultater for operasjonell logging/audit.
     results_before_suppression = dict(results)
@@ -898,15 +1077,15 @@ def main():
 
     col1, col2 = st.columns(2)
     with col1:
-        render_compact_risk_card("Nysnø", results["Nysnø"])
+        render_compact_risk_card("Nysnø", results["Nysnø"], confidence_map.get("Nysnø"))
     with col2:
-        render_compact_risk_card("Snøfokk", results["Snøfokk"])
+        render_compact_risk_card("Snøfokk", results["Snøfokk"], confidence_map.get("Snøfokk"))
 
     col3, col4 = st.columns(2)
     with col3:
-        render_compact_risk_card("Slaps", results["Slaps"])
+        render_compact_risk_card("Slaps", results["Slaps"], confidence_map.get("Slaps"))
     with col4:
-        render_compact_risk_card("Glatte veier", results["Glatte veier"])
+        render_compact_risk_card("Glatte veier", results["Glatte veier"], confidence_map.get("Glatte veier"))
 
     # Current metrics
     st.subheader("Nåværende forhold")
@@ -927,6 +1106,9 @@ def main():
 
     render_wax_guide(df)
 
+    st.divider()
+
+    render_forecast_section()
     st.divider()
 
     st.subheader("Værgrafer")
@@ -1033,6 +1215,9 @@ def main():
 
     # Netatmo temperaturkart
     render_netatmo_map()
+
+    st.divider()
+    render_operational_kpis()
 
 
 @st.cache_data(ttl=settings.netatmo.cache_ttl_seconds)

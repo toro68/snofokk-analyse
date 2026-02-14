@@ -56,8 +56,11 @@ class APIConfig:
     base_url: str = "https://frost.met.no/observations/v0.jsonld"
     sources_url: str = "https://frost.met.no/sources/v0.jsonld"
     elements_url: str = "https://frost.met.no/elements/v0.jsonld"
+    met_forecast_url: str = "https://api.met.no/weatherapi/locationforecast/2.0/compact"
     timeout: int = 30
     streamlit_cache_ttl_seconds: int = 300
+    forecast_timeout_seconds: int = 15
+    forecast_hours: int = 24
 
     # Default tidsvindu for "siste N timer"-kall (brukes hvis ikke overstyrt i UI)
     default_hours_back: int = 24
