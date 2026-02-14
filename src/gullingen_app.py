@@ -69,7 +69,7 @@ def _app_version() -> str | None:
                 return ref_path.read_text(encoding="utf-8").strip()[:12]
             return None
         return head[:12]
-    except Exception:
+    except (OSError, ValueError):
         return None
 
 
@@ -109,12 +109,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-def get_risk_emoji(level: RiskLevel) -> str:
-    """Get emoji for risk level."""
-    return ""
-
-
-def render_compact_risk_card(icon: str, title: str, result: AnalysisResult) -> None:
+def render_compact_risk_card(title: str, result: AnalysisResult) -> None:
     """Render a compact risk card (Streamlit-native styling)."""
     if result.risk_level == RiskLevel.HIGH:
         st.error(f"**{title}**: {result.message}")
@@ -150,7 +145,7 @@ def render_risk_details(result):
         st.caption(f"Scenario: {result.scenario}")
 
 
-def render_key_metrics(df, plowing_info: PlowingInfo):
+def render_key_metrics(df):
     """Render current weather metrics."""
     latest = df.iloc[-1]
 
@@ -271,6 +266,7 @@ def get_overall_status(results: dict) -> tuple[str, str, RiskLevel]:
     # Find highest risk
     highest_risk = RiskLevel.LOW
     critical_warnings = []
+    unknown_categories = []
 
     for name, result in results.items():
         if result.risk_level == RiskLevel.HIGH:
@@ -278,14 +274,35 @@ def get_overall_status(results: dict) -> tuple[str, str, RiskLevel]:
             critical_warnings.append(name)
         elif result.risk_level == RiskLevel.MEDIUM and highest_risk != RiskLevel.HIGH:
             highest_risk = RiskLevel.MEDIUM
+        elif result.risk_level == RiskLevel.UNKNOWN:
+            unknown_categories.append(name)
 
     if highest_risk == RiskLevel.HIGH:
         categories = ", ".join(critical_warnings)
         return "KRITISK", f"Kritiske forhold: {categories}", highest_risk
     elif highest_risk == RiskLevel.MEDIUM:
         return "VÆR OPPMERKSOM", "Enkelte forhold krever oppmerksomhet", highest_risk
+    elif unknown_categories:
+        categories = ", ".join(unknown_categories)
+        return "UKJENTE FORHOLD", f"Manglende datagrunnlag for: {categories}", RiskLevel.UNKNOWN
     else:
         return "NORMALE FORHOLD", "Trygge kjøreforhold", highest_risk
+
+
+@st.cache_resource
+def get_frost_client() -> FrostClient:
+    """Gjenbruk Frost-klient mellom reruns for mindre overhead."""
+    return FrostClient()
+
+
+@st.cache_data(ttl=settings.api.streamlit_cache_ttl_seconds)
+def fetch_weather_period_cached(start_iso: str, end_iso: str) -> pd.DataFrame:
+    """Hent værdata for valgt periode med Streamlit-cache."""
+    start_time = datetime.fromisoformat(start_iso)
+    end_time = datetime.fromisoformat(end_iso)
+    client = get_frost_client()
+    weather_data = client.fetch_period(start_time, end_time)
+    return weather_data.df
 
 
 def main():
@@ -428,23 +445,23 @@ def main():
     selected_end_utc = st.session_state["period_end_local"].astimezone(UTC)
 
     try:
-        client = FrostClient()
         with st.spinner("Henter værdata..."):
-            weather_data = client.fetch_period(selected_start_utc, selected_end_utc)
+            df = fetch_weather_period_cached(
+                selected_start_utc.isoformat(),
+                selected_end_utc.isoformat(),
+            )
     except FrostAPIError as e:
         st.error(f"Kunne ikke hente data: {e}")
         st.stop()
 
-    if weather_data.is_empty:
+    if df is None or df.empty:
         st.warning("Ingen data tilgjengelig for valgt periode")
         st.stop()
-
-    df = weather_data.df
 
     # Fetch plowing/maintenance info (available via vedlikeholds-endepunkt)
     try:
         plowing_info = get_cached_plowing_info()
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError, KeyError, OSError) as e:
         logger.error("Error fetching plowing info: %s", e)
         plowing_info = PlowingInfo(
             last_plowing=None,
@@ -467,7 +484,16 @@ def main():
     for name, analyzer in analyzers.items():
         results[name] = analyzer.analyze(df)
 
+    # Behold usupprimerte resultater for operasjonell logging/audit.
+    results_before_suppression = dict(results)
+
     suppress_alerts = should_suppress_alerts(plowing_info)
+
+    maintenance_reason = "ukjent vedlikeholdstype"
+    if plowing_info.last_work_types:
+        maintenance_reason = ", ".join([str(x) for x in plowing_info.last_work_types if str(x).strip()])
+    elif plowing_info.last_event_type:
+        maintenance_reason = str(plowing_info.last_event_type)
 
     # Stans farevarsel ved nylig vedlikehold (brøyting/strøing)
     if suppress_alerts:
@@ -476,13 +502,16 @@ def main():
             if r.risk_level != RiskLevel.LOW:
                 suppressed[name] = AnalysisResult(
                     risk_level=RiskLevel.LOW,
-                    message="Nylig vedlikehold (brøyting/strøing) – farevarsel stanset",
+                    message=f"Nylig vedlikehold ({maintenance_reason}) – farevarsel stanset",
                     scenario=r.scenario,
-                    factors=(r.factors or []) + ["Nylig vedlikehold"],
+                    factors=(r.factors or []) + [f"Nylig vedlikehold: {maintenance_reason}"],
                     details={
                         **(r.details or {}),
                         "suppressed_by_maintenance": True,
                         "maintenance_hours_since": plowing_info.hours_since,
+                        "maintenance_event_type": plowing_info.last_event_type,
+                        "maintenance_work_types": plowing_info.last_work_types,
+                        "maintenance_operator_id": plowing_info.last_operator_id,
                     },
                     timestamp=r.timestamp,
                 )
@@ -499,9 +528,22 @@ def main():
         st.error(f"## {status_title}\n{status_msg}")
     elif overall_risk == RiskLevel.MEDIUM:
         st.warning(f"## {status_title}\n{status_msg}")
+    elif overall_risk == RiskLevel.UNKNOWN:
+        st.info(f"## {status_title}\n{status_msg}")
 
     # Flyttet opp: Siste vedlikehold (erstatter tidligere "NORMALE FORHOLD"-banner)
     render_maintenance_top(plowing_info, suppress_alerts)
+
+    if suppress_alerts:
+        if plowing_info.hours_since is not None:
+            st.caption(
+                f"Varsler er midlertidig undertrykt av vedlikehold: {maintenance_reason} "
+                f"({float(plowing_info.hours_since):.1f}t siden)"
+            )
+        else:
+            st.caption(
+                f"Varsler er midlertidig undertrykt av vedlikehold: {maintenance_reason}"
+            )
 
     st.divider()
 
@@ -509,26 +551,32 @@ def main():
     st.subheader("Varsler nå")
     col1, col2 = st.columns(2)
     with col1:
-        render_compact_risk_card("", "Nysnø", results["Nysnø"])
+        render_compact_risk_card("Nysnø", results["Nysnø"])
     with col2:
-        render_compact_risk_card("", "Snøfokk", results["Snøfokk"])
+        render_compact_risk_card("Snøfokk", results["Snøfokk"])
 
     col3, col4 = st.columns(2)
     with col3:
-        render_compact_risk_card("", "Slaps", results["Slaps"])
+        render_compact_risk_card("Slaps", results["Slaps"])
     with col4:
-        render_compact_risk_card("", "Glatte veier", results["Glatte veier"])
+        render_compact_risk_card("Glatte veier", results["Glatte veier"])
 
     # Current metrics
     st.subheader("Nåværende forhold")
 
     # Operational logging: MEDIUM/HIGH only (deduped)
     try:
-        log_medium_high_alerts(results=results, df=df, plowing_info=plowing_info)
-    except Exception as e:
+        log_medium_high_alerts(
+            results=results_before_suppression if suppress_alerts else results,
+            df=df,
+            plowing_info=plowing_info,
+            suppressed_by_maintenance=suppress_alerts,
+            suppression_reason=maintenance_reason if suppress_alerts else "",
+        )
+    except (RuntimeError, ValueError, TypeError, KeyError, OSError) as e:
         logger.warning("Operational logger failed: %s", e)
 
-    render_key_metrics(df, plowing_info)
+    render_key_metrics(df)
 
     render_wax_guide(df)
 
@@ -614,7 +662,7 @@ def main():
     # Footer
     st.divider()
     st.caption(
-        f"Data: {weather_data.record_count} målinger fra Meteorologisk institutt | "
+        f"Data: {len(df)} målinger fra Meteorologisk institutt | "
         f"Stasjon: {settings.station.station_id} {settings.station.name}"
     )
 
@@ -646,8 +694,8 @@ def fetch_netatmo_stations():
                     "timestamp": s.timestamp.isoformat() if s.timestamp else None,
                 })
             return rows
-    except Exception as e:
-        logger.warning(f"Netatmo feil: {e}")
+    except (RuntimeError, ValueError, TypeError, KeyError, OSError) as e:
+        logger.warning("Netatmo feil: %s", e)
     return []
 
 
@@ -670,7 +718,7 @@ def render_netatmo_map():
         if r.get("timestamp"):
             try:
                 ts = datetime.fromisoformat(r["timestamp"])
-            except Exception:
+            except ValueError:
                 ts = None
 
         stations.append(
@@ -787,7 +835,7 @@ def render_netatmo_map():
         minutes = int(age.total_seconds() // 60)
         try:
             latest_local = latest_ts.astimezone(datetime.now().astimezone().tzinfo)
-        except Exception:
+        except (ValueError, OSError):
             latest_local = latest_ts
 
         st.caption(
@@ -821,7 +869,7 @@ def render_netatmo_map():
         st.metric("Stasjoner", f"{len(temp_stations)}")
 
     # Snøgrense-info (sidebar-stil på siden)
-    render_snow_limit_info(snow_limit, temp_stations, high_stations, low_stations)
+    render_snow_limit_info(snow_limit, high_stations, low_stations)
 
     # Tabell med alle stasjoner (i expander)
     with st.expander("Alle Netatmo-stasjoner"):
@@ -923,7 +971,7 @@ def estimate_snow_limit(stations) -> dict:
     }
 
 
-def render_snow_limit_info(snow_limit: dict, all_stations, high_stations, low_stations):
+def render_snow_limit_info(snow_limit: dict, high_stations, low_stations):
     """Render snøgrense-info som en informasjonsboks."""
 
     col1, col2 = st.columns([2, 1])

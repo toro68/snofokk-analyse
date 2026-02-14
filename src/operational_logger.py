@@ -115,6 +115,8 @@ def log_medium_high_alerts(
     results: dict[str, object],
     df: pd.DataFrame,
     plowing_info: PlowingInfo | None,
+    suppressed_by_maintenance: bool = False,
+    suppression_reason: str = "",
 ) -> None:
     """Append MEDIUM/HIGH analyzer results to a CSV (deduped).
 
@@ -209,6 +211,8 @@ def log_medium_high_alerts(
                 "maintenance_work_types": maintenance_work_types,
                 "maintenance_operator_id": maintenance_operator_id,
                 "maintenance_error": maintenance_error,
+                "suppressed_by_maintenance": bool(suppressed_by_maintenance),
+                "suppression_reason": suppression_reason,
             }
         )
         state[dedupe_key] = logged_at_iso

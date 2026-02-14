@@ -57,6 +57,7 @@ class APIConfig:
     sources_url: str = "https://frost.met.no/sources/v0.jsonld"
     elements_url: str = "https://frost.met.no/elements/v0.jsonld"
     timeout: int = 30
+    streamlit_cache_ttl_seconds: int = 300
 
     # Default tidsvindu for "siste N timer"-kall (brukes hvis ikke overstyrt i UI)
     default_hours_back: int = 24
@@ -122,7 +123,7 @@ class SnowdriftThresholds:
 
     # Gate for vindkast-advarsel ("gust warning")
     # Navn forklarer bruken tydeligere enn "median".
-    wind_speed_gust_warning_gate: float = 8.0
+    wind_speed_gust_warning_gate: float = 9.0
 
     # Deprecated alias: beholdes for bakoverkompatibilitet.
     # NB: Per nå er dette feltet ikke referert av koden i `src/`, men beholdes
@@ -132,7 +133,7 @@ class SnowdriftThresholds:
     # Vindkast-terskler (NY - bedre trigger!)
     # Historisk snitt: 21.9 m/s - justert terskel til 20.0 for å fange typiske episoder
     wind_gust_critical: float = 20.0    # Kritisk risiko (tidligere 22.0)
-    wind_gust_warning: float = 13.0     # Moderat risiko (kalibrert event-nivå)
+    wind_gust_warning: float = 14.0     # Moderat risiko (redusert varslingsstøy)
 
     # Kritiske vindretninger (SE-S)
     critical_wind_dir_min: float = 135.0  # SE
@@ -190,7 +191,7 @@ class SlipperyRoadThresholds:
     rain_on_snow_recent_air_temp_freeze_max_c: float = -1.0
     # Nedbørterskler
     # Hevet for å redusere falske positiver ("hysteriske" varsler) ved svært lett nedbør.
-    rain_threshold_mm: float = 1.0
+    rain_threshold_mm: float = 1.5
     # Underkjølt regn / frysing på kald bakke.
     # Skill mellom "warning" og "critical" for å unngå høy-alarm ved små drypp.
     freezing_precip_warning_mm: float = 0.1
@@ -202,7 +203,7 @@ class SlipperyRoadThresholds:
     hidden_freeze_surface_max: float = -1.0
     hidden_freeze_air_min: float = 0.0
     hidden_freeze_air_max: float = 1.0
-    hidden_freeze_precip_12h_min: float = 0.5
+    hidden_freeze_precip_12h_min: float = 1.0
 
     # Temperaturvindu for typiske "glatt føre"-situasjoner nær frysepunktet.
     near_freezing_temp_min: float = -1.0
@@ -243,10 +244,10 @@ class FreshSnowThresholds:
     # Tolkning av nivåer:
     # - warning: kan nærme seg brøytebehov
     # - critical: brøyting sannsynligvis nyttig/nødvendig
-    snow_increase_warning: float = 5.0    # våt snø (bygger raskt problemer)
+    snow_increase_warning: float = 6.0    # våt snø (mindre sensitiv warning)
     snow_increase_critical: float = 7.0  # våt snø (typisk 6–7 cm)
 
-    snow_increase_warning_dry: float = 7.0    # tørr lett snø (på vei mot behov)
+    snow_increase_warning_dry: float = 8.0    # tørr lett snø (mindre sensitiv warning)
     snow_increase_critical_dry: float = 10.0 # tørr lett snø (typisk ~10 cm)
 
     # Temperatur for snø (ikke regn)
@@ -264,7 +265,7 @@ class FreshSnowThresholds:
     wet_snow_dew_point_max: float = 0.5
 
     # Nedbør
-    precipitation_min: float = 0.3      # mm/t for å registrere
+    precipitation_min: float = 0.5      # mm/t for å registrere
 
     # 6t akkumulert nedbør som fallback når snødybdemåler påvirkes av vindtransport.
     # Tommelfingerregel: 1 mm nedbør ~ 1 cm tørr snø (varierer), brukes som proxy.
@@ -365,7 +366,7 @@ class SlapsThresholds:
     precipitation_min: float = 1.0      # mm/t (øyeblikksindikator)
     precipitation_heavy: float = 5.0    # mm/t (øyeblikksindikator)
     # Akkumulert nedbør (historisk kalibrert som 12t-terskler; vinduet styres av `precipitation_accum_hours`)
-    precipitation_12h_min: float = 6.0
+    precipitation_12h_min: float = 7.0
     precipitation_12h_heavy: float = 12.0
 
     # Snødekke

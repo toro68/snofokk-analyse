@@ -46,6 +46,13 @@ def test_weather_grafer_tolerate_nans_and_strings():
     df = _df_base()
     df.loc[0, "air_temperature"] = np.nan
     df.loc[1, "wind_speed"] = np.nan
+    df = df.astype(
+        {
+            "precipitation_1h": "object",
+            "surface_snow_thickness": "object",
+            "wind_from_direction": "object",
+        }
+    )
     df.loc[2, "precipitation_1h"] = "0.1"  # stringy input sometimes sneaks in
     df.loc[3, "surface_snow_thickness"] = "15"  # string
     df.loc[4, "wind_from_direction"] = "180"  # string

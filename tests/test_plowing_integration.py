@@ -23,7 +23,7 @@ from src.analyzers.base import RiskLevel
 from src.analyzers.fresh_snow import FreshSnowAnalyzer
 from src.analyzers.slippery_road import SlipperyRoadAnalyzer
 from src.analyzers.snowdrift import SnowdriftAnalyzer
-from src.plowing_service import PlowingInfo, get_plowing_info
+from src.plowing_service import PlowingInfo, get_plowing_info, should_suppress_alerts
 from src.plowman_client import MaintenanceApiClient, PlowingEvent
 
 
@@ -215,6 +215,34 @@ class TestPlowingService:
         assert info.source == 'live'
         assert info.hours_since is not None
         assert 4.9 < info.hours_since < 5.1
+
+    def test_should_suppress_alerts_for_scraping(self):
+        """Skraping/fresing skal regnes som reelt vedlikehold og stanse varsler kortvarig."""
+        info = PlowingInfo(
+            last_plowing=datetime.now(UTC) - timedelta(hours=1),
+            hours_since=1.0,
+            is_recent=True,
+            all_timestamps=[],
+            source='test',
+            last_event_type='SCRAPE',
+            last_work_types=['skraping'],
+        )
+
+        assert should_suppress_alerts(info) is True
+
+    def test_should_not_suppress_alerts_for_inspection(self):
+        """Inspeksjon alene skal ikke stanse farevarsler."""
+        info = PlowingInfo(
+            last_plowing=datetime.now(UTC) - timedelta(hours=1),
+            hours_since=1.0,
+            is_recent=True,
+            all_timestamps=[],
+            source='test',
+            last_event_type='INSPECTION',
+            last_work_types=['inspeksjon'],
+        )
+
+        assert should_suppress_alerts(info) is False
 
 
 class TestPlowingIntegrationMissing:
