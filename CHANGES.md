@@ -2,6 +2,15 @@
 
 # Endringer
 
+## 2026-02-14: Anti-støy varsler og operativ beslutningsstøtte
+
+- Innført stabilisering av varsler ved nedgradering (kort holdetid) for å redusere flapping/støy.
+- Knyttet datakvalitet direkte til risikovisning:
+	- kritisk svak kvalitet → `UNKNOWN`
+	- moderat svak kvalitet → nedjustering ett risikotrinn
+- Lagt til ny seksjon i appen: **Anbefalt handling nå** med konkrete råd for brøytemannskap og hytteeiere.
+- Utvidet `DashboardConfig` med styringsparametre for datastale/dekning og varselstabilisering.
+
 ## 2026-02-14: UI/UX og grafforbedringer i dashboard
 
 - La til periodeoversikt øverst med valgt tidsrom, datadekning og tid siden siste måling.
