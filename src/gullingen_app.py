@@ -221,12 +221,47 @@ def render_key_metrics(df):
 
 def render_period_summary(df: pd.DataFrame, selected_start_utc: datetime, selected_end_utc: datetime) -> None:
     """Vis kompakt periodestatus for bedre situasjonsforståelse."""
-    if df is None or df.empty:
+    metrics = get_data_quality_metrics(df, selected_start_utc, selected_end_utc)
+    if not metrics.get("valid", False):
         return
+
+    latest_age_min = int(metrics["latest_age_min"])
+    coverage_pct = float(metrics["coverage_pct"])
+    selected_hours = float(metrics["selected_hours"])
+    measured_start = metrics["measured_start"]
+    measured_end = metrics["measured_end"]
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Valgt periode", f"{selected_hours:.1f} timer")
+    with col2:
+        st.metric("Datadekning", f"{coverage_pct:.0f}%", delta=f"{metrics['count']} målinger")
+    with col3:
+        st.metric("Siste måling", f"{latest_age_min} min siden")
+
+    st.caption(
+        f"Målinger i datasettet: {measured_start.strftime('%d.%m %H:%M')}–{measured_end.strftime('%d.%m %H:%M')}"
+    )
+
+    if latest_age_min > settings.dashboard.data_stale_warning_minutes:
+        st.warning(
+            f"Værdata er eldre enn {settings.dashboard.data_stale_warning_minutes} minutter. "
+            "Vurder å oppdatere perioden."
+        )
+
+
+def get_data_quality_metrics(
+    df: pd.DataFrame,
+    selected_start_utc: datetime,
+    selected_end_utc: datetime,
+) -> dict[str, object]:
+    """Beregn datakvalitet for valgt tidsperiode."""
+    if df is None or df.empty:
+        return {"valid": False}
 
     times = pd.to_datetime(df.get("reference_time"), errors="coerce", utc=True).dropna()
     if times.empty:
-        return
+        return {"valid": False}
 
     measured_start = times.iloc[0]
     measured_end = times.iloc[-1]
@@ -237,20 +272,193 @@ def render_period_summary(df: pd.DataFrame, selected_start_utc: datetime, select
     expected_points = max(1, int(round(selected_hours)) + 1)
     coverage_pct = min(100.0, (len(times) / expected_points) * 100.0)
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Valgt periode", f"{selected_hours:.1f} timer")
-    with col2:
-        st.metric("Datadekning", f"{coverage_pct:.0f}%", delta=f"{len(times)} målinger")
-    with col3:
-        st.metric("Siste måling", f"{latest_age_min} min siden")
+    return {
+        "valid": True,
+        "count": len(times),
+        "selected_hours": selected_hours,
+        "coverage_pct": coverage_pct,
+        "latest_age_min": latest_age_min,
+        "measured_start": measured_start,
+        "measured_end": measured_end,
+        "latest_time_utc": measured_end.to_pydatetime().astimezone(UTC),
+    }
 
-    st.caption(
-        f"Målinger i datasettet: {measured_start.strftime('%d.%m %H:%M')}–{measured_end.strftime('%d.%m %H:%M')}"
+
+def _risk_rank(level: RiskLevel) -> int:
+    return {
+        RiskLevel.UNKNOWN: 0,
+        RiskLevel.LOW: 1,
+        RiskLevel.MEDIUM: 2,
+        RiskLevel.HIGH: 3,
+    }[level]
+
+
+def _decrease_risk(level: RiskLevel) -> RiskLevel:
+    if level == RiskLevel.HIGH:
+        return RiskLevel.MEDIUM
+    if level == RiskLevel.MEDIUM:
+        return RiskLevel.LOW
+    return level
+
+
+def apply_data_quality_guard(
+    results: dict[str, AnalysisResult],
+    quality: dict[str, object],
+) -> tuple[dict[str, AnalysisResult], str | None]:
+    """Nedjuster risikopresentasjon når datakvalitet er lav."""
+    if not quality.get("valid", False):
+        adjusted = {
+            name: AnalysisResult(
+                risk_level=RiskLevel.UNKNOWN,
+                message="Utilstrekkelig datagrunnlag for sikker vurdering",
+                scenario=result.scenario,
+                factors=(result.factors or []) + ["Datakvalitet: manglende tidsserie"],
+                details={**(result.details or {}), "data_quality_guard": "invalid"},
+                timestamp=result.timestamp,
+            )
+            for name, result in results.items()
+        }
+        return adjusted, "Datakvalitet utilstrekkelig: manglende tidsstempler i perioden."
+
+    latest_age_min = int(quality["latest_age_min"])
+    coverage_pct = float(quality["coverage_pct"])
+
+    unknown_mode = (
+        latest_age_min >= settings.dashboard.data_stale_unknown_minutes
+        or coverage_pct < settings.dashboard.data_coverage_unknown_pct
+    )
+    warning_mode = (
+        latest_age_min >= settings.dashboard.data_stale_warning_minutes
+        or coverage_pct < settings.dashboard.data_coverage_warning_pct
     )
 
-    if latest_age_min > 90:
-        st.warning("Værdata er eldre enn 90 minutter. Vurder å oppdatere perioden.")
+    if unknown_mode:
+        adjusted = {
+            name: AnalysisResult(
+                risk_level=RiskLevel.UNKNOWN,
+                message="Datakvalitet for lav til sikker varsling",
+                scenario=result.scenario,
+                factors=(result.factors or []) + [
+                    f"Datadekning: {coverage_pct:.0f}%",
+                    f"Alder siste måling: {latest_age_min} min",
+                ],
+                details={**(result.details or {}), "data_quality_guard": "unknown"},
+                timestamp=result.timestamp,
+            )
+            for name, result in results.items()
+        }
+        return adjusted, "Datakvalitet kritisk lav: varsler settes til ukjent nivå."
+
+    if warning_mode:
+        adjusted: dict[str, AnalysisResult] = {}
+        for name, result in results.items():
+            new_level = _decrease_risk(result.risk_level)
+            if new_level != result.risk_level:
+                adjusted[name] = AnalysisResult(
+                    risk_level=new_level,
+                    message=f"{result.message} (nedjustert pga datakvalitet)",
+                    scenario=result.scenario,
+                    factors=(result.factors or []) + [
+                        f"Datadekning: {coverage_pct:.0f}%",
+                        f"Alder siste måling: {latest_age_min} min",
+                    ],
+                    details={**(result.details or {}), "data_quality_guard": "warning"},
+                    timestamp=result.timestamp,
+                )
+            else:
+                adjusted[name] = result
+        return adjusted, "Datakvalitet moderat: risikonivå er nedjustert ett trinn der relevant."
+
+    return results, None
+
+
+def apply_alert_stability(
+    results: dict[str, AnalysisResult],
+    reference_time_utc: datetime,
+) -> dict[str, AnalysisResult]:
+    """Hold på høyere nivå kort tid ved nedgradering for å redusere varselstøy."""
+    hold_window = timedelta(minutes=settings.dashboard.alert_downgrade_hold_minutes)
+    state: dict[str, dict[str, str]] = st.session_state.setdefault("alert_stability_state", {})
+    stabilized: dict[str, AnalysisResult] = {}
+
+    for name, result in results.items():
+        previous = state.get(name, {})
+        previous_level_name = previous.get("level")
+        previous_changed_at_str = previous.get("changed_at")
+
+        previous_level = result.risk_level
+        if previous_level_name in RiskLevel.__members__:
+            previous_level = RiskLevel[previous_level_name]
+
+        previous_changed_at = reference_time_utc
+        if previous_changed_at_str:
+            try:
+                previous_changed_at = datetime.fromisoformat(previous_changed_at_str)
+                if previous_changed_at.tzinfo is None:
+                    previous_changed_at = previous_changed_at.replace(tzinfo=UTC)
+                else:
+                    previous_changed_at = previous_changed_at.astimezone(UTC)
+            except (ValueError, TypeError):
+                previous_changed_at = reference_time_utc
+
+        incoming_level = result.risk_level
+        is_downgrade = _risk_rank(incoming_level) < _risk_rank(previous_level)
+        within_hold = (reference_time_utc - previous_changed_at) < hold_window
+
+        if is_downgrade and within_hold:
+            stabilized[name] = AnalysisResult(
+                risk_level=previous_level,
+                message=f"{result.message} (stabilisert {settings.dashboard.alert_downgrade_hold_minutes} min)",
+                scenario=result.scenario,
+                factors=(result.factors or []) + [
+                    f"Stabilisering: holder {previous_level.norwegian.lower()} kortvarig"
+                ],
+                details={**(result.details or {}), "stabilized_from": incoming_level.value},
+                timestamp=result.timestamp,
+            )
+            continue
+
+        stabilized[name] = result
+        if incoming_level != previous_level or name not in state:
+            state[name] = {
+                "level": incoming_level.name,
+                "changed_at": reference_time_utc.isoformat(),
+            }
+
+    st.session_state["alert_stability_state"] = state
+    return stabilized
+
+
+def render_recommended_actions(
+    results: dict[str, AnalysisResult],
+    suppress_alerts: bool,
+    maintenance_reason: str,
+    quality_note: str | None,
+) -> None:
+    """Vis anbefalt handling for operativ bruk."""
+    st.subheader("Anbefalt handling nå")
+
+    if quality_note:
+        st.info(quality_note)
+
+    if suppress_alerts:
+        st.info(f"Varsler er midlertidig undertrykt av vedlikehold ({maintenance_reason}).")
+        return
+
+    high_categories = [name for name, r in results.items() if r.risk_level == RiskLevel.HIGH]
+    medium_categories = [name for name, r in results.items() if r.risk_level == RiskLevel.MEDIUM]
+
+    if high_categories:
+        st.error("Brøytemannskap: planlegg utrykning nå for " + ", ".join(high_categories) + ".")
+        st.warning("Hytteeiere: vurder å utsette avreise eller beregn betydelig ekstra tid.")
+        return
+
+    if medium_categories:
+        st.warning("Brøytemannskap: følg tett med, mulig behov for tiltak for " + ", ".join(medium_categories) + ".")
+        st.info("Hytteeiere: kjør med ekstra margin og følg oppdateringer før avreise.")
+        return
+
+    st.success("Ingen akutte tiltak anbefalt nå. Fortsett normal overvåking.")
 
 
 def render_alert_overview(results: dict[str, AnalysisResult]) -> None:
@@ -581,6 +789,7 @@ def main():
         st.warning("Ingen data tilgjengelig for valgt periode")
         st.stop()
 
+    quality_metrics = get_data_quality_metrics(df, selected_start_utc, selected_end_utc)
     render_period_summary(df, selected_start_utc, selected_end_utc)
     st.divider()
 
@@ -609,6 +818,13 @@ def main():
     results = {}
     for name, analyzer in analyzers.items():
         results[name] = analyzer.analyze(df)
+
+    results, quality_note = apply_data_quality_guard(results, quality_metrics)
+
+    reference_time_utc = quality_metrics.get("latest_time_utc") if quality_metrics.get("valid") else datetime.now(UTC)
+    if not isinstance(reference_time_utc, datetime):
+        reference_time_utc = datetime.now(UTC)
+    results = apply_alert_stability(results, reference_time_utc)
 
     # Behold usupprimerte resultater for operasjonell logging/audit.
     results_before_suppression = dict(results)
@@ -671,6 +887,9 @@ def main():
                 f"Varsler er midlertidig undertrykt av vedlikehold: {maintenance_reason}"
             )
 
+    st.divider()
+
+    render_recommended_actions(results, suppress_alerts, maintenance_reason, quality_note)
     st.divider()
 
     # Compact status summary

@@ -412,6 +412,15 @@ class DashboardConfig:
     # Maks periode brukeren kan velge i UI (ytelse/lesbarhet)
     max_period_days: int = 7
 
+    # Varsel-stabilisering (anti-støy)
+    alert_downgrade_hold_minutes: int = 30
+
+    # Datakvalitet-gating i UI
+    data_stale_warning_minutes: int = 90
+    data_stale_unknown_minutes: int = 240
+    data_coverage_warning_pct: float = 70.0
+    data_coverage_unknown_pct: float = 40.0
+
 
 @dataclass(frozen=True)
 class NetatmoConfig:
