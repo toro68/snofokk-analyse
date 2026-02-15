@@ -14,6 +14,7 @@ MANGLENDE FUNKSJONALITET I ANALYSATORER:
 """
 
 from datetime import UTC, datetime, timedelta
+import zoneinfo
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
@@ -154,6 +155,30 @@ class TestPlowingService:
         formatted = info.formatted_time
         assert "I går" in formatted
 
+    def test_plowing_info_formatted_time_yesterday_even_if_under_24h(self):
+        """Skal vise 'I går' når datoen er i går lokalt, selv om diff < 24 timer."""
+        oslo_tz = zoneinfo.ZoneInfo("Europe/Oslo")
+        now_oslo = datetime.now(oslo_tz).replace(second=0, microsecond=0)
+
+        if now_oslo.hour < 1:
+            yesterday_evening_oslo = now_oslo - timedelta(days=1)
+        else:
+            yesterday_evening_oslo = (now_oslo - timedelta(days=1)).replace(hour=max(0, now_oslo.hour - 1))
+
+        yesterday_evening_utc = yesterday_evening_oslo.astimezone(UTC)
+        hours_since = (datetime.now(UTC) - yesterday_evening_utc).total_seconds() / 3600
+
+        info = PlowingInfo(
+            last_plowing=yesterday_evening_utc,
+            hours_since=hours_since,
+            is_recent=hours_since < 6,
+            all_timestamps=[yesterday_evening_utc],
+            source='test',
+        )
+
+        formatted = info.formatted_time
+        assert "I går" in formatted
+
     def test_plowing_info_status_emoji(self):
         """Tester status-tekst (ingen emoji) basert på tid siden brøyting."""
         # Nylig brøytet (< 6 timer)
@@ -215,6 +240,52 @@ class TestPlowingService:
         assert info.source == 'live'
         assert info.hours_since is not None
         assert 4.9 < info.hours_since < 5.1
+
+    @patch('src.plowing_service._save_cache')
+    @patch('src.plowing_service._load_cache')
+    @patch('src.plowing_service.get_last_maintenance_result')
+    def test_get_plowing_info_prefers_live_with_metadata_over_newer_cache_without_metadata(
+        self,
+        mock_get_last,
+        mock_load_cache,
+        mock_save_cache,
+    ):
+        """Live API med metadata skal vinne over nyere cache uten metadata."""
+        now = datetime.now(UTC)
+        cached_timestamp = now - timedelta(hours=1)
+        live_timestamp = now - timedelta(hours=2)
+
+        mock_load_cache.return_value = {
+            'cached_at': now,
+            'all_timestamps': [cached_timestamp],
+            'last_plowing': cached_timestamp,
+            'last_event_type': None,
+            'last_work_types': None,
+            'last_operator_id': None,
+        }
+
+        mock_get_last.return_value = (
+            PlowingEvent(
+                timestamp=live_timestamp,
+                event_type='SCRAPE',
+                work_types=['skraping'],
+                status='COMPLETED',
+            ),
+            None,
+        )
+
+        mock_save_cache.return_value = {
+            'all_timestamps': [cached_timestamp, live_timestamp],
+            'last_event_type': 'SCRAPE',
+            'last_work_types': ['skraping'],
+            'last_operator_id': None,
+        }
+
+        info = get_plowing_info(use_cache=False)
+
+        assert info.source == 'live'
+        assert info.last_plowing == live_timestamp
+        assert info.last_work_types == ['skraping']
 
     def test_should_suppress_alerts_for_scraping(self):
         """Skraping/fresing skal regnes som reelt vedlikehold og stanse varsler kortvarig."""

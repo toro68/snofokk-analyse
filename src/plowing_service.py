@@ -123,18 +123,20 @@ class PlowingInfo:
 
         # Konverter til lokal tid (Norge)
         local_time = self.last_plowing.astimezone()
-        now = datetime.now(UTC)
-        diff = now - self.last_plowing
+        now_utc = datetime.now(UTC)
+        now_local = now_utc.astimezone(local_time.tzinfo)
+        diff = now_utc - self.last_plowing
+        day_diff = (now_local.date() - local_time.date()).days
         cfg = settings.plowing_service
 
-        if diff.days == 0:
+        if day_diff == 0:
             if diff.seconds < cfg.formatted_recent_seconds:
                 return f"For {diff.seconds // 60} min siden"
             else:
                 return f"I dag kl. {local_time.strftime('%H:%M')}"
-        elif diff.days == 1:
+        elif day_diff == 1:
             return f"I går kl. {local_time.strftime('%H:%M')}"
-        elif diff.days < cfg.formatted_week_days:
+        elif day_diff < cfg.formatted_week_days:
             dag_navn = ["man", "tir", "ons", "tor", "fre", "lør", "søn"]
             return f"{dag_navn[local_time.weekday()]} {local_time.strftime('%d.%m kl. %H:%M')}"
         else:
@@ -227,24 +229,36 @@ def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int | None = N
         if event and event.timestamp:
             newest_cached = cache_data['last_plowing'] if cache_data else None
             new_timestamp = event.timestamp
+            live_has_metadata = bool(event.work_types or event.event_type or event.status)
+            cache_has_metadata = bool(
+                (cache_data.get('last_work_types') if cache_data else None)
+                or (cache_data.get('last_event_type') if cache_data else None)
+            )
 
             if newest_cached and new_timestamp < newest_cached:
-                logger.warning(
-                    "Plowman returnerte eldre brøyting (%s) enn cache (%s) – beholder cache",
-                    new_timestamp.isoformat(),
-                    newest_cached.isoformat()
-                )
-                hours_since = (now - newest_cached).total_seconds() / 3600
-                return PlowingInfo(
-                    last_plowing=newest_cached,
-                    hours_since=hours_since,
-                    is_recent=hours_since < RECENT_PLOWING_HOURS,
-                    all_timestamps=cache_data['all_timestamps'] if cache_data else [newest_cached],
-                    source='cache',
-                    last_event_type=cache_data.get('last_event_type') if cache_data else None,
-                    last_work_types=cache_data.get('last_work_types') if cache_data else None,
-                    last_operator_id=cache_data.get('last_operator_id') if cache_data else None,
-                )
+                if live_has_metadata and not cache_has_metadata:
+                    logger.info(
+                        "Live vedlikeholdsdata (%s) erstatter nyere cache (%s) fordi cache mangler metadata",
+                        new_timestamp.isoformat(),
+                        newest_cached.isoformat(),
+                    )
+                else:
+                    logger.warning(
+                        "Plowman returnerte eldre brøyting (%s) enn cache (%s) – beholder cache",
+                        new_timestamp.isoformat(),
+                        newest_cached.isoformat()
+                    )
+                    hours_since = (now - newest_cached).total_seconds() / 3600
+                    return PlowingInfo(
+                        last_plowing=newest_cached,
+                        hours_since=hours_since,
+                        is_recent=hours_since < RECENT_PLOWING_HOURS,
+                        all_timestamps=cache_data['all_timestamps'] if cache_data else [newest_cached],
+                        source='cache',
+                        last_event_type=cache_data.get('last_event_type') if cache_data else None,
+                        last_work_types=cache_data.get('last_work_types') if cache_data else None,
+                        last_operator_id=cache_data.get('last_operator_id') if cache_data else None,
+                    )
 
             # Lagre til cache og returner live-data
             updated_cache = _save_cache(
