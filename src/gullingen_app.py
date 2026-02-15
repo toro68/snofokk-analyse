@@ -659,12 +659,13 @@ def fetch_forecast_cached(lat: float, lon: float, hours: int) -> pd.DataFrame:
 
 def render_forecast_section() -> None:
     """Vis korttidsprognose for neste timer."""
-    st.subheader("Prognose neste 24 timer")
+    horizon_hours = max(1, int(settings.api.forecast_hours))
+    st.subheader(f"Prognose neste {horizon_hours} timer")
     try:
         forecast_df = fetch_forecast_cached(
             settings.station.lat,
             settings.station.lon,
-            settings.api.forecast_hours,
+            horizon_hours,
         )
     except ForecastClientError as e:
         st.info(f"Prognose utilgjengelig: {e}")
@@ -695,7 +696,7 @@ def render_forecast_section() -> None:
     fig = WeatherPlots.create_compact_plot(forecast_df, title="Prognose: temperatur, vind og nedbør")
     st.pyplot(fig)
     plt.close(fig)
-    st.caption("Kilde: MET Locationforecast (kompakt prognose)")
+    st.caption(f"Kilde: MET Locationforecast (kompakt prognose, horisont {horizon_hours}t)")
 
 
 def render_wax_guide(df: pd.DataFrame) -> None:
