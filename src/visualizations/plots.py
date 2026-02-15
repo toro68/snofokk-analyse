@@ -671,7 +671,7 @@ class WeatherPlots:
         # Y-akse labels
         ax.set_ylim(0, 360)
         ax.set_yticks([0, 45, 90, 135, 180, 225, 270, 315, 360])
-        ax.set_yticklabels(['N', 'NE', 'Ø', 'SE', 'S', 'SW', 'V', 'NW', 'N'])
+        ax.set_yticklabels(['N', 'NØ', 'Ø', 'SØ', 'S', 'SV', 'V', 'NV', 'N'])
 
         ax.set_ylabel('Retning')
         ax.legend(loc='upper right', fontsize=8)

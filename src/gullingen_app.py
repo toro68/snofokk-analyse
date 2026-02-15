@@ -1162,7 +1162,8 @@ def main():
             fig = WeatherPlots.create_precip_plot(df)
             st.pyplot(fig)
             st.caption(
-                f"12t akkumulert linje og slaps-terskel ({settings.slaps.precipitation_12h_min:.0f} mm)"
+                f"{settings.slaps.precipitation_accum_hours}t akkumulert linje og slaps-terskel "
+                f"({settings.slaps.precipitation_12h_min:.0f} mm)"
             )
             plt.close(fig)
         with col2:
