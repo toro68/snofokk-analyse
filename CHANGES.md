@@ -2,6 +2,14 @@
 
 # Endringer
 
+## 2026-02-15: Riktig visning av siste vedlikehold + cache-prioritering
+
+- Rettet tidsvisning for `Siste vedlikehold` slik at `I dag`/`I går` avgjøres av lokal kalenderdato (ikke bare antall timer siden).
+- Verifisert mot live vedlikeholds-API at siste hendelse hentes fra `timestamp_utc` når `completed_at_utc` ikke finnes.
+- Forbedret cache-logikk: live vedlikeholdsdata med metadata (f.eks. `work_types`) kan nå overstyre nyere cache uten metadata.
+- Lagt til regresjonstester for både dato-overgang (`I går` selv om <24t) og cache-prioritering.
+- Verifisert smøreguide med tester og scenariokjøring: hardvoks ved kald nysnø, klister ved fuktig omdannet snø nær null.
+
 ## 2026-02-14: Anti-støy varsler og operativ beslutningsstøtte
 
 - Innført stabilisering av varsler ved nedgradering (kort holdetid) for å redusere flapping/støy.
