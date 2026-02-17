@@ -132,7 +132,7 @@ class TestAnalysisServiceCore:
         df = pd.DataFrame({
             'is_high_risk': [True, True, False, False],
             'risk_score': [0.8, 0.7, 0.3, 0.2],
-            'referenceTime': pd.date_range('2024-01-01', periods=4, freq='H')
+            'referenceTime': pd.date_range('2024-01-01', periods=4, freq='h')
         })
 
         periods = self.service._identify_continuous_periods(df)
@@ -142,7 +142,7 @@ class TestAnalysisServiceCore:
         df = pd.DataFrame({
             'is_high_risk': [False, False, True, True],
             'risk_score': [0.2, 0.3, 0.7, 0.8],
-            'referenceTime': pd.date_range('2024-01-01', periods=4, freq='H')
+            'referenceTime': pd.date_range('2024-01-01', periods=4, freq='h')
         })
 
         periods = self.service._identify_continuous_periods(df)
@@ -152,7 +152,7 @@ class TestAnalysisServiceCore:
         df = pd.DataFrame({
             'is_high_risk': [True, True, True, True],
             'risk_score': [0.8, 0.7, 0.9, 0.8],
-            'referenceTime': pd.date_range('2024-01-01', periods=4, freq='H')
+            'referenceTime': pd.date_range('2024-01-01', periods=4, freq='h')
         })
 
         periods = self.service._identify_continuous_periods(df)
@@ -162,7 +162,7 @@ class TestAnalysisServiceCore:
         df = pd.DataFrame({
             'is_high_risk': [False, False, False, False],
             'risk_score': [0.2, 0.3, 0.1, 0.2],
-            'referenceTime': pd.date_range('2024-01-01', periods=4, freq='H')
+            'referenceTime': pd.date_range('2024-01-01', periods=4, freq='h')
         })
 
         periods = self.service._identify_continuous_periods(df)
@@ -173,7 +173,7 @@ class TestAnalysisServiceCore:
         df = pd.DataFrame({
             'is_high_risk': [True, True, False, False, True, True, False],
             'risk_score': [0.8, 0.7, 0.3, 0.2, 0.9, 0.8, 0.1],
-            'referenceTime': pd.date_range('2024-01-01', periods=7, freq='H')
+            'referenceTime': pd.date_range('2024-01-01', periods=7, freq='h')
         })
 
         periods = self.service._identify_continuous_periods(df)
@@ -195,7 +195,7 @@ class TestAnalysisServiceIntegration:
 
         # Simuler realistisk værdata
         df = pd.DataFrame({
-            'referenceTime': pd.date_range('2024-01-01', periods=10, freq='H'),
+            'referenceTime': pd.date_range('2024-01-01', periods=10, freq='h'),
             'wind_speed': [5, 8, 15, 18, 12, 6, 4, 16, 20, 10],
             'air_temperature': [-2, -5, -8, -12, -6, -3, -1, -10, -15, -7],
             'surface_snow_thickness': [0.10, 0.12, 0.15, 0.18, 0.16, 0.14, 0.12, 0.20, 0.25, 0.22]
