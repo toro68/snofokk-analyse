@@ -2,6 +2,13 @@
 
 # Endringer
 
+## 2026-02-17: Terskelkonsistens, lint-opprydding og robusthet
+
+- Synkronisert nysnø-dokumentasjon med aktive terskler i kode (våt/tørr snø) og gjort fallback for nedbør eksplisitt 6t-konsistent.
+- Justert slaps-logikk for proporsjonal nedbørsskalering ved ulike akkumuleringstider, og oppdatert UI-tekster/tabeller slik at viste terskler matcher faktisk logikk.
+- Ryddet `get_errors`/lint-funn i analyzere og tjenester (spesifikke unntak i stedet for brede `Exception`, lazy logging-format, eksplisitt UTF-8 ved fil-IO).
+- Oppdatert testdata for terskelendringer og verifisert med både målrettede tester og full test-suite (`188 passed`, `4 skipped`).
+
 ## 2026-02-15: Riktig visning av siste vedlikehold + cache-prioritering
 
 - Rettet tidsvisning for `Siste vedlikehold` slik at `I dag`/`I går` avgjøres av lokal kalenderdato (ikke bare antall timer siden).
