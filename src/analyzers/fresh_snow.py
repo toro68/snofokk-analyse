@@ -5,7 +5,7 @@ Varsler brøytemannskaper og hytteeiere om nysnø som krever brøyting.
 Bruker duggpunkt som primær indikator for snø vs regn.
 """
 
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 
 import pandas as pd
 
@@ -24,9 +24,9 @@ class FreshSnowAnalyzer(BaseAnalyzer):
     ikke en garanti for når det blir ufremkommelig for alle. For noen kan dårlig
     fremkommelighet typisk oppleves først ved ~10+ cm, spesielt ved lett/tørr snø.
 
-    - Våt snø: snødybde øker ≥ 5 cm over vinduet → MODERAT (kan nærme seg brøytebehov)
+    - Våt snø: snødybde øker ≥ 6 cm over vinduet → MODERAT (kan nærme seg brøytebehov)
     - Våt snø: snødybde øker ≥ 7 cm over vinduet → HØY (brøyting ofte nyttig)
-    - Tørr lett snø: snødybde øker ≥ 7 cm over vinduet → MODERAT
+    - Tørr lett snø: snødybde øker ≥ 8 cm over vinduet → MODERAT
     - Tørr lett snø: snødybde øker ≥ 10 cm over vinduet → HØY
 
     Snø vs regn-klassifisering:
@@ -84,10 +84,14 @@ class FreshSnowAnalyzer(BaseAnalyzer):
         wind = self._safe_get(latest, 'wind_speed')
         gust = self._safe_get(latest, 'max_wind_gust')
 
-        # Beregn snøendring og akkumulert nedbør siste N timer.
+        # Beregn snøendring siste N timer.
         # Viktig: Ved vind kan snødybde synke selv når det snør (vindtransport til/fra måleren).
         snow_change = self._calculate_snow_change(df, hours=window_hours)
         precip_total = self._calculate_precip_total(df, hours=window_hours)
+
+        # Fallback for vindpåvirket snøsensor bruker eksplisitt 6t-terskler.
+        precip_fallback_hours = 6
+        precip_fallback_total = self._calculate_precip_total(df, hours=precip_fallback_hours)
 
         # Sjekk om nedbør er snø (ikke regn)
         is_snow = self._is_precipitation_snow(temp, dew_point, precip)
@@ -119,6 +123,8 @@ class FreshSnowAnalyzer(BaseAnalyzer):
             "window_hours": window_hours,
             "snow_change_cm": round(snow_change, 1),
             "precip_total_mm": round(precip_total, 2),
+            "precip_fallback_hours": precip_fallback_hours,
+            "precip_fallback_total_mm": round(precip_fallback_total, 2),
             "temperature": round(temp, 1) if temp else None,
             "surface_temperature": round(surface_temp, 1) if surface_temp is not None else None,
             "dew_point": round(dew_point, 1) if dew_point else None,
@@ -170,20 +176,20 @@ class FreshSnowAnalyzer(BaseAnalyzer):
                 details=details
             )
 
-        # Fallback: Hvis snødybdemåler påvirkes av vind, bruk akkumulert nedbør som proxy for nysnø.
-        if snow_sensor_suspect and snow_favorable and surface_cold_enough and precip_total >= precip_6h_critical:
+        # Fallback: Hvis snødybdemåler påvirkes av vind, bruk 6t akkumulert nedbør som proxy for nysnø.
+        if snow_sensor_suspect and snow_favorable and surface_cold_enough and precip_fallback_total >= precip_6h_critical:
             return AnalysisResult(
                 risk_level=RiskLevel.HIGH,
-                message=f"Kraftig snøfall (nedbør {precip_total:.0f} mm siste {window_hours}t)",
+                message=f"Kraftig snøfall (nedbør {precip_fallback_total:.0f} mm siste {precip_fallback_hours}t)",
                 scenario="Kraftig nysnø (nedbør)",
                 factors=factors,
                 details=details
             )
 
-        if snow_sensor_suspect and snow_favorable and surface_cold_enough and precip_total >= precip_6h_warning:
+        if snow_sensor_suspect and snow_favorable and surface_cold_enough and precip_fallback_total >= precip_6h_warning:
             return AnalysisResult(
                 risk_level=RiskLevel.MEDIUM,
-                message=f"Nysnø sannsynlig (nedbør {precip_total:.0f} mm siste {window_hours}t)",
+                message=f"Nysnø sannsynlig (nedbør {precip_fallback_total:.0f} mm siste {precip_fallback_hours}t)",
                 scenario="Nysnø (nedbør)",
                 factors=factors,
                 details=details

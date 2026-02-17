@@ -1158,13 +1158,15 @@ def main():
         plt.close(fig)
 
     with precip_tab:
+        slaps_precip_scale = max(settings.slaps.precipitation_accum_hours, 1) / 12.0
+        slaps_precip_threshold = settings.slaps.precipitation_12h_min * slaps_precip_scale
         col1, col2 = st.columns(2)
         with col1:
             fig = WeatherPlots.create_precip_plot(df)
             st.pyplot(fig)
             st.caption(
                 f"{settings.slaps.precipitation_accum_hours}t akkumulert linje og slaps-terskel "
-                f"({settings.slaps.precipitation_12h_min:.0f} mm)"
+                f"({slaps_precip_threshold:.1f} mm)"
             )
             plt.close(fig)
         with col2:
@@ -1222,17 +1224,20 @@ def main():
             )
 
         with tab2:
+            slaps_precip_scale = max(settings.slaps.precipitation_accum_hours, 1) / 12.0
+            slaps_precip_threshold = settings.slaps.precipitation_12h_min * slaps_precip_scale
             st.markdown(f"""
             ### Validerte terskler (2025)
 
             | Kategori | Kriterium | Terskel |
             |----------|-----------|---------|
-            | **Nysnø** | Snøøkning {settings.fresh_snow.lookback_hours}t | ≥ {settings.fresh_snow.snow_increase_warning:.0f} cm (moderat) / ≥ {settings.fresh_snow.snow_increase_critical:.0f} cm (høy) |
+            | **Nysnø** | Snøøkning {settings.fresh_snow.lookback_hours}t | Våt: ≥ {settings.fresh_snow.snow_increase_warning:.0f} / {settings.fresh_snow.snow_increase_critical:.0f} cm, Tørr: ≥ {settings.fresh_snow.snow_increase_warning_dry:.0f} / {settings.fresh_snow.snow_increase_critical_dry:.0f} cm |
             | **Nysnø** | Duggpunkt | < {settings.fresh_snow.dew_point_max:.0f}°C (snø) |
+            | **Nysnø** | Fallback nedbør (6t, ved vind) | Våt: ≥ {settings.fresh_snow.precipitation_6h_warning_mm:.0f} / {settings.fresh_snow.precipitation_6h_critical_mm:.0f} mm, Tørr: ≥ {settings.fresh_snow.precipitation_6h_warning_mm_dry:.0f} / {settings.fresh_snow.precipitation_6h_critical_mm_dry:.0f} mm |
             | **Snøfokk** | Vindkast | ≥ {settings.snowdrift.wind_gust_warning:.0f} m/s (advarsel) / ≥ {settings.snowdrift.wind_gust_critical:.0f} m/s (kritisk) |
             | **Snøfokk** | Vindkjøling | ≤ {settings.snowdrift.wind_chill_warning:.0f}°C (advarsel) / ≤ {settings.snowdrift.wind_chill_critical:.0f}°C (kritisk) |
             | **Slaps** | Temperatur | {settings.slaps.temp_min:.0f} til {settings.slaps.temp_max:.0f}°C |
-            | **Slaps** | Nedbør ({settings.slaps.precipitation_accum_hours}t) | ≥ {settings.slaps.precipitation_12h_min:.0f} mm |
+            | **Slaps** | Nedbør ({settings.slaps.precipitation_accum_hours}t) | ≥ {slaps_precip_threshold:.1f} mm |
             | **Glatte veier** | Bakketemperatur | ≤ {settings.slippery.surface_temp_freeze:.0f}°C |
             | **Glatte veier** | Skjult frysefare | Luft {settings.slippery.hidden_freeze_air_min:.0f}-{settings.slippery.hidden_freeze_air_max:.0f}°C og bakke ≤ {settings.slippery.hidden_freeze_surface_max:.1f}°C |
             """)

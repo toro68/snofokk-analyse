@@ -91,8 +91,8 @@ class SlapsAnalyzer(BaseAnalyzer):
 
         # Nedbørterskler er historisk kalibrert for 12 timer (felt-navnene reflekterer dette).
         # Når vi endrer akkumuleringstiden, skalerer vi tersklene proporsjonalt for å beholde
-        # omtrent samme "mm per time"-intensitet.
-        precip_scale = max(precip_hours / 12.0, 1.0)
+        # omtrent samme "mm per time"-intensitet, både for kortere og lengre vindu.
+        precip_scale = max(precip_hours, 1) / 12.0
         precip_accum_min = thresholds.precipitation_12h_min * precip_scale
         precip_accum_heavy = thresholds.precipitation_12h_heavy * precip_scale
 

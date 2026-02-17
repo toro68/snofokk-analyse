@@ -1,0 +1,2 @@
+[MASTER]
+ignored-modules=pandas,matplotlib,matplotlib.pyplot,pydeck,streamlit

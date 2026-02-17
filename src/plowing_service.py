@@ -280,8 +280,8 @@ def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int | None = N
                 last_work_types=updated_cache.get('last_work_types'),
                 last_operator_id=updated_cache.get('last_operator_id'),
             )
-    except Exception as e:
-        logger.warning(f"Feil ved henting fra vedlikeholds-API: {e}")
+    except (RuntimeError, ValueError, TypeError, KeyError, OSError) as e:
+        logger.warning("Feil ved henting fra vedlikeholds-API: %s", e)
 
     # Ingen data tilgjengelig
     if cache_data and cache_data['last_plowing']:
@@ -315,7 +315,7 @@ def _load_cache() -> dict | None:
         return None
 
     try:
-        with open(CACHE_FILE) as f:
+        with open(CACHE_FILE, encoding='utf-8') as f:
             raw = json.load(f)
 
         cached_at = datetime.fromisoformat(raw['cached_at'])
@@ -340,7 +340,7 @@ def _load_cache() -> dict | None:
             'last_operator_id': raw.get('last_operator_id'),
         }
     except (json.JSONDecodeError, KeyError, ValueError) as e:
-        logger.warning(f"Cache-lesefeil: {e}")
+        logger.warning("Cache-lesefeil: %s", e)
         return None
 
 
@@ -368,7 +368,7 @@ def _save_cache(
             'last_operator_id': last_operator_id,
         }
 
-        with open(CACHE_FILE, 'w') as f:
+        with open(CACHE_FILE, 'w', encoding='utf-8') as f:
             json.dump(cache_payload, f, indent=2)
 
         return {
@@ -379,8 +379,8 @@ def _save_cache(
             'last_work_types': last_work_types,
             'last_operator_id': last_operator_id,
         }
-    except Exception as e:
-        logger.warning(f"Kunne ikke lagre cache: {e}")
+    except (OSError, TypeError, ValueError) as e:
+        logger.warning("Kunne ikke lagre cache: %s", e)
         return existing_cache or {
             'cached_at': datetime.now(UTC),
             'all_timestamps': [],

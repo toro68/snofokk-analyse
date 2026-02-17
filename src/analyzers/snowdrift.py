@@ -232,7 +232,7 @@ class SnowdriftAnalyzer(BaseAnalyzer):
         reference_time = row.get('reference_time')
         try:
             reference_str = pd.to_datetime(reference_time).isoformat()
-        except Exception:
+        except (TypeError, ValueError, OverflowError):
             reference_str = str(reference_time) if reference_time is not None else None
 
         result.details = {

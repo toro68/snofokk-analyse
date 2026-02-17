@@ -189,7 +189,7 @@ class TestFreshSnowAnalyzer:
             wind_speed=9.0,
             surface_snow_thickness=30.0,
             surface_snow_thickness_6h_ago=30.0,
-            precipitation_1h=0.7,  # 12t akkumulert ~8.4 mm (mellom warning/critical)
+            precipitation_1h=1.2,  # 6t akkumulert ~7.2 mm (dry-snow warning, under critical)
             hours=13,
         )
         result = analyzer.analyze(df)
@@ -568,7 +568,7 @@ class TestSlipperyRoadAnalyzer:
             'air_temperature': temps,
             'wind_speed': [5.0] * 12,
             'surface_snow_thickness': [30.0] * 12,
-            'precipitation_1h': [1.0] * 12,
+            'precipitation_1h': [2.0] * 12,
             'dew_point_temperature': [t - 2 for t in temps],
             'surface_temperature': [t - 2 for t in temps],
             'relative_humidity': [80.0] * 12,

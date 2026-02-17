@@ -441,7 +441,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
         try:
             if 'reference_time' in df.columns and not df.empty:
                 return pd.to_datetime(df['reference_time']).iloc[-1].to_pydatetime()
-        except Exception:
+        except (TypeError, ValueError, IndexError, KeyError):
             pass
         return datetime.now(UTC)
 
