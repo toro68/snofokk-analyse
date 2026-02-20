@@ -18,7 +18,6 @@ from src.config import settings
 # Koden kan ikke vite om veibanen faktisk har en snø-/issåle eller tele.
 # Tidlig vinter og om våren kan det regne på bar bakke – da er varslet irrelevant.
 _SAALE_CAVEAT = (
-    "Forutsetter etablert snø-/issåle eller tele i veibanen. "
     "Hvis regnet faller på bar veibane uten tele er varslet ikke relevant."
 )
 
