@@ -172,16 +172,23 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
         # Sjekk ulike risikoscenarier
         mild_weather = thresholds.mild_temp_min <= temp <= thresholds.mild_temp_max
         existing_snow = snow >= thresholds.snow_depth_min_cm
-        rain_now = precip >= thresholds.rain_threshold_mm
-        freezing_precip_warning = precip >= thresholds.freezing_precip_warning_mm
-        freezing_precip_critical = precip >= thresholds.freezing_precip_critical_mm
         near_freezing = thresholds.near_freezing_temp_min <= temp <= thresholds.near_freezing_temp_max
 
         snow_change_6h = self._calculate_snow_change(df, hours=6)
-        melt_indicator = snow_change_6h <= thresholds.melt_snow_change_6h_cm
 
         precip_12h = self._precip_total(df, hours=12)
         details["precipitation_12h"] = round(precip_12h, 2)
+
+        # KJERNEPREMISS: Glatte veier (is-fare) oppstår ved FLYTENDE nedbør (regn/sludd) på
+        # kald/frossen bakke. Snøfall gir ikke is på veien – det er FreshSnowAnalyzer sitt domene.
+        # Duggpunkt >= 0°C indikerer regn; < 0°C indikerer snø.
+        # Konservativ fallback: hvis duggpunkt mangler, anta at nedbøren KAN være flytende.
+        precip_is_liquid = dew_point is None or dew_point >= settings.fresh_snow.dew_point_max
+        rain_now = precip >= thresholds.rain_threshold_mm and precip_is_liquid
+        freezing_precip_warning = precip >= thresholds.freezing_precip_warning_mm and precip_is_liquid
+        freezing_precip_critical = precip >= thresholds.freezing_precip_critical_mm and precip_is_liquid
+        # Flytende nedbør siste 12t (regnfall som nå fryser = is-fare).
+        liquid_precip_12h = precip_12h >= thresholds.hidden_freeze_precip_12h_min and precip_is_liquid
 
         # Samle faktorer
         if mild_weather:
@@ -228,21 +235,27 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
         if temp_rising:
             factors.append("Temperaturøkning siste 6t")
 
-        # SCENARIO 0: Skjult frysefare (KRITISK - ofte oversett!)
+        # SCENARIO 0: Skjult frysefare – luft > 0°C men bakke < 0°C.
+        # Farlig KUN hvis det er flytende nedbør (regn) nå eller nylig.
+        # Kun kald bakke uten regn = ikke is-fare (normalt vintervær).
         if hidden_freeze:
-            moisture_likely = (
-                (precip_12h >= thresholds.hidden_freeze_precip_12h_min)
-                or melt_indicator
-                or (humidity is not None and humidity >= thresholds.rimfrost_humidity_min)
-            )
+            if rain_now or liquid_precip_12h:
+                return AnalysisResult(
+                    risk_level=RiskLevel.HIGH if rain_now else RiskLevel.MEDIUM,
+                    message=(
+                        f"FRYSEFARE! Regn ({precip:.1f} mm/h) på frossen bakke ({surface_temp:.1f}°C)"
+                        if rain_now
+                        else f"Isfare: Regnvær nylig på frossen bakke ({surface_temp:.1f}°C, luft {temp:.1f}°C)"
+                    ),
+                    scenario="Skjult frysefare",
+                    factors=factors,
+                    details={**details, "snow_change_6h": snow_change_6h}
+                )
+            # Ingen regn = ikke is-fare nå
             return AnalysisResult(
-                risk_level=RiskLevel.HIGH if moisture_likely else RiskLevel.MEDIUM,
-                message=(
-                    f"FRYSEFARE! Plusgrader i luft ({temp:.1f}°C) men bakke under frysepunkt ({surface_temp:.1f}°C)"
-                    if moisture_likely
-                    else f"Mulig frysefare: Plusgrader i luft ({temp:.1f}°C) men kald bakke ({surface_temp:.1f}°C)"
-                ),
-                scenario="Skjult frysefare",
+                risk_level=RiskLevel.LOW,
+                message=f"Kald bakke ({surface_temp:.1f}°C) men ingen regn – lav is-risiko",
+                scenario="Kald bakke uten regn",
                 factors=factors,
                 details={**details, "snow_change_6h": snow_change_6h}
             )
@@ -303,8 +316,8 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
                 details=details
             )
 
-        # SCENARIO 2: Underkjølt regn / nedbør som fryser på kald bakke
-        # Krever nær frysepunktet og målbar nedbør.
+        # SCENARIO 2: Underkjølt regn / nedbør som fryser på kald bakke.
+        # precip_is_liquid er allerede bakt inn i freezing_precip_* over.
         if ice_risk and freezing_precip_critical and near_freezing:
             return AnalysisResult(
                 risk_level=RiskLevel.HIGH,
@@ -317,50 +330,37 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
         if ice_risk and freezing_precip_warning and near_freezing:
             return AnalysisResult(
                 risk_level=RiskLevel.MEDIUM,
-                message=f"Mulig glatt føre: Lett nedbør på kald bakke ({surface_temp:.1f}°C)",
+                message=f"Mulig glatt føre: Lett regn på kald bakke ({surface_temp:.1f}°C)",
                 scenario="Lett frysing",
                 factors=factors,
                 details=details
             )
 
-        # SCENARIO 2b: Kald bakke under snø er vanlig vintertilstand og er ofte IKKE glatt føre i seg selv.
-        # Varsle kun hvis vi har indikasjoner på smelting/refrysing eller rimfrost.
+        # SCENARIO 2b, 3, 4: Kald bakke / rimfrost / temperaturovergang UTEN regn.
+        # Ingen flytende nedbør = ingen is-fare. LAV risiko.
         if ice_risk and existing_snow:
-            if frost_risk or melt_indicator:
-                extra = []
-                if melt_indicator:
-                    extra.append("Smelting siste 6t")
-                return AnalysisResult(
-                    risk_level=RiskLevel.MEDIUM,
-                    message=f"Moderat risiko: Kald bakke ({surface_temp:.1f}°C) etter smelting/rimfrost",
-                    scenario="Refrysing / rimfrost",
-                    factors=factors + extra,
-                    details={**details, "snow_change_6h": snow_change_6h}
-                )
             return AnalysisResult(
                 risk_level=RiskLevel.LOW,
-                message="Lav risiko: Tørr vinterføre (kald bakke under snø)",
+                message="Lav risiko: Tørr vinterføre (ingen regn)",
                 scenario="Tørr vinterføre",
-                factors=factors if factors else ["Ingen tegn til isdannelse på veien"],
+                factors=factors if factors else ["Ingen regn – is-risiko lav"],
                 details=details
             )
 
-        # SCENARIO 3: Rimfrost
         if frost_risk:
             return AnalysisResult(
-                risk_level=RiskLevel.MEDIUM,
-                message=f"Moderat risiko: Rimfrost-forhold (duggpunkt {dew_point:.1f}°C)",
+                risk_level=RiskLevel.LOW,
+                message=f"Rimfrost-forhold mulig, men ingen regn – lav is-risiko",
                 scenario="Rimfrost",
                 factors=factors,
                 details=details
             )
 
-        # SCENARIO 4: Temperaturovergang
         if mild_weather and existing_snow and temp_rising:
             return AnalysisResult(
-                risk_level=RiskLevel.MEDIUM,
-                message=f"Moderat risiko: Snøsmelting pga. temperaturøkning til {temp:.1f}°C",
-                scenario="Temperaturovergang",
+                risk_level=RiskLevel.LOW,
+                message=f"Snøsmelting pågår ({temp:.1f}°C) men ingen regn – ikke is-fare",
+                scenario="Snøsmelting",
                 factors=factors,
                 details=details
             )

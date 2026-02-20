@@ -612,9 +612,62 @@ class TestSlipperyRoadAnalyzer:
             f"Forventet MEDIUM/HIGH men fikk {result.risk_level}: {result.message}"
         )
 
-    @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=False)
-    def test_summer_frost_risk(self, mock_winter, analyzer):
-        """Rimfrost kan forekomme på kalde sommernetter."""
+    @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
+    def test_snowfall_near_freezing_not_classified_as_freezing_rain(self, mock_winter, analyzer):
+        """BUG-FIX: Snøfall (dew < 0°C) skal IKKE utløse 'Underkjølt regn / frysing'.
+
+        Scenario: -0.2°C, duggpunkt -0.3°C (under 0 = snø), 2.4 mm/t.
+        Bakke -0.5°C. Denne kombinasjonen ga feilaktig HIGH 'Underkjølt regn'.
+        Korrekt: nedbøren er snø, ikke underkjølt regn. SlipperyRoad skal gi ≤ MEDIUM.
+        """
+        df = create_weather_dataframe(
+            air_temperature=-0.2,
+            dew_point_temperature=-0.3,   # Under 0 = snø
+            surface_temperature=-0.5,
+            surface_snow_thickness=20.0,
+            precipitation_1h=2.4,
+            relative_humidity=97.0,
+        )
+        result = analyzer.analyze(df)
+        assert result.risk_level in (RiskLevel.LOW, RiskLevel.MEDIUM), (
+            f"Forventet LOW/MEDIUM for snøfall, fikk {result.risk_level}: "
+            f"{result.scenario} - {result.message}"
+        )
+        assert result.scenario != "Underkjølt regn / frysing", (
+            "Snøfall (dew < 0) skal ikke klassifiseres som 'Underkjølt regn / frysing'"
+        )
+
+    @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
+    def test_freezing_rain_with_positive_dew_point_returns_high(self, mock_winter, analyzer):
+        """Underkjølt regn: dew > 0°C, luft nær 0, bakke frossen → skal gi HIGH."""
+        df = create_weather_dataframe(
+            air_temperature=-0.2,
+            dew_point_temperature=0.2,    # Over 0 = regn
+            surface_temperature=-0.5,
+            surface_snow_thickness=20.0,
+            precipitation_1h=2.4,
+            relative_humidity=97.0,
+        )
+        result = analyzer.analyze(df)
+        assert result.risk_level == RiskLevel.HIGH, (
+            f"Forventet HIGH for underkjølt regn (dew > 0), fikk {result.risk_level}"
+        )
+
+    @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
+    def test_freezing_rain_without_dew_point_is_conservative_high(self, mock_winter, analyzer):
+        """Uten duggpunkt-data: konservativ fallback skal beholde HIGH (usikker nedbørstype)."""
+        df = create_weather_dataframe(
+            air_temperature=-0.2,
+            dew_point_temperature=None,   # Manglende data
+            surface_temperature=-0.5,
+            surface_snow_thickness=20.0,
+            precipitation_1h=2.4,
+            relative_humidity=97.0,
+        )
+        result = analyzer.analyze(df)
+        assert result.risk_level in (RiskLevel.MEDIUM, RiskLevel.HIGH), (
+            f"Uten dew-data skal vi beholde MEDIUM/HIGH, fikk {result.risk_level}"
+        )
         df = create_weather_dataframe(
             air_temperature=2.0,
             dew_point_temperature=1.0,
