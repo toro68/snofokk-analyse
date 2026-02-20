@@ -5,8 +5,6 @@ Varsler brøytemannskaper og hytteeiere om nysnø som krever brøyting.
 Bruker duggpunkt som primær indikator for snø vs regn.
 """
 
-from datetime import timedelta
-
 import pandas as pd
 
 from src.analyzers.base import AnalysisResult, BaseAnalyzer, RiskLevel
@@ -87,11 +85,11 @@ class FreshSnowAnalyzer(BaseAnalyzer):
         # Beregn snøendring siste N timer.
         # Viktig: Ved vind kan snødybde synke selv når det snør (vindtransport til/fra måleren).
         snow_change = self._calculate_snow_change(df, hours=window_hours)
-        precip_total = self._calculate_precip_total(df, hours=window_hours)
+        precip_total = self._precip_total(df, hours=window_hours)
 
         # Fallback for vindpåvirket snøsensor bruker eksplisitt 6t-terskler.
         precip_fallback_hours = 6
-        precip_fallback_total = self._calculate_precip_total(df, hours=precip_fallback_hours)
+        precip_fallback_total = self._precip_total(df, hours=precip_fallback_hours)
 
         # Sjekk om nedbør er snø (ikke regn)
         is_snow = self._is_precipitation_snow(temp, dew_point, precip)
@@ -231,62 +229,7 @@ class FreshSnowAnalyzer(BaseAnalyzer):
             details=details
         )
 
-    def _calculate_snow_change(self, df: pd.DataFrame, hours: int = 6) -> float:
-        """
-        Beregn snøendring over tid.
-
-        Args:
-            df: DataFrame med værdata
-            hours: Antall timer tilbake
-
-        Returns:
-            Snøendring i cm (positiv = økning)
-        """
-        if 'surface_snow_thickness' not in df.columns:
-            return 0.0
-
-        if df.empty or 'reference_time' not in df.columns:
-            return 0.0
-
-        now = pd.to_datetime(df['reference_time']).max()
-        if pd.isna(now):
-            return 0.0
-
-        cutoff = now - timedelta(hours=hours)
-
-        # Filtrer til tidsperiode
-        recent = df[pd.to_datetime(df['reference_time']) >= cutoff].copy()
-        if len(recent) < 2:
-            return 0.0
-
-        snow_values = recent['surface_snow_thickness'].dropna()
-        if len(snow_values) < 2:
-            return 0.0
-
-        # Beregn endring fra start til slutt av perioden
-        start_snow = snow_values.iloc[0]
-        end_snow = snow_values.iloc[-1]
-
-        return end_snow - start_snow
-
-    def _calculate_precip_total(self, df: pd.DataFrame, hours: int = 6) -> float:
-        """Akkumulert nedbør siste N timer (mm), basert på `precipitation_1h`."""
-        if df.empty or 'reference_time' not in df.columns or 'precipitation_1h' not in df.columns:
-            return 0.0
-
-        now = pd.to_datetime(df['reference_time']).max()
-        if pd.isna(now):
-            return 0.0
-
-        cutoff = now - timedelta(hours=hours)
-
-        # Bruk "siste N timer" (ekskluderer punktet akkurat på cutoff) for å unngå å telle 7 timer ved timeoppløsning.
-        recent = df[pd.to_datetime(df['reference_time']) > cutoff].copy()
-        if recent.empty:
-            return 0.0
-
-        precip = pd.to_numeric(recent['precipitation_1h'], errors='coerce').fillna(0)
-        return float(precip.sum())
+    # _calculate_snow_change og _precip_total er arvet fra BaseAnalyzer
 
     def _is_wet_snow(
         self,

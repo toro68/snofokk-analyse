@@ -125,13 +125,7 @@ class SnowdriftThresholds:
     wind_speed_warning: float = 8.0     # Moderat risiko
 
     # Gate for vindkast-advarsel ("gust warning")
-    # Navn forklarer bruken tydeligere enn "median".
     wind_speed_gust_warning_gate: float = 9.0
-
-    # Deprecated alias: beholdes for bakoverkompatibilitet.
-    # NB: Per nå er dette feltet ikke referert av koden i `src/`, men beholdes
-    # for eldre scripts/eksperimenter og som dokumentasjon på navnebyttet.
-    wind_speed_median: float = 8.0
 
     # Vindkast-terskler (NY - bedre trigger!)
     # Historisk snitt: 21.9 m/s - justert terskel til 20.0 for å fange typiske episoder
@@ -143,7 +137,9 @@ class SnowdriftThresholds:
     critical_wind_dir_max: float = 225.0  # S
 
     # Andre terskler
-    temperature_max: float = -1.0       # Må være frost
+    # Hevet fra -1.0°C: snøfokk kan opptre ned mot 0°C (grensesnø).
+    # Terskelen blokkerte vindkast- og ML-triggere ved -0.5°C til 0°C.
+    temperature_max: float = -0.5       # Må være frost (nær frysepunkt)
     snow_depth_min_cm: float = 3.0      # Minimum snødekke (spesifikasjon ≥3 cm)
     fresh_snow_threshold: float = 0.3   # cm/h for nysnø
     wind_transport_snow_change_threshold_cm_per_h: float = -0.2  # cm/h (negativ endring indikerer vindtransport)
@@ -247,7 +243,9 @@ class FreshSnowThresholds:
     # Tolkning av nivåer:
     # - warning: kan nærme seg brøytebehov
     # - critical: brøyting sannsynligvis nyttig/nødvendig
-    snow_increase_warning: float = 6.0    # våt snø (mindre sensitiv warning)
+    # Gap økt fra 1 cm (6/7) til 2 cm (5/7) for å redusere ustabil grenseklassifisering
+    # ved støy i snødybdemåling. Terskelen 5 cm er praktisk brøyterelevant for våt snø.
+    snow_increase_warning: float = 5.0    # våt snø
     snow_increase_critical: float = 7.0  # våt snø (typisk 6–7 cm)
 
     snow_increase_warning_dry: float = 8.0    # tørr lett snø (mindre sensitiv warning)
@@ -362,7 +360,9 @@ class SlapsThresholds:
     """
     # Temperatur (kritisk område for slaps)
     temp_min: float = -1.0              # Under dette: snø
-    temp_max: float = 2.0               # Over dette: mest regn/mer sjelden slaps (kalibrert)
+    # Hevet fra 2.0°C etter bekreftet episode 27. nov 2025 med snitt 3.8°C/topp 5.5°C.
+    # Over 4.0°C klassifiseres som smelting/regn (ikke slaps) med eget scenario-kall.
+    temp_max: float = 4.0
     temp_optimal: float = 1.2           # Historisk snitt for slaps
 
     # Nedbør

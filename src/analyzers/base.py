@@ -6,7 +6,7 @@ Definerer felles interface og hjelpefunksjoner for alle analysatorer.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 
 import pandas as pd
@@ -73,15 +73,19 @@ class AnalysisResult:
     timestamp: datetime = field(default_factory=datetime.now)
 
     def to_dict(self) -> dict:
-        """Konverter til dictionary for JSON/API."""
+        """Konverter til dictionary for JSON/API.
+
+        Standardfelter (risk_level, message, …) overskriver alltid
+        eventuelle nøkler med samme navn i `details`.
+        """
         return {
+            **self.details,
             "risk_level": self.risk_level.value,
             "risk_level_norwegian": self.risk_level.norwegian,
             "message": self.message,
             "scenario": self.scenario,
             "factors": self.factors,
             "timestamp": self.timestamp.isoformat(),
-            **self.details
         }
 
     @property
@@ -183,6 +187,70 @@ class BaseAnalyzer(ABC):
             - 11.37 * (wind_kmh ** 0.16)
             + 0.3965 * temp * (wind_kmh ** 0.16)
         )
+
+    @staticmethod
+    def _analysis_now(df: pd.DataFrame) -> datetime:
+        """
+        Bruk siste reference_time i datasettet som «nå».
+
+        Returnerer alltid en UTC-aware datetime slik at sammenligninger
+        med timezone-aware og timezone-naive data ikke kaster TypeError.
+        """
+        try:
+            if 'reference_time' in df.columns and not df.empty:
+                ts = pd.to_datetime(df['reference_time']).iloc[-1]
+                if not pd.isna(ts):
+                    if ts.tzinfo is None:
+                        ts = ts.tz_localize('UTC')
+                    return ts.to_pydatetime()
+        except (TypeError, ValueError, IndexError, KeyError):
+            pass
+        return datetime.now(UTC)
+
+    def _calculate_snow_change(self, df: pd.DataFrame, hours: int = 6) -> float:
+        """
+        Beregn snøendring siste N timer (basert på dataens tidsakse).
+
+        Positiv verdi = økning (nysnø), negativ = smelting/blåst vekk.
+        Returnerer 0.0 hvis data mangler.
+        """
+        if 'surface_snow_thickness' not in df.columns or 'reference_time' not in df.columns:
+            return 0.0
+        if df.empty:
+            return 0.0
+
+        now = self._analysis_now(df)
+        cutoff = now - timedelta(hours=hours)
+        recent = df[pd.to_datetime(df['reference_time']) > cutoff].copy()
+        if len(recent) < 2:
+            return 0.0
+
+        snow = recent['surface_snow_thickness'].dropna()
+        if len(snow) < 2:
+            return 0.0
+
+        return float(snow.iloc[-1] - snow.iloc[0])
+
+    def _precip_total(self, df: pd.DataFrame, hours: int = 12) -> float:
+        """
+        Akkumuler nedbør siste N timer (mm) basert på precipitation_1h.
+
+        Bruker eksklusiv cutoff (>) for å unngå dobbel-telling ved
+        timeoppløste data.
+        """
+        if 'precipitation_1h' not in df.columns or 'reference_time' not in df.columns:
+            return 0.0
+        if df.empty:
+            return 0.0
+
+        now = self._analysis_now(df)
+        cutoff = now - timedelta(hours=hours)
+        recent = df[pd.to_datetime(df['reference_time']) > cutoff].copy()
+        if recent.empty:
+            return 0.0
+
+        vals = pd.to_numeric(recent['precipitation_1h'], errors='coerce').fillna(0.0)
+        return float(vals.sum())
 
     @staticmethod
     def is_winter_season() -> bool:

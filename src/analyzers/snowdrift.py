@@ -6,7 +6,7 @@ Vindkjøling har 73.1% viktighet i modellen.
 """
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 
 import pandas as pd
 
@@ -83,7 +83,7 @@ class SnowdriftAnalyzer(BaseAnalyzer):
         lookback_hours = thresholds.interval_hours
         window = self._select_recent_window(df, lookback_hours)
         loose_snow = self._check_loose_snow(window)
-        snow_change = self._calculate_snow_change(window)
+        snow_change = self._snow_change_over_window(window)
 
         best_result: AnalysisResult | None = None
         best_priority = -1
@@ -151,8 +151,8 @@ class SnowdriftAnalyzer(BaseAnalyzer):
         - Mildvær (>0°C) smelter/kompakterer snøen
         """
         thresholds = settings.snowdrift
-        now = datetime.now(UTC)
-        last_24h = df[df['reference_time'] >= (now - timedelta(hours=thresholds.loose_snow_lookback_hours))]
+        now = self._analysis_now(df)
+        last_24h = df[pd.to_datetime(df['reference_time']) >= (now - timedelta(hours=thresholds.loose_snow_lookback_hours))]
 
         if 'air_temperature' not in last_24h.columns or last_24h.empty:
             return {"available": True, "reason": "Usikker - mangler temperaturdata"}
@@ -174,8 +174,9 @@ class SnowdriftAnalyzer(BaseAnalyzer):
         else:
             return {"available": True, "reason": "Frostforhold"}
 
-    def _calculate_snow_change(self, df: pd.DataFrame) -> float:
-        """Beregn snøendring over vinduet."""
+    @staticmethod
+    def _snow_change_over_window(df: pd.DataFrame) -> float:
+        """Beregn snøendring fra første til siste måling i vinduet."""
         if 'surface_snow_thickness' not in df.columns or len(df) < 2:
             return 0.0
 
@@ -183,7 +184,7 @@ class SnowdriftAnalyzer(BaseAnalyzer):
         if len(snow) < 2:
             return 0.0
 
-        return snow.iloc[-1] - snow.iloc[0]
+        return float(snow.iloc[-1] - snow.iloc[0])
 
     def _evaluate_snapshot(
         self,

@@ -262,7 +262,6 @@ Per 13. des 2025 (dedupet `broyting_weather_correlation_2025.csv`) viser scripte
 Merk om navngivning i config:
 
 - `settings.snowdrift.wind_speed_gust_warning_gate` er den eksplisitte vind-gaten som brukes i `SnowdriftAnalyzer`.
-- `settings.snowdrift.wind_speed_median` er en deprecated alias for bakoverkompatibilitet.
 
 Viktig:
 - “Løssnø tilgjengelig” kan ikke valideres fullgodt fra `broyting_weather_correlation_2025.csv` alene (den er event-oppsummert).

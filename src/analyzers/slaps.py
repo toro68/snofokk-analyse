@@ -7,7 +7,7 @@ Oppstår når snø smelter (varmegrader) eller regn faller på snø.
 VIKTIG: Slaps er IKKE is. Hvis slaps fryser, blir det is (→ glatte veier).
 """
 
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 
 import pandas as pd
 
@@ -87,7 +87,7 @@ class SlapsAnalyzer(BaseAnalyzer):
         # Beregn snøendring (synkende = smelting = slaps)
         snow_change = self._calculate_snow_change(df, hours=snow_change_hours)
 
-        precip_total = self._calculate_precip_total(df, hours=precip_hours)
+        precip_total = self._precip_total(df, hours=precip_hours)
 
         # Nedbørterskler er historisk kalibrert for 12 timer (felt-navnene reflekterer dette).
         # Når vi endrer akkumuleringstiden, skalerer vi tersklene proporsjonalt for å beholde
@@ -231,47 +231,7 @@ class SlapsAnalyzer(BaseAnalyzer):
             details=details
         )
 
-    def _calculate_precip_total(self, df: pd.DataFrame, hours: int = 12) -> float:
-        """Akkumuler nedbør siste N timer (mm)."""
-        if 'reference_time' not in df.columns or 'precipitation_1h' not in df.columns or df.empty:
-            return 0.0
-
-        now = pd.to_datetime(df['reference_time']).max()
-        if pd.isna(now):
-            return 0.0
-
-        cutoff = now - timedelta(hours=hours)
-        recent = df[pd.to_datetime(df['reference_time']) >= cutoff].copy()
-        if recent.empty:
-            return 0.0
-
-        vals = pd.to_numeric(recent['precipitation_1h'], errors='coerce').fillna(0.0)
-        return float(vals.sum())
-
-    def _calculate_snow_change(self, df: pd.DataFrame, hours: int = 6) -> float:
-        """Beregn snøendring over tid."""
-        if 'surface_snow_thickness' not in df.columns:
-            return 0.0
-
-        if df.empty or 'reference_time' not in df.columns:
-            return 0.0
-
-        now = pd.to_datetime(df['reference_time']).max()
-        if pd.isna(now):
-            return 0.0
-
-        cutoff = now - timedelta(hours=hours)
-
-        recent = df[pd.to_datetime(df['reference_time']) >= cutoff].copy()
-        if len(recent) < 2:
-            return 0.0
-
-        snow_values = recent['surface_snow_thickness'].dropna()
-        if len(snow_values) < 2:
-            return 0.0
-
-        return snow_values.iloc[-1] - snow_values.iloc[0]
-
+    # _calculate_snow_change og _precip_total er arvet fra BaseAnalyzer
     def _is_precipitation_rain(
         self,
         temp: float | None,
@@ -300,14 +260,14 @@ class SlapsAnalyzer(BaseAnalyzer):
         return False
 
     def _is_temperature_falling(self, df: pd.DataFrame, hours: int = 3) -> bool:
-        """Sjekk om temperatur synker."""
+        """Sjekk om temperatur synker (basert på dataens tidsakse)."""
         if 'air_temperature' not in df.columns:
             return False
 
-        now = datetime.now(UTC)
+        now = self._analysis_now(df)
         cutoff = now - timedelta(hours=hours)
 
-        recent = df[df['reference_time'] >= cutoff].copy()
+        recent = df[pd.to_datetime(df['reference_time']) >= cutoff].copy()
         if len(recent) < 2:
             return False
 

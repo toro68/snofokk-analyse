@@ -7,7 +7,7 @@ Fokuserer på:
 - Rimfrost (duggpunkt nær lufttemperatur)
 """
 
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 
 import pandas as pd
 
@@ -171,8 +171,8 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
         freezing_precip_critical = precip >= thresholds.freezing_precip_critical_mm
         near_freezing = thresholds.near_freezing_temp_min <= temp <= thresholds.near_freezing_temp_max
 
-        snow_change_6h = self._snow_change(df, hours=6)
-        melt_indicator = snow_change_6h is not None and snow_change_6h <= thresholds.melt_snow_change_6h_cm
+        snow_change_6h = self._calculate_snow_change(df, hours=6)
+        melt_indicator = snow_change_6h <= thresholds.melt_snow_change_6h_cm
 
         precip_12h = self._precip_total(df, hours=12)
         details["precipitation_12h"] = round(precip_12h, 2)
@@ -435,43 +435,4 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
         # Økning på minst 1°C siste 6 timer
         return (temps.iloc[-1] - temps.iloc[0]) >= settings.slippery.temp_rise_threshold
 
-    @staticmethod
-    def _analysis_now(df: pd.DataFrame) -> datetime:
-        """Bruk siste reference_time som "nå" når mulig."""
-        try:
-            if 'reference_time' in df.columns and not df.empty:
-                return pd.to_datetime(df['reference_time']).iloc[-1].to_pydatetime()
-        except (TypeError, ValueError, IndexError, KeyError):
-            pass
-        return datetime.now(UTC)
-
-    def _snow_change(self, df: pd.DataFrame, hours: int = 6) -> float | None:
-        """Beregn snøendring siste N timer (basert på dataens tidsakse)."""
-        if 'surface_snow_thickness' not in df.columns or 'reference_time' not in df.columns:
-            return None
-
-        now = self._analysis_now(df)
-        cutoff = now - timedelta(hours=hours)
-        recent = df[df['reference_time'] >= cutoff].copy()
-        if len(recent) < 2:
-            return None
-
-        snow_values = recent['surface_snow_thickness'].dropna()
-        if len(snow_values) < 2:
-            return None
-
-        return float(snow_values.iloc[-1] - snow_values.iloc[0])
-
-    def _precip_total(self, df: pd.DataFrame, hours: int = 12) -> float:
-        """Akkumuler nedbør siste N timer (mm) basert på precipitation_1h."""
-        if 'precipitation_1h' not in df.columns or 'reference_time' not in df.columns:
-            return 0.0
-
-        now = self._analysis_now(df)
-        cutoff = now - timedelta(hours=hours)
-        recent = df[df['reference_time'] >= cutoff].copy()
-        if recent.empty:
-            return 0.0
-
-        vals = pd.to_numeric(recent['precipitation_1h'], errors='coerce').fillna(0.0)
-        return float(vals.sum())
+    # _analysis_now, _calculate_snow_change og _precip_total er arvet fra BaseAnalyzer

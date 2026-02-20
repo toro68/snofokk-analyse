@@ -212,7 +212,7 @@ ELLERS HVIS snødybde øker >= settings.fresh_snow.snow_increase_warning over se
 | Advarsel | `settings.snowdrift.wind_chill_warning` | `settings.snowdrift.wind_speed_gust_warning_gate` (gate) | `settings.snowdrift.wind_gust_warning` | `settings.snowdrift.snow_depth_min_cm` | Løssnø tilgjengelig | Alle |
 | Kritisk | `settings.snowdrift.wind_chill_critical` | `settings.snowdrift.wind_speed_warning` (gate) | `settings.snowdrift.wind_gust_critical` | `settings.snowdrift.snow_depth_min_cm` | Løssnø tilgjengelig | SE-S (`settings.snowdrift.critical_wind_dir_min`–`settings.snowdrift.critical_wind_dir_max`) |
 
-Merk: `settings.snowdrift.wind_speed_median` finnes fortsatt som deprecated alias for bakoverkompatibilitet.
+Merk: `wind_speed_median` ble fjernet (var deprecated alias for `wind_speed_gust_warning_gate`).
 
 **Ny innsikt: Vindkast er bedre trigger enn snittwind!**
 - Snøfokk-episoder: snittwind 10.3 m/s, vindkast **21.9 m/s**
