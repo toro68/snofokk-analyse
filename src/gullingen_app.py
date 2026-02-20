@@ -1040,15 +1040,17 @@ def main():
     for name, analyzer in analyzers.items():
         results[name] = analyzer.analyze(df)
 
+    # Capture raw analyzer output BEFORE any downstream transformations.
+    # This ensures audit logging records what sensors actually detected,
+    # regardless of whether data_quality_guard later downgrades to UNKNOWN.
+    raw_results_for_log = dict(results)
+
     results, quality_note = apply_data_quality_guard(results, quality_metrics)
 
     reference_time_utc = quality_metrics.get("latest_time_utc") if quality_metrics.get("valid") else datetime.now(UTC)
     if not isinstance(reference_time_utc, datetime):
         reference_time_utc = datetime.now(UTC)
     results = apply_alert_stability(results, reference_time_utc)
-
-    # Behold usupprimerte resultater for operasjonell logging/audit.
-    results_before_suppression = dict(results)
 
     suppress_alerts = should_suppress_alerts(plowing_info)
 
@@ -1135,14 +1137,17 @@ def main():
     # Current metrics
     st.subheader("Nåværende forhold")
 
-    # Operational logging: MEDIUM/HIGH only (deduped)
+    # Operational logging: use raw analyzer results (before quality guard and
+    # suppression) so that HIGH-risk events are captured even when
+    # data_quality_guard has downgraded them to UNKNOWN for display purposes.
     try:
         log_medium_high_alerts(
-            results=results_before_suppression if suppress_alerts else results,
+            results=raw_results_for_log,
             df=df,
             plowing_info=plowing_info,
             suppressed_by_maintenance=suppress_alerts,
             suppression_reason=maintenance_reason if suppress_alerts else "",
+            quality_guard_note=quality_note or "",
         )
     except (RuntimeError, ValueError, TypeError, KeyError, OSError) as e:
         logger.warning("Operational logger failed: %s", e)

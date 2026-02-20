@@ -85,8 +85,10 @@ def _load_state(path: Path) -> dict[str, str]:
 def _save_state(path: Path, state: dict[str, str]) -> None:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "w", encoding="utf-8") as f:
+        tmp = path.with_suffix(".tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
             json.dump(state, f, ensure_ascii=False, indent=2)
+        tmp.replace(path)
     except (OSError, TypeError, ValueError) as e:
         logger.warning("Operational logger: failed to save state: %s", e)
 
@@ -117,8 +119,13 @@ def log_medium_high_alerts(
     plowing_info: PlowingInfo | None,
     suppressed_by_maintenance: bool = False,
     suppression_reason: str = "",
+    quality_guard_note: str = "",
 ) -> None:
     """Append MEDIUM/HIGH analyzer results to a CSV (deduped).
+
+    Always logs raw analyzer output (before quality-guard and suppression
+    transformations) so that real risk events are captured even when
+    data_quality_guard has downgraded them to UNKNOWN for display purposes.
 
     Controlled via:
     - OPERATIONAL_LOG_ENABLED (default: true)
@@ -213,6 +220,7 @@ def log_medium_high_alerts(
                 "maintenance_error": maintenance_error,
                 "suppressed_by_maintenance": bool(suppressed_by_maintenance),
                 "suppression_reason": suppression_reason,
+                "quality_guard_note": quality_guard_note,
             }
         )
         state[dedupe_key] = logged_at_iso
