@@ -120,7 +120,7 @@ class BaseAnalyzer(ABC):
         Returns:
             AnalysisResult med risikovurdering
         """
-        pass
+        ...
 
     def _get_latest(self, df: pd.DataFrame) -> pd.Series:
         """Hent siste måling."""
@@ -154,7 +154,7 @@ class BaseAnalyzer(ABC):
             if pd.isna(value):
                 return default
             return value
-        except Exception:
+        except (TypeError, ValueError, KeyError, AttributeError):
             return default
 
     @staticmethod

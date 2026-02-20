@@ -78,7 +78,7 @@ def _app_version() -> str | None:
 # Page config
 st.set_page_config(
     page_title="Føreforhold – Gullingen",
-    page_icon=None,
+    page_icon="\u2745",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -133,7 +133,13 @@ def render_compact_risk_card(title: str, result: AnalysisResult, confidence: int
     if caption_parts:
         st.caption(" • ".join(caption_parts))
     if confidence is not None:
-        st.caption(f"Tillit: {confidence}%")
+        if confidence >= 75:
+            confidence_label = "Tillit: H\u00f8y"
+        elif confidence >= 50:
+            confidence_label = "Tillit: Moderat"
+        else:
+            confidence_label = "Tillit: Lav"
+        st.caption(confidence_label)
 
 
 def render_risk_details(result):
@@ -452,17 +458,25 @@ def render_recommended_actions(
     high_categories = [name for name, r in results.items() if r.risk_level == RiskLevel.HIGH]
     medium_categories = [name for name, r in results.items() if r.risk_level == RiskLevel.MEDIUM]
 
-    if high_categories:
-        st.error("Brøytemannskap: planlegg utrykning nå for " + ", ".join(high_categories) + ".")
-        st.warning("Hytteeiere: vurder å utsette avreise eller beregn betydelig ekstra tid.")
-        return
+    col_crew, col_owners = st.columns(2)
 
-    if medium_categories:
-        st.warning("Brøytemannskap: følg tett med, mulig behov for tiltak for " + ", ".join(medium_categories) + ".")
-        st.info("Hytteeiere: kjør med ekstra margin og følg oppdateringer før avreise.")
-        return
+    with col_crew:
+        st.markdown("**Br\u00f8ytemannskap**")
+        if high_categories:
+            st.error("Planlegg utrykning for: " + ", ".join(high_categories))
+        elif medium_categories:
+            st.warning("F\u00f8lg tett med, mulig behov for tiltak: " + ", ".join(medium_categories))
+        else:
+            st.success("Ingen akutte tiltak n\u00f8dvendig")
 
-    st.success("Ingen akutte tiltak anbefalt nå. Fortsett normal overvåking.")
+    with col_owners:
+        st.markdown("**Hytteeiere**")
+        if high_categories:
+            st.error("Vurder \u00e5 utsette avreise eller beregn betydelig ekstra tid")
+        elif medium_categories:
+            st.warning("Kj\u00f8r med ekstra margin \u2013 f\u00f8lg oppdateringer f\u00f8r avreise")
+        else:
+            st.success("Trygge kj\u00f8reforhold. Fortsett som normalt.")
 
 
 def render_alert_overview(results: dict[str, AnalysisResult]) -> None:
@@ -827,7 +841,7 @@ def main():
 
     # Header
     st.markdown("# Føreforhold Gullingen")
-    st.caption(f"{settings.station.name} ({settings.station.altitude_m} moh) | Oppdatert: {datetime.now().strftime('%H:%M')}")
+    st.caption(f"{settings.station.name} ({settings.station.altitude_m} moh)")
 
     # Validate config
     valid, msg = settings.validate()
@@ -997,8 +1011,8 @@ def main():
         st.stop()
 
     quality_metrics = get_data_quality_metrics(df, selected_start_utc, selected_end_utc)
-    render_period_summary(df, selected_start_utc, selected_end_utc)
-    st.divider()
+    with st.expander("Datakvalitet og periode", expanded=False):
+        render_period_summary(df, selected_start_utc, selected_end_utc)
 
     # Fetch plowing/maintenance info (available via vedlikeholds-endepunkt)
     try:
@@ -1081,6 +1095,8 @@ def main():
         st.warning(f"## {status_title}\n{status_msg}")
     elif overall_risk == RiskLevel.UNKNOWN:
         st.info(f"## {status_title}\n{status_msg}")
+    else:
+        st.success(f"## {status_title}\n{status_msg}")
 
     # Flyttet opp: Siste vedlikehold (erstatter tidligere "NORMALE FORHOLD"-banner)
     render_maintenance_top(plowing_info, suppress_alerts)
@@ -1103,7 +1119,6 @@ def main():
 
     # Compact status summary
     st.subheader("Varsler nå")
-    render_alert_overview(results)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -1133,8 +1148,6 @@ def main():
         logger.warning("Operational logger failed: %s", e)
 
     render_key_metrics(df)
-
-    render_wax_guide(df)
 
     st.divider()
 
@@ -1242,6 +1255,9 @@ def main():
             | **Glatte veier** | Skjult frysefare | Luft {settings.slippery.hidden_freeze_air_min:.0f}-{settings.slippery.hidden_freeze_air_max:.0f}°C og bakke ≤ {settings.slippery.hidden_freeze_surface_max:.1f}°C |
             """)
 
+    # Smøreguide (under grafer for bedre kontekst)
+    render_wax_guide(df)
+
     # Footer
     st.divider()
     st.caption(
@@ -1252,8 +1268,8 @@ def main():
     # Netatmo temperaturkart
     render_netatmo_map()
 
-    st.divider()
-    render_operational_kpis()
+    with st.expander("Operasjonelle KPI-er (admin)", expanded=False):
+        render_operational_kpis()
 
 
 @st.cache_data(ttl=settings.netatmo.cache_ttl_seconds)
