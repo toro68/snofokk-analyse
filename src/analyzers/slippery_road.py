@@ -19,7 +19,7 @@ from src.config import settings
 # Tidlig vinter og om våren kan det regne på bar bakke – da er varslet irrelevant.
 _SAALE_CAVEAT = (
     "Forutsetter etablert snø-/issåle eller tele i veibanen. "
-    "Tidlig vinter og om våren – hvis regnet faller på bar asfalt – er varslet ikke relevant."
+    "Tidlig vinter og om våren – hvis regnet faller på bar veibane – er varslet ikke relevant."
 )
 
 
