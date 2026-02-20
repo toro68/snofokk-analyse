@@ -70,6 +70,7 @@ class AnalysisResult:
     scenario: str | None = None
     factors: list[str] = field(default_factory=list)
     details: dict = field(default_factory=dict)
+    caveat: str = ""
     timestamp: datetime = field(default_factory=datetime.now)
 
     def to_dict(self) -> dict:
@@ -85,6 +86,7 @@ class AnalysisResult:
             "message": self.message,
             "scenario": self.scenario,
             "factors": self.factors,
+            "caveat": self.caveat,
             "timestamp": self.timestamp.isoformat(),
         }
 

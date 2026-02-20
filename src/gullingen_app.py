@@ -140,6 +140,8 @@ def render_compact_risk_card(title: str, result: AnalysisResult, confidence: int
         else:
             confidence_label = "Tillit: Lav"
         st.caption(confidence_label)
+    if result.caveat:
+        st.caption(f"Forbehold: {result.caveat}")
 
 
 def render_risk_details(result):
@@ -153,6 +155,8 @@ def render_risk_details(result):
 
     if result.scenario:
         st.caption(f"Scenario: {result.scenario}")
+    if result.caveat:
+        st.caption(f"Forbehold: {result.caveat}")
 
 
 def render_key_metrics(df):

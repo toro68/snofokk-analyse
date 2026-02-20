@@ -14,6 +14,14 @@ import pandas as pd
 from src.analyzers.base import AnalysisResult, BaseAnalyzer, RiskLevel
 from src.config import settings
 
+# Forbehold som vises ved alle MEDIUM/HIGH varsler fra SlipperyRoadAnalyzer.
+# Koden kan ikke vite om veibanen faktisk har en snø-/issåle eller tele.
+# Tidlig vinter og om våren kan det regne på bar bakke – da er varslet irrelevant.
+_SAALE_CAVEAT = (
+    "Forutsetter etablert snø-/issåle eller tele i veibanen. "
+    "Tidlig vinter og om våren – hvis regnet faller på bar asfalt – er varslet ikke relevant."
+)
+
 
 class SlipperyRoadAnalyzer(BaseAnalyzer):
     """
@@ -111,6 +119,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
                 message=f"Rimfrost-forhold mulig ({temp:.1f}°C)",
                 scenario="Rimfrost",
                 factors=factors,
+                caveat=_SAALE_CAVEAT,
                 details={"surface_temp": surface_temp, "dew_point": dew_point}
             )
 
@@ -249,6 +258,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
                     ),
                     scenario="Skjult frysefare",
                     factors=factors,
+                    caveat=_SAALE_CAVEAT,
                     details={**details, "snow_change_6h": snow_change_6h}
                 )
             # Ingen regn = ikke is-fare nå
@@ -298,6 +308,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
                     message=f"Regn ({precip:.1f} mm/h) på snø, men ingen nylig kulde (bakketemp {surface_label}) - vått/slaps",
                     scenario="Regn på snø (uten kald kontekst)",
                     factors=factors + ["Mild bakke uten nylig kulde reduserer is-risiko"],
+                    caveat=_SAALE_CAVEAT,
                     details=details
                 )
             if not self._recent_snow_absent(df):
@@ -306,6 +317,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
                     message=f"Regn ({precip:.1f} mm/h) på fersk snø - slaps, ikke is",
                     scenario="Regn på snø",
                     factors=factors + ["Fersk snø modererer glattføre"],
+                    caveat=_SAALE_CAVEAT,
                     details=details
                 )
             return AnalysisResult(
@@ -313,6 +325,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
                 message=f"Høy glattføre-risiko! Regn ({precip:.1f} mm/h) på {snow:.0f} cm snø ved {temp:.1f}°C",
                 scenario="Regn på snø",
                 factors=factors,
+                caveat=_SAALE_CAVEAT,
                 details=details
             )
 
@@ -324,6 +337,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
                 message=f"Høy glattføre-risiko! Nedbør fryser på kald bakke ({surface_temp:.1f}°C)",
                 scenario="Underkjølt regn / frysing",
                 factors=factors,
+                caveat=_SAALE_CAVEAT,
                 details=details
             )
 
@@ -333,6 +347,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
                 message=f"Mulig glatt føre: Lett regn på kald bakke ({surface_temp:.1f}°C)",
                 scenario="Lett frysing",
                 factors=factors,
+                caveat=_SAALE_CAVEAT,
                 details=details
             )
 
