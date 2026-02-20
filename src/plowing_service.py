@@ -7,7 +7,6 @@ for å justere varsler i appen.
 
 import json
 import logging
-import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -22,6 +21,14 @@ CACHE_FILE = Path(__file__).parent.parent / "data" / "cache" / "plowing_cache.js
 
 # Hvor lenge siden brøyting skal anses som "nylig" (timer)
 RECENT_PLOWING_HOURS = settings.plowing_service.recent_plowing_hours
+
+
+def _parse_ts_utc(value: str) -> datetime:
+    """Parse ISO timestamp string, ensuring UTC timezone."""
+    dt = datetime.fromisoformat(value)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=UTC)
+    return dt
 
 
 def _maintenance_keywords() -> set[str]:
@@ -141,39 +148,6 @@ class PlowingInfo:
             return f"{dag_navn[local_time.weekday()]} {local_time.strftime('%d.%m kl. %H:%M')}"
         else:
             return local_time.strftime("%d.%m.%Y kl. %H:%M")
-
-    @property
-    def status_emoji(self) -> str:
-        """Statusmarkør for UI.
-
-        Appen bruker ikke emojis i UI.
-        """
-        return ""
-
-
-def parse_timestamps_from_html(html_content: str) -> list[datetime]:
-    """Parser tidsstempler fra Plowman HTML-data."""
-    timestamps = []
-
-    # Finn alle ISO-tidsstempler (2025-11-27T11:20:34.000Z format)
-    pattern = r'(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)'
-    matches = re.findall(pattern, html_content)
-
-    for match in matches:
-        try:
-            # Håndter både med og uten Z
-            ts_str = match
-            if not ts_str.endswith('Z'):
-                ts_str += 'Z'
-            # Fjern backslash hvis det finnes
-            ts_str = ts_str.replace('\\', '')
-
-            dt = datetime.fromisoformat(ts_str.replace('Z', '+00:00'))
-            timestamps.append(dt)
-        except ValueError:
-            continue
-
-    return timestamps
 
 
 def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int | None = None) -> PlowingInfo:
@@ -319,14 +293,19 @@ def _load_cache() -> dict | None:
             raw = json.load(f)
 
         cached_at = datetime.fromisoformat(raw['cached_at'])
+        # Gammel cache kan mangle tidssone-info; sikre UTC.
+        if cached_at.tzinfo is None:
+            cached_at = cached_at.replace(tzinfo=UTC)
         stored_timestamps = [
-            datetime.fromisoformat(ts)
+            _parse_ts_utc(ts)
             for ts in raw.get('all_timestamps', [])
             if ts
         ]
 
         if raw.get('last_plowing'):
-            stored_timestamps.append(datetime.fromisoformat(raw['last_plowing']))
+            # Bakoverkompatibilitet: gamle cache-filer kan ha last_plowing uten
+            # at den er inkludert i all_timestamps. _dedupe_and_sort rydder opp.
+            stored_timestamps.append(_parse_ts_utc(raw['last_plowing']))
 
         unique_sorted = _dedupe_and_sort(stored_timestamps)
         last_plowing = unique_sorted[0] if unique_sorted else None
@@ -368,8 +347,11 @@ def _save_cache(
             'last_operator_id': last_operator_id,
         }
 
-        with open(CACHE_FILE, 'w', encoding='utf-8') as f:
+        # Skriv atomisk: temp-fil + replace for å unngå korrupt JSON ved avbrudd.
+        tmp_path = CACHE_FILE.with_suffix('.tmp')
+        with open(tmp_path, 'w', encoding='utf-8') as f:
             json.dump(cache_payload, f, indent=2)
+        tmp_path.replace(CACHE_FILE)
 
         return {
             'cached_at': datetime.fromisoformat(cache_payload['cached_at']),
@@ -392,15 +374,6 @@ def _dedupe_and_sort(timestamps: list[datetime]) -> list[datetime]:
     """Dedupliserer og sorterer tidsstempler synkende."""
     unique = {ts.isoformat(): ts for ts in timestamps if isinstance(ts, datetime)}
     return sorted(unique.values(), reverse=True)
-def get_adjusted_risk_message(original_message: str, plowing_info: PlowingInfo) -> str:
-    """
-    Justerer risikomelding basert på brøyting.
-
-    Legger til kontekst om når det ble brøytet.
-    """
-    if plowing_info.is_recent and plowing_info.last_plowing:
-        return f"{original_message} (Sist brøytet: {plowing_info.formatted_time})"
-    return original_message
 
 
 # Hovedfunksjon for å teste modulen
@@ -410,7 +383,6 @@ if __name__ == "__main__":
     print(f"Timer siden: {info.hours_since:.1f}" if info.hours_since else "Ukjent")
     print(f"Er nylig: {info.is_recent}")
     print(f"Kilde: {info.source}")
-    print(f"Status: {info.status_emoji}")
 
     if info.all_timestamps:
         print(f"\nAlle tidsstempler ({len(info.all_timestamps)}):")

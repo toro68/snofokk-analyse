@@ -96,8 +96,7 @@ class FrostClient:
         'max(wind_speed_of_gust PT1H)': 'max_wind_gust',
         'min(air_temperature PT1H)': 'temp_min_1h',
         'max(air_temperature PT1H)': 'temp_max_1h',
-        'dew_point_temperature': 'dew_point_temperature',
-        'surface_temperature': 'surface_temperature',
+        # dew_point_temperature and surface_temperature need no remapping
     }
 
     def __init__(self, station_id: str | None = None):
@@ -197,8 +196,8 @@ class FrostClient:
                 return data['data'][0].get('validElements', [])
             return []
 
-        except Exception as e:
-            logger.warning(f"Kunne ikke hente elementer: {e}")
+        except (FrostAPIError, requests.exceptions.RequestException, ValueError, KeyError) as e:
+            logger.warning("Kunne ikke hente elementer: %s", e)
             return []
 
     @retry(
@@ -249,7 +248,7 @@ class FrostClient:
             'timeresolutions': 'PT1H'
         }
 
-        logger.info(f"Henter data: {self.station_id}, {start_iso} til {end_iso}")
+        logger.info("Henter data: %s, %s til %s", self.station_id, start_iso, end_iso)
 
         try:
             try:
@@ -266,7 +265,7 @@ class FrostClient:
                 raise FrostAPIError(f"Stasjon {self.station_id} ikke funnet (404)")
             elif response.status_code == 412:
                 # Ingen data for perioden - ikke en feil
-                logger.warning(f"Ingen data for perioden {start_iso} til {end_iso}")
+                logger.warning("Ingen data for perioden %s til %s", start_iso, end_iso)
                 return pd.DataFrame()
 
             response.raise_for_status()
@@ -292,7 +291,9 @@ class FrostClient:
 
         records = []
         for obs in data['data']:
-            record = {'reference_time': pd.to_datetime(obs['referenceTime'])}
+            # utc=True ensures timezone-aware timestamps; avoids TypeError in
+            # downstream comparisons against UTC-aware datetimes.
+            record = {'reference_time': pd.to_datetime(obs['referenceTime'], utc=True)}
 
             for observation in obs['observations']:
                 element_id = observation['elementId']
@@ -312,7 +313,7 @@ class FrostClient:
         df = df.drop_duplicates('reference_time')
         df = df.reset_index(drop=True)
 
-        logger.info(f"Parset {len(df)} observasjoner med {len(df.columns)} kolonner")
+        logger.info("Parset %d observasjoner med %d kolonner", len(df), len(df.columns))
 
         return df
 

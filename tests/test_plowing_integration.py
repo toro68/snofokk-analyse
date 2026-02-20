@@ -179,38 +179,6 @@ class TestPlowingService:
         formatted = info.formatted_time
         assert "I går" in formatted
 
-    def test_plowing_info_status_emoji(self):
-        """Tester status-tekst (ingen emoji) basert på tid siden brøyting."""
-        # Nylig brøytet (< 6 timer)
-        info_recent = PlowingInfo(
-            last_plowing=datetime.now(UTC),
-            hours_since=2.0,
-            is_recent=True,
-            all_timestamps=[],
-            source='test'
-        )
-        assert info_recent.status_emoji == ""
-
-        # Brøytet siste døgn
-        info_day = PlowingInfo(
-            last_plowing=datetime.now(UTC) - timedelta(hours=12),
-            hours_since=12.0,
-            is_recent=True,
-            all_timestamps=[],
-            source='test'
-        )
-        assert info_day.status_emoji == ""
-
-        # Mer enn 2 dager
-        info_old = PlowingInfo(
-            last_plowing=datetime.now(UTC) - timedelta(days=3),
-            hours_since=72.0,
-            is_recent=False,
-            all_timestamps=[],
-            source='test'
-        )
-        assert info_old.status_emoji == ""
-
     def test_plowing_info_no_data(self):
         """Tester PlowingInfo uten data."""
         info = PlowingInfo(
@@ -223,7 +191,6 @@ class TestPlowingService:
         )
 
         assert info.formatted_time == "Ukjent"
-        assert info.status_emoji == ""
 
     @patch('src.plowing_service.get_last_maintenance_result')
     def test_get_plowing_info_uses_plowman_client(self, mock_get_last):

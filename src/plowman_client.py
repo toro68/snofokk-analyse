@@ -138,9 +138,15 @@ class MaintenanceApiClient:
                 error=f"Vedlikeholds-API ({r.status_code}) returnerte ikke JSON. Response: {preview}"
             )
 
-    def get_last_maintenance_time(self) -> PlowingEvent | None:
-        """Hent siste vedlikeholdstidspunkt som PlowingEvent."""
-        payload = self.get_latest()
+    def get_last_maintenance_time(self, payload: dict | None = None) -> PlowingEvent | None:
+        """Hent siste vedlikeholdstidspunkt som PlowingEvent.
+
+        Args:
+            payload: Allerede hentet JSON-payload. Hvis None hentes det fra API.
+                     Bruk pre-hentet payload for å unngå dobbel HTTP-forespørsel.
+        """
+        if payload is None:
+            payload = self.get_latest()
         if not payload:
             # Viktig: Plowman share er ikke en stabil kilde for drift. Som default bruker vi
             # KUN vedlikeholds-API. Fallback kan eksplisitt slås på ved behov.
@@ -248,7 +254,8 @@ def get_last_maintenance_result() -> tuple[PlowingEvent | None, str | None]:
         # Ingen payload uten tydelig feil
         return None, None
 
-    maintenance_event = client.get_last_maintenance_time()
+    # Gjenbruk allerede hentet payload – unngår dobbel HTTP-forespørsel.
+    maintenance_event = client.get_last_maintenance_time(payload=fetch.payload)
     if not maintenance_event:
         return None, "Vedlikeholds-API: Kunne ikke tolke tidspunkt fra payload"
     return maintenance_event, None
@@ -352,19 +359,13 @@ def _extract_latest_timestamp_from_share_html(html: str) -> datetime | None:
     return max(valid)
 
 
-def get_last_plowing_time(sector_name: str = None) -> PlowingEvent | None:
+def get_last_plowing_time() -> PlowingEvent | None:
     """
     Hjelpefunksjon for å hente siste brøytetidspunkt.
-
-    Args:
-        sector_name: Filtrer på spesifikk rode (optional)
 
     Returns:
         PlowingEvent eller None
     """
-    if sector_name:
-        logger.info("sector_name er ignorert for vedlikeholds-API (%s)", sector_name)
-
     client = MaintenanceApiClient()
     return client.get_last_maintenance_time()
 
