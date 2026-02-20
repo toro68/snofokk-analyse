@@ -154,7 +154,13 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
         }
 
         # SCENARIO 0: Nysnø = naturlig strøing (lav risiko) - men kun ved kaldt vær
-        if self._check_recent_snow(df):
+        # OBS: Hopp over hvis det pågår regn (ikke snø) - regn på snø overstyrer!
+        # Regn identifiseres ved duggpunkt ≥ 0°C, eller lufttemp ≥ 1°C hvis duggpunkt mangler.
+        rain_falling_now = precip >= thresholds.rain_threshold_mm and (
+            (dew_point is not None and dew_point >= settings.fresh_snow.dew_point_max)
+            or (dew_point is None and temp >= settings.fresh_snow.air_temp_max)
+        )
+        if self._check_recent_snow(df) and not rain_falling_now:
             return AnalysisResult(
                 risk_level=RiskLevel.LOW,
                 message="Fersk nysnø - naturlig strøing",

@@ -578,6 +578,40 @@ class TestSlipperyRoadAnalyzer:
         # Temperaturstigning med nedbør bør gi varsel
         assert result.risk_level in (RiskLevel.MEDIUM, RiskLevel.HIGH)
 
+    @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=True)
+    def test_rain_on_snow_not_suppressed_by_recent_snow_accumulation(self, mock_winter, analyzer):
+        """BUG-FIX: Regn på snø skal IKKE undertrykkes av 'Scenario 0 - fersk nysnø'.
+
+        Scenario: Snø falt natt til i dag (+2 cm), men det regner nå (kl. 07).
+        Snødybden økte ≥2 cm siste 6t → gammel Scenario 0 returnerte feil LOW.
+        Med fiksen skal regnet føre til MEDIUM/HIGH siden dew_point > 0 (regn).
+        """
+        now = datetime.now(UTC)
+        # Lager 8 timer: snøfall tidlig (kl 01-04), deretter regn (kl 05-08)
+        timestamps = [now - timedelta(hours=i) for i in range(7, -1, -1)]
+        snow_depths = [10.0, 10.5, 11.0, 12.0, 12.0, 12.0, 12.0, 12.0]  # +2 cm tidlig
+        temps = [0.0, 0.2, 0.5, 1.0, 1.5, 2.0, 2.0, 2.0]               # mildvær vokser
+        dew_pts = [-0.5, -0.3, 0.0, 0.5, 1.0, 1.5, 1.5, 1.5]           # dew > 0 = regn sent
+        precips = [0.2, 0.5, 0.5, 0.0, 1.5, 2.0, 2.5, 2.5]             # regn siste 4t
+        surf_temps = [-1.5, -1.0, -0.5, 0.0, 0.2, 0.3, 0.3, 0.3]
+
+        df = pd.DataFrame({
+            'reference_time': timestamps,
+            'air_temperature': temps,
+            'wind_speed': [2.0] * 8,
+            'surface_snow_thickness': snow_depths,
+            'precipitation_1h': precips,
+            'dew_point_temperature': dew_pts,
+            'surface_temperature': surf_temps,
+            'relative_humidity': [90.0] * 8,
+        })
+
+        result = analyzer.analyze(df)
+        # Regn (dew_point > 0) på snødekke = MEDIUM eller HØY, IKKE LAV
+        assert result.risk_level in (RiskLevel.MEDIUM, RiskLevel.HIGH), (
+            f"Forventet MEDIUM/HIGH men fikk {result.risk_level}: {result.message}"
+        )
+
     @patch('src.analyzers.base.BaseAnalyzer.is_winter_season', return_value=False)
     def test_summer_frost_risk(self, mock_winter, analyzer):
         """Rimfrost kan forekomme på kalde sommernetter."""
