@@ -312,7 +312,7 @@ class HistoricalWeatherService:
             'hours_since_plowing': (datetime.now(UTC) - last_plowed).total_seconds() / 3600
         }
 
-    def save_plowing_event(self, timestamp: datetime, notes: str = ""):
+    def save_plowing_event(self, timestamp: datetime, notes: str = "") -> None:
         """Lagre brøyting-hendelse"""
         plowing_file = "data/plowing_log.json"
 
@@ -358,12 +358,12 @@ class HistoricalWeatherService:
                 event['timestamp'] = datetime.fromisoformat(event['timestamp'])
 
             data.sort(key=lambda x: x['timestamp'], reverse=True)
-            return data[:limit]
+            return list(data[:limit])
 
         except (OSError, json.JSONDecodeError, ValueError, TypeError):
             return []
 
-    def create_february_sample_data(self):
+    def create_february_sample_data(self) -> pd.DataFrame:
         """Opprett eksempel-data for 1-15 februar"""
 
         cfg = settings.historical
@@ -384,7 +384,7 @@ class HistoricalWeatherService:
 
         records = []
         base_snow_depth = cfg.feb_sample_start_snow_depth_cm  # Start snødybde
-        accumulated_precip = 0
+        accumulated_precip: float = 0.0
 
         for i, ts in enumerate(timestamps):
             # Simuler realistiske værforhold
@@ -409,13 +409,13 @@ class HistoricalWeatherService:
             wind = min(wind, cfg.feb_sample_wind_cap_ms)
 
             # Nedbør-episoder
-            precip_hour = 0
+            precip_hour: float = 0.0
             if cfg.feb_sample_precip_ep1_day_start <= day_of_period <= cfg.feb_sample_precip_ep1_day_end and temp < cfg.feb_sample_precip_ep1_temp_max_c:
-                precip_hour = np.random.exponential(cfg.feb_sample_precip_ep1_exp_scale) if np.random.random() < cfg.feb_sample_precip_ep1_prob else 0
+                precip_hour = np.random.exponential(cfg.feb_sample_precip_ep1_exp_scale) if np.random.random() < cfg.feb_sample_precip_ep1_prob else 0.0
             elif cfg.feb_sample_precip_ep2_day_start <= day_of_period <= cfg.feb_sample_precip_ep2_day_end and temp < cfg.feb_sample_precip_ep2_temp_max_c:
-                precip_hour = np.random.exponential(cfg.feb_sample_precip_ep2_exp_scale) if np.random.random() < cfg.feb_sample_precip_ep2_prob else 0
+                precip_hour = np.random.exponential(cfg.feb_sample_precip_ep2_exp_scale) if np.random.random() < cfg.feb_sample_precip_ep2_prob else 0.0
             elif cfg.feb_sample_precip_ep3_day_start <= day_of_period <= cfg.feb_sample_precip_ep3_day_end and temp < cfg.feb_sample_precip_ep3_temp_max_c:
-                precip_hour = np.random.exponential(cfg.feb_sample_precip_ep3_exp_scale) if np.random.random() < cfg.feb_sample_precip_ep3_prob else 0
+                precip_hour = np.random.exponential(cfg.feb_sample_precip_ep3_exp_scale) if np.random.random() < cfg.feb_sample_precip_ep3_prob else 0.0
 
             accumulated_precip += precip_hour
 

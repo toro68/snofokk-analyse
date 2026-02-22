@@ -7,6 +7,7 @@ Vindkjøling har 73.1% viktighet i modellen.
 from __future__ import annotations
 
 from datetime import timedelta
+from typing import Any
 
 import pandas as pd
 
@@ -189,9 +190,9 @@ class SnowdriftAnalyzer(BaseAnalyzer):
     def _evaluate_snapshot(
         self,
         row: pd.Series,
-        loose_snow: dict,
+        loose_snow: dict[str, Any],
         snow_change: float,
-        thresholds,
+        thresholds: Any,
         lookback_hours: int
     ) -> AnalysisResult | None:
         """Evaluer én observasjon og returner resultat."""
@@ -232,7 +233,7 @@ class SnowdriftAnalyzer(BaseAnalyzer):
 
         reference_time = row.get('reference_time')
         try:
-            reference_str = pd.to_datetime(reference_time).isoformat()
+            reference_str: str | None = pd.to_datetime(reference_time).isoformat() if reference_time is not None else None
         except (TypeError, ValueError, OverflowError):
             reference_str = str(reference_time) if reference_time is not None else None
 
@@ -263,7 +264,7 @@ class SnowdriftAnalyzer(BaseAnalyzer):
         wind_chill: float,
         snow_change: float,
         is_critical_direction: bool,
-        thresholds
+        thresholds: Any
     ) -> list[str]:
         """Samle risikofaktorer for visning."""
         factors = []

@@ -16,7 +16,7 @@ class AnalysisService:
 
     def analyze_snow_conditions(self, df: WeatherData) -> list[SnowAnalysis]:
         """Analyze snow conditions and detect changes"""
-        analyses = []
+        analyses: list[SnowAnalysis] = []
 
         if 'surface_snow_thickness' not in df.columns or df.empty:
             logger.warning("No snow thickness data available for analysis")

@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum
+from typing import Any
 
 import pandas as pd
 
@@ -145,7 +146,7 @@ class BaseAnalyzer(ABC):
         required = required or self.REQUIRED_COLUMNS
         return all(col in df.columns for col in required)
 
-    def _safe_get(self, series: pd.Series, key: str, default=None):
+    def _safe_get(self, series: pd.Series, key: str, default: Any = None) -> Any:
         """
         Hent verdi fra Series med fallback.
 
@@ -160,7 +161,7 @@ class BaseAnalyzer(ABC):
             return default
 
     @staticmethod
-    def calculate_wind_chill(temp: float, wind: float) -> float:
+    def calculate_wind_chill(temp: float | None, wind: float | None) -> float:
         """
         Beregn vindkjøling (NWS-formel).
 
@@ -176,15 +177,15 @@ class BaseAnalyzer(ABC):
             Vindkjølingsindeks i °C
         """
         if temp is None or wind is None:
-            return temp if temp is not None else 0.0
+            return float(temp) if temp is not None else 0.0
 
         from src.config import settings
 
         if temp >= settings.viz.wind_chill_valid_temp_max_c or wind < settings.viz.wind_chill_valid_wind_min_ms:
-            return temp
+            return float(temp)
 
         wind_kmh = wind * 3.6
-        return (
+        return float(
             13.12 + 0.6215 * temp
             - 11.37 * (wind_kmh ** 0.16)
             + 0.3965 * temp * (wind_kmh ** 0.16)

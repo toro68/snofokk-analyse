@@ -11,7 +11,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 
-def inject_pwa_code():
+def inject_pwa_code() -> None:
     """Inject PWA JavaScript code into Streamlit app"""
 
     pwa_js = """
@@ -391,7 +391,7 @@ def inject_pwa_code():
     # Inject the JavaScript
     components.html(pwa_js, height=0)
 
-def add_pwa_meta_tags():
+def add_pwa_meta_tags() -> None:
     """Add PWA meta tags to Streamlit page"""
 
     # Set page config with PWA-friendly settings
@@ -406,7 +406,7 @@ def add_pwa_meta_tags():
         """, unsafe_allow_html=True)
         st.session_state.pwa_meta_added = True
 
-def setup_pwa():
+def setup_pwa() -> None:
     """Complete PWA setup for Streamlit app"""
     add_pwa_meta_tags()
     inject_pwa_code()
@@ -414,7 +414,7 @@ def setup_pwa():
     # Serve static files through Streamlit
     serve_static_files()
 
-def serve_static_files():
+def serve_static_files() -> None:
     """Make static files available through Streamlit"""
     # We rely on Streamlit's static file serving under /static/
     # Ensure the manifest and service worker are referenced via /static/

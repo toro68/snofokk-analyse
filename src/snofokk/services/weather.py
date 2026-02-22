@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class WeatherService:
     """Service for fetching and caching weather data from Frost API"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.session = self._create_session()
 
     def _create_session(self) -> requests.Session:

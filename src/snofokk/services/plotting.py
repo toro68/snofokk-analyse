@@ -3,6 +3,7 @@ Plotting service for creating weather visualizations
 """
 import logging
 from pathlib import Path
+from typing import Any
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 class PlottingService:
     """Service for creating weather plots and visualizations"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Set matplotlib style
         plt.style.use('default')
         plt.rcParams['figure.figsize'] = (12, 10)
@@ -78,7 +79,7 @@ class PlottingService:
             plt.close('all')
             return False, None
 
-    def _plot_temperature(self, ax, df: WeatherData):
+    def _plot_temperature(self, ax: Any, df: WeatherData) -> None:
         """Plot temperature data"""
         if 'air_temperature' not in df.columns or df.empty:
             ax.text(0.5, 0.5, 'Ingen temperaturdata', ha='center', va='center', transform=ax.transAxes)
@@ -89,7 +90,7 @@ class PlottingService:
         if 'referenceTime' in df.columns:
             time_data = df['referenceTime']
         else:
-            time_data = df.index
+            time_data = df.index.to_series()
 
         # Filter out NaN values
         temp_data = df['air_temperature'].dropna()
@@ -123,7 +124,7 @@ class PlottingService:
         ax.legend()
         ax.grid(True, alpha=0.3)
 
-    def _plot_wind(self, ax, df: WeatherData):
+    def _plot_wind(self, ax: Any, df: WeatherData) -> None:
         """Plot wind data"""
         if 'wind_speed' not in df.columns or df.empty:
             ax.text(0.5, 0.5, 'Ingen vinddata', ha='center', va='center', transform=ax.transAxes)
@@ -134,7 +135,7 @@ class PlottingService:
         if 'referenceTime' in df.columns:
             time_data = df['referenceTime']
         else:
-            time_data = df.index
+            time_data = df.index.to_series()
 
         # Filter out NaN values
         wind_data = df['wind_speed'].dropna()
@@ -162,13 +163,13 @@ class PlottingService:
         ax.legend()
         ax.grid(True, alpha=0.3)
 
-    def _plot_snow_and_risk(self, ax, df: WeatherData):
+    def _plot_snow_and_risk(self, ax: Any, df: WeatherData) -> None:
         """Plot snow depth and risk score"""
         # Use referenceTime if available, otherwise use index
         if 'referenceTime' in df.columns:
             time_data = df['referenceTime']
         else:
-            time_data = df.index
+            time_data = df.index.to_series()
 
         # Snow depth
         if 'surface_snow_thickness' in df.columns:
@@ -198,7 +199,7 @@ class PlottingService:
         ax.legend(loc='upper left')
         ax.grid(True, alpha=0.3)
 
-    def _format_time_axis(self, axes):
+    def _format_time_axis(self, axes: Any) -> None:
         """Format time axis for all subplots"""
         for ax in axes:
             ax.xaxis.set_major_formatter(mdates.DateFormatter('%d.%m %H:%M'))

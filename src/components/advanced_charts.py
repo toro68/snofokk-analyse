@@ -4,10 +4,10 @@ Avanserte chart-komponenter for værdata-utforskning
 from datetime import datetime
 
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
+import plotly.express as px  # type: ignore[import-untyped]
+import plotly.graph_objects as go  # type: ignore[import-untyped]
 import streamlit as st
-from plotly.subplots import make_subplots
+from plotly.subplots import make_subplots  # type: ignore[import-untyped]
 
 from src.config import settings
 
@@ -119,7 +119,7 @@ class AdvancedCharts:
         return fig
 
     @staticmethod
-    def _add_categorical_trace(fig: go.Figure, df: pd.DataFrame, col: str, row: int, color: str):
+    def _add_categorical_trace(fig: go.Figure, df: pd.DataFrame, col: str, row: int, color: str) -> None:
         """Legg til kategorisk trace (snøtype)"""
 
         # Konverter kategorier til numeriske verdier
@@ -490,7 +490,7 @@ class AdvancedCharts:
         df_risk = df.copy()
 
         # Snøfokk-risiko (0-3)
-        snowdrift_risk = 0
+        snowdrift_risk: pd.Series | int = 0
         if 'wind_speed' in df.columns and 'air_temperature' in df.columns:
             wind_risk = (
                 (df_risk['wind_speed'] > th.snowdrift_wind_low_ms).astype(int)
@@ -503,7 +503,7 @@ class AdvancedCharts:
             snowdrift_risk = wind_risk + temp_risk
 
         # Glattføre-risiko (0-2)
-        slippery_risk = 0
+        slippery_risk: pd.Series | int = 0
         if 'air_temperature' in df.columns:
             slippery_risk = (
                 (df_risk['air_temperature'] >= th.slippery_temp_min_c) &
@@ -518,7 +518,7 @@ class AdvancedCharts:
 
         # Fargekoding
         colors = []
-        for risk in total_risk:
+        for risk in total_risk:  # type: ignore[union-attr]
             if risk >= th.risk_red_min:
                 colors.append('red')
             elif risk >= th.risk_orange_min:

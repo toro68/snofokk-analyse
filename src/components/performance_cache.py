@@ -10,7 +10,19 @@ from typing import Any
 import pandas as pd
 import streamlit as st
 
+from src.components import weather_utils
 from src.config import settings
+
+RECOVERABLE_ERRORS = (
+    AttributeError,
+    ConnectionError,
+    KeyError,
+    OSError,
+    RuntimeError,
+    TimeoutError,
+    TypeError,
+    ValueError,
+)
 
 
 class DataCache:
@@ -81,7 +93,7 @@ class DataCache:
             raise
 
     @staticmethod
-    def _cleanup_cache():
+    def _cleanup_cache() -> None:
         """Fjern utløpte cache-oppføringer"""
         if 'data_cache' not in st.session_state:
             return
@@ -110,7 +122,7 @@ class DataCache:
                 del cache[key]
 
     @staticmethod
-    def invalidate_cache(key_pattern: str | None = None):
+    def invalidate_cache(key_pattern: str | None = None) -> None:
         """Fjern cache oppføringer"""
         if 'data_cache' not in st.session_state:
             return
@@ -178,7 +190,7 @@ class ProgressiveLoader:
             )
             result['critical'] = critical_data
 
-        except Exception as e:
+        except RECOVERABLE_ERRORS as e:
             st.error(f"Kunne ikke laste kritiske data: {e}")
             return result
 
@@ -195,14 +207,14 @@ class ProgressiveLoader:
                 result['detailed'] = detailed_data
                 result['loading_detailed'] = False
 
-            except Exception as e:
+            except RECOVERABLE_ERRORS as e:
                 st.warning(f"Kunne ikke laste detaljerte data: {e}")
                 result['loading_detailed'] = False
 
         return result
 
     @staticmethod
-    def show_skeleton_loader(content_type: str = "card"):
+    def show_skeleton_loader(content_type: str = "card") -> None:
         """Vis skeleton loader mens data lastes"""
 
         if content_type == "card":
@@ -323,7 +335,7 @@ class ErrorHandler:
         try:
             return primary_func()
 
-        except Exception as e:
+        except RECOVERABLE_ERRORS as e:
             # Log feilen
             error_details = f"{error_message}: {str(e)}"
 
@@ -332,7 +344,7 @@ class ErrorHandler:
                 try:
                     st.warning(f"{error_message} - bruker backup data")
                     return fallback_func()
-                except Exception as fallback_error:
+                except RECOVERABLE_ERRORS as fallback_error:
                     st.error(f"Både primær og backup feilet: {fallback_error}")
                     return None
             else:
@@ -353,12 +365,14 @@ class ErrorHandler:
 def cached_weather_fetch(client_id: str, station_id: str, hours: int = 24) -> pd.DataFrame:
     """Cached værdata henting"""
 
-    def fetch_weather():
-        # Import her for å unngå sirkulære imports
-        from weather_utils import fetch_frost_data
-        return fetch_frost_data(client_id, station_id, hours)
+    def fetch_weather() -> pd.DataFrame:
+        return weather_utils.fetch_frost_data(
+            client_id,
+            station_id,
+            hours,
+        )  # type: ignore[no-any-return]
 
-    return DataCache.get_cached_data(
+    return DataCache.get_cached_data(  # type: ignore[no-any-return]
         'weather_data',
         fetch_weather,
         ttl_seconds=300,  # 5 minutter
@@ -369,9 +383,11 @@ def cached_weather_fetch(client_id: str, station_id: str, hours: int = 24) -> pd
 def progressive_weather_load(client_id: str, station_id: str) -> dict[str, Any]:
     """Progressive weather loading med error handling"""
 
-    def fetch_func(hours_back):
-        # Import her for å unngå sirkulære imports
-        from weather_utils import fetch_frost_data
-        return fetch_frost_data(client_id, station_id, hours_back)
+    def fetch_func(hours_back: int) -> pd.DataFrame:
+        return weather_utils.fetch_frost_data(
+            client_id,
+            station_id,
+            hours_back,
+        )  # type: ignore[no-any-return]
 
     return ProgressiveLoader.load_critical_data_first(fetch_func)

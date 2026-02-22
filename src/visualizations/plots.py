@@ -6,6 +6,7 @@ Modulære plotting-funksjoner for Streamlit-appen.
 
 import warnings
 from datetime import datetime
+from typing import Any
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -251,7 +252,7 @@ class WeatherPlots:
             Matplotlib Figure
         """
         df_prepared, times = cls._prepare_time_series(df)
-        if df_prepared is None or df_prepared.empty:
+        if df_prepared is None or df_prepared.empty or times is None:
             return cls._empty_figure("Ingen data tilgjengelig")
 
         from src.analyzers.base import BaseAnalyzer
@@ -390,7 +391,7 @@ class WeatherPlots:
         return df_prepared, df_prepared['reference_time']
 
     @classmethod
-    def _plot_temperature(cls, ax, times, df, viz):
+    def _plot_temperature(cls: Any, ax: Any, times: Any, df: Any, viz: Any) -> None:
         """Plot temperatur med bakketemperatur og duggpunkt."""
         if 'air_temperature' in df.columns:
             temp = cls._numeric(df, 'air_temperature').ffill()
@@ -426,7 +427,7 @@ class WeatherPlots:
         ax.grid(True, alpha=0.3)
 
     @classmethod
-    def _plot_wind(cls, ax, times, df, viz):
+    def _plot_wind(cls: Any, ax: Any, times: Any, df: Any, viz: Any) -> None:
         """Plot vindstyrke."""
         thresholds = settings.snowdrift
 
@@ -494,7 +495,7 @@ class WeatherPlots:
         ax.grid(True, alpha=0.3)
 
     @classmethod
-    def _plot_snow_precip(cls, ax, times, df, viz):
+    def _plot_snow_precip(cls: Any, ax: Any, times: Any, df: Any, viz: Any) -> None:
         """Plot snødybde og nedbør."""
         ax2 = ax.twinx()
 
@@ -553,7 +554,7 @@ class WeatherPlots:
         ax.grid(True, alpha=0.3)
 
     @classmethod
-    def _plot_snow_only(cls, ax, times, df, viz):
+    def _plot_snow_only(cls: Any, ax: Any, times: Any, df: Any, viz: Any) -> None:
         if 'surface_snow_thickness' not in df.columns:
             ax.text(0.5, 0.5, 'Ingen snødata', ha='center', va='center', transform=ax.transAxes)
             return
@@ -594,7 +595,7 @@ class WeatherPlots:
         ax.grid(True, alpha=0.3)
 
     @classmethod
-    def _plot_precip_only(cls, ax, times, df, viz):
+    def _plot_precip_only(cls: Any, ax: Any, times: Any, df: Any, viz: Any) -> None:
         if 'precipitation_1h' not in df.columns:
             ax.text(0.5, 0.5, 'Ingen nedbørsdata', ha='center', va='center', transform=ax.transAxes)
             return
@@ -640,7 +641,7 @@ class WeatherPlots:
         ax.grid(True, alpha=0.3)
 
     @classmethod
-    def _plot_wind_direction(cls, ax, times, df, viz):
+    def _plot_wind_direction(cls: Any, ax: Any, times: Any, df: Any, viz: Any) -> None:
         """Plot vindretning med kritisk sektor markert (fra settings)."""
         if 'wind_from_direction' not in df.columns:
             ax.text(0.5, 0.5, 'Ingen vindretningsdata', ha='center', va='center', transform=ax.transAxes)
@@ -678,7 +679,7 @@ class WeatherPlots:
         ax.grid(True, alpha=0.3)
 
     @classmethod
-    def _plot_accumulated_precip(cls, ax, times, df, viz):
+    def _plot_accumulated_precip(cls: Any, ax: Any, times: Any, df: Any, viz: Any) -> None:
         """Plot akkumulert nedbør over perioden."""
         if 'precipitation_1h' not in df.columns:
             ax.text(0.5, 0.5, 'Ingen nedbørsdata', ha='center', va='center', transform=ax.transAxes)
@@ -701,7 +702,7 @@ class WeatherPlots:
         ax.grid(True, alpha=0.3)
 
     @classmethod
-    def _plot_temp_wind_combined(cls, ax, times, df, viz):
+    def _plot_temp_wind_combined(cls: Any, ax: Any, times: Any, df: Any, viz: Any) -> None:
         """Plot temperatur og vind på samme akse."""
         ax2 = ax.twinx()
 
@@ -747,7 +748,7 @@ class WeatherPlots:
         return pd.to_numeric(df[col], errors='coerce')
 
     @classmethod
-    def _format_time_axis(cls, ax):
+    def _format_time_axis(cls: Any, ax: Any) -> None:
         """Formater tidsakse."""
         locator = mdates.AutoDateLocator(minticks=4, maxticks=8)
         ax.xaxis.set_major_locator(locator)
@@ -768,7 +769,7 @@ class WeatherPlots:
         ax.set_xlabel('Tid')
 
     @classmethod
-    def _safe_layout(cls, fig):
+    def _safe_layout(cls: Any, fig: Any) -> None:
         """Sikker layout-justering."""
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")

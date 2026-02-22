@@ -24,9 +24,12 @@ from src.config import settings
 from src.frost_client import FrostAPIError, FrostClient
 from src.logging_config import configure_logging
 from src.visualizations import WeatherPlots
+from typing import Any
+
+import pandas as pd
 
 
-def main():
+def main() -> None:
     """Hovedfunksjon for Streamlit-app."""
     configure_logging()
 
@@ -170,7 +173,7 @@ def main():
     )
 
 
-def render_risk_card(title: str, result):
+def render_risk_card(title: str, result: Any) -> None:
     """Render risiko-kort med styling."""
     st.subheader(title)
 
@@ -195,7 +198,7 @@ def render_risk_card(title: str, result):
                 st.write(f"• {factor}")
 
 
-def render_key_metrics(df):
+def render_key_metrics(df: pd.DataFrame) -> None:
     """Render nøkkelverdier fra siste måling."""
     st.subheader("Nåværende forhold")
 
@@ -226,8 +229,10 @@ def render_key_metrics(df):
         st.metric("Nedbør", f"{precip:.1f} mm/h")
 
 
-def render_wax_guide(df):
+def render_wax_guide(df: pd.DataFrame | None) -> None:
     """Render en kompakt smøreguide under nåværende forhold."""
+    if df is None:
+        return
 
     # Ikke vis smøreguide når det ikke er snø (da er det ikke skiforhold).
     if df is not None and not df.empty and "surface_snow_thickness" in df.columns:

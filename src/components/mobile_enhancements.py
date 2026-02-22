@@ -11,7 +11,7 @@ class GestureNavigation:
     """Implementer gesture-basert navigasjon for mobil"""
 
     @staticmethod
-    def setup_swipe_navigation():
+    def setup_swipe_navigation() -> None:
         """Sett opp swipe gestures for navigasjon"""
 
         from src.config import settings
@@ -219,7 +219,7 @@ class OfflineManager:
     """Håndter offline-funksjonalitet"""
 
     @staticmethod
-    def setup_offline_detection():
+    def setup_offline_detection() -> None:
         """Sett opp offline-deteksjon og caching"""
 
         offline_js = """
@@ -474,7 +474,7 @@ class OfflineManager:
         # Dette må håndteres via JavaScript callback eller session state
 
         if 'offline_data' in st.session_state:
-            return st.session_state.offline_data
+            return st.session_state.offline_data  # type: ignore[no-any-return]
 
         return None
 
@@ -482,14 +482,14 @@ class OfflineManager:
     def is_online() -> bool:
         """Sjekk om vi er online"""
         # Dette kan settes via JavaScript callback
-        return st.session_state.get('is_online', True)
+        return bool(st.session_state.get('is_online', True))
 
 
 class GeolocationService:
     """Geolocation-baserte features"""
 
     @staticmethod
-    def setup_geolocation():
+    def setup_geolocation() -> None:
         """Sett opp geolocation for kontekst-bevisste varsler"""
 
         from src.config import settings
@@ -689,7 +689,7 @@ class GeolocationService:
         components.html(geo_js, height=0)
 
 
-def setup_mobile_enhancements():
+def setup_mobile_enhancements() -> None:
     """Sett opp alle mobile forbedringer"""
     GestureNavigation.setup_swipe_navigation()
     OfflineManager.setup_offline_detection()
@@ -700,7 +700,7 @@ def get_location_context() -> dict[str, Any]:
     """Hent location context fra session state"""
     from src.config import settings
 
-    return st.session_state.get('location_context', {
+    return st.session_state.get('location_context', {  # type: ignore[no-any-return]
         'priority': 'medium',
         'refresh_interval': settings.mobile.refresh_interval_medium_s,
         'show_detailed': False,

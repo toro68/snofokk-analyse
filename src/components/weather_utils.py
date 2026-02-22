@@ -7,16 +7,20 @@ from typing import Any
 import pandas as pd
 
 from src.config import settings
+from src.frost_client import FrostClient
 
 
-def simple_snowdrift_analysis(temp: float, wind: float, snow_depth: float | None = None) -> dict[str, Any]:
+def simple_snowdrift_analysis(
+    temp: float,
+    wind: float,
+    snow_depth: float | None = None,
+) -> dict[str, Any]:
     """Enkel snøfokk-analyse uten ML"""
 
     th = settings.fallback
 
-    # Validering
     if pd.isna(temp) or pd.isna(wind):
-        return {
+        return {  # type: ignore[unreachable]
             'risk_level': 'unknown',
             'message': 'Mangler værdata',
             'confidence': 0.0,
@@ -62,7 +66,11 @@ def simple_snowdrift_analysis(temp: float, wind: float, snow_depth: float | None
         if snow_depth < 0:
             factors.append("Snødybde ukjent")
         else:
-            snow_cm = snow_depth * 100 if snow_depth < settings.historical.snow_depth_conversion_cutoff_cm else snow_depth
+            snow_cm = (
+                snow_depth * 100
+                if snow_depth < settings.historical.snow_depth_conversion_cutoff_cm
+                else snow_depth
+            )
             if snow_cm >= th.snowdrift_snow_cm_high_min:
                 factors.append(f"Mye snø ({snow_cm:.0f} cm)")
                 snow_score = 2
@@ -127,7 +135,7 @@ def simple_slippery_analysis(temp: float, surface_temp: float | None = None,
     analysis_temp = surface_temp if pd.notna(surface_temp) else temp
 
     if pd.isna(analysis_temp):
-        return {
+        return {  # type: ignore[unreachable]
             'risk_level': 'unknown',
             'message': 'Mangler temperaturdata',
             'confidence': 0.0,
@@ -137,7 +145,11 @@ def simple_slippery_analysis(temp: float, surface_temp: float | None = None,
     factors = []
 
     # Temperatur-analyse
-    if th.slippery_temp_band_min_c <= analysis_temp <= th.slippery_temp_band_max_c:
+    if (
+        th.slippery_temp_band_min_c
+        <= analysis_temp
+        <= th.slippery_temp_band_max_c
+    ):
         if pd.notna(humidity):
             if humidity > th.slippery_humidity_high_pct:
                 risk_level = 'high'
@@ -211,14 +223,19 @@ def calculate_wind_chill(temp: float, wind_speed: float) -> float:
         return temp if pd.notna(temp) else float('nan')
 
     # Standard vindkjøling-formel
-    wind_chill = 13.12 + 0.6215 * temp - 11.37 * (wind_speed ** 0.16) + 0.3965 * temp * (wind_speed ** 0.16)
-    return wind_chill
+    wind_chill = (
+        13.12
+        + 0.6215 * temp
+        - 11.37 * (wind_speed ** 0.16)
+        + 0.3965 * temp * (wind_speed ** 0.16)
+    )
+    return float(wind_chill)
 
 
 def format_time_ago(timestamp: pd.Timestamp) -> str:
     """Format hvor lenge siden en tidsstempel"""
     if pd.isna(timestamp):
-        return "Ukjent tid"
+        return "Ukjent tid"  # type: ignore[unreachable]
 
     now = pd.Timestamp.now(tz=timestamp.tz)
     diff = now - timestamp
@@ -230,7 +247,7 @@ def format_time_ago(timestamp: pd.Timestamp) -> str:
         hours = int(diff.total_seconds() / 3600)
         return f"{hours} timer siden"
     else:
-        days = int(diff / timedelta(days=1))
+        days = int(diff.total_seconds() / 86400)
         return f"{days} dager siden"
 
 
@@ -315,3 +332,11 @@ def validate_weather_data(df: pd.DataFrame) -> dict[str, Any]:
         'issues': issues,
         'recommendations': recommendations
     }
+
+
+def fetch_frost_data(client_id: str, station_id: str, hours: int = 24) -> pd.DataFrame:
+    """Hent værdata fra Frost API med legacy-signatur brukt av cache-laget."""
+    _ = client_id
+    client = FrostClient(station_id=station_id)
+    weather_data = client.fetch_recent(hours_back=hours)
+    return weather_data.df

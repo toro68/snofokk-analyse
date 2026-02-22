@@ -431,7 +431,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
         if len(snow) < 2:
             return False
 
-        return (snow.iloc[-1] - snow.iloc[0]) >= settings.slippery.recent_snow_relief_cm
+        return bool((snow.iloc[-1] - snow.iloc[0]) >= settings.slippery.recent_snow_relief_cm)
 
     def _recent_snow_absent(self, df: pd.DataFrame) -> bool:
         """True hvis ingen fersk snø (øker sensitivitet for regn på snø)."""
@@ -453,6 +453,6 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
             return False
 
         # Økning på minst 1°C siste 6 timer
-        return (temps.iloc[-1] - temps.iloc[0]) >= settings.slippery.temp_rise_threshold
+        return bool((temps.iloc[-1] - temps.iloc[0]) >= settings.slippery.temp_rise_threshold)
 
     # _analysis_now, _calculate_snow_change og _precip_total er arvet fra BaseAnalyzer

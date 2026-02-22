@@ -11,6 +11,7 @@ import logging
 import os
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 import requests
 
@@ -49,7 +50,7 @@ class NetatmoClient:
     BASE_URL = "https://api.netatmo.com/api"
 
     # Fjellbergsskardet Hyttegrend område (ca 5km radius)
-    FJELLBERGSSKARDET = {
+    FJELLBERGSSKARDET: dict[str, Any] = {
         "lat": 59.39205,
         "lon": 6.42667,
         "name": "Fjellbergsskardet",
@@ -99,13 +100,13 @@ class NetatmoClient:
 
         url = f"{self.BASE_URL}/getpublicdata"
 
-        params = {
+        params: dict[str, str | float | int] = {
             "lat_ne": lat_ne,
             "lon_ne": lon_ne,
             "lat_sw": lat_sw,
             "lon_sw": lon_sw,
             "required_data": required_data,
-            "filter": True
+            "filter": 1
         }
 
         headers = {
@@ -144,10 +145,10 @@ class NetatmoClient:
         loc = self.FJELLBERGSSKARDET
 
         return self.get_public_data(
-            lat_ne=loc["lat"] + delta,
-            lon_ne=loc["lon"] + delta,
-            lat_sw=loc["lat"] - delta,
-            lon_sw=loc["lon"] - delta
+            lat_ne=float(loc["lat"]) + delta,
+            lon_ne=float(loc["lon"]) + delta,
+            lat_sw=float(loc["lat"]) - delta,
+            lon_sw=float(loc["lon"]) - delta
         )
 
     def authenticate(self, refresh_token: str | None = None) -> bool:
@@ -293,7 +294,7 @@ class NetatmoClient:
         return stations
 
 
-def test_netatmo():
+def test_netatmo() -> None:
     """Test Netatmo-klient."""
     client = NetatmoClient()
 

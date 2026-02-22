@@ -15,6 +15,7 @@ import json
 import logging
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
@@ -114,7 +115,7 @@ def _prune_state(state: dict[str, str], keep_for: timedelta) -> dict[str, str]:
 
 def log_medium_high_alerts(
     *,
-    results: dict[str, object],
+    results: dict[str, Any],
     df: pd.DataFrame,
     plowing_info: PlowingInfo | None,
     suppressed_by_maintenance: bool = False,
@@ -148,7 +149,7 @@ def log_medium_high_alerts(
 
     latest: pd.Series | None = df.iloc[-1] if df is not None and not df.empty else None
 
-    def _as_float(value: object) -> float | None:
+    def _as_float(value: Any) -> float | None:
         try:
             return float(value) if value is not None else None
         except (TypeError, ValueError):

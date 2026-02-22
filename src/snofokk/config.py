@@ -3,6 +3,7 @@ Configuration management for Snøfokk application
 """
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import pytz
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -149,7 +150,7 @@ class Settings(BaseSettings):
     )
 
     @property
-    def tz(self):
+    def tz(self) -> Any:
         return pytz.timezone(self.timezone)
 
     @property

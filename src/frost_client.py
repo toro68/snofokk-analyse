@@ -58,6 +58,7 @@ class WeatherData:
         if self.is_empty:
             return
 
+        observations = self.df.to_dict(orient='records')
         data = {
             "metadata": {
                 "station_id": self.station_id,
@@ -67,11 +68,11 @@ class WeatherData:
                 "elements": self.elements_fetched,
                 "exported_at": datetime.now(UTC).isoformat()
             },
-            "observations": self.df.to_dict(orient='records')
+            "observations": observations
         }
 
         # Konverter datetime til strings for JSON
-        for obs in data["observations"]:
+        for obs in observations:
             if 'reference_time' in obs and isinstance(obs['reference_time'], pd.Timestamp):
                 obs['reference_time'] = obs['reference_time'].isoformat()
 
@@ -193,7 +194,9 @@ class FrostClient:
 
             data = response.json()
             if data.get('data'):
-                return data['data'][0].get('validElements', [])
+                elements = data['data'][0].get('validElements', [])
+                if isinstance(elements, list):
+                    return [str(e) for e in elements]
             return []
 
         except (FrostAPIError, requests.exceptions.RequestException, ValueError, KeyError) as e:

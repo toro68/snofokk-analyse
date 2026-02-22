@@ -27,16 +27,16 @@ class MobileLayout:
         if 'surface_snow_thickness' in df_prepared.columns:
             snow_data = df_prepared['surface_snow_thickness'].copy()
             # Sanitize: negative verdier er ofte sentinel values for missing data
-            snow_data = snow_data.where(snow_data >= 0, None)
+            snow_data = snow_data.where(snow_data >= 0, other=float('nan'))
             # Konverter fra meter til cm hvis verdiene ser ut til å være i meter
             df_prepared['surface_snow_thickness_cm'] = snow_data.apply(
-                lambda x: x * 100 if pd.notna(x) and x < settings.historical.snow_depth_conversion_cutoff_cm else x
+                lambda x: x * 100 if pd.notna(x) and x < settings.historical.snow_depth_conversion_cutoff_cm else x  # type: ignore[unreachable]
             )
 
         return df_prepared
 
     @staticmethod
-    def configure_mobile_page():
+    def configure_mobile_page() -> None:
         """Konfigurer siden for mobil-first design"""
         st.set_page_config(
             page_title="Snøfokk Varsling",
@@ -299,7 +299,7 @@ class MobileLayout:
         """, unsafe_allow_html=True)
 
     @staticmethod
-    def show_mobile_header():
+    def show_mobile_header() -> None:
         """Kompakt mobil-header med kritisk info"""
         st.markdown("""
         <div style="text-align: center; margin-bottom: 1rem;">
@@ -337,7 +337,7 @@ class MobileLayout:
         """
 
     @staticmethod
-    def show_risk_cards(snowdrift_risk: dict[str, Any], slippery_risk: dict[str, Any]):
+    def show_risk_cards(snowdrift_risk: dict[str, Any], slippery_risk: dict[str, Any]) -> None:
         """Mobil-optimaliserte risikokort med forbedret tilgjengelighet"""
 
         # Quick status row - most important info first
@@ -362,7 +362,7 @@ class MobileLayout:
             st.markdown(slippery_card, unsafe_allow_html=True)
 
     @staticmethod
-    def show_current_conditions(df: pd.DataFrame):
+    def show_current_conditions(df: pd.DataFrame) -> None:
         """Kompakt visning av nåværende forhold med forbedret datahåndtering"""
         if df.empty:
             st.warning("Ingen værdata tilgjengelig")
@@ -436,7 +436,7 @@ class MobileLayout:
                 """, unsafe_allow_html=True)
 
     @staticmethod
-    def show_skeleton_loader(content_type: str = "card"):
+    def show_skeleton_loader(content_type: str = "card") -> None:
         """Vis skeleton loader mens data lastes"""
 
         if content_type == "card":
@@ -518,7 +518,7 @@ class MobileLayout:
             """, unsafe_allow_html=True)
 
     @staticmethod
-    def show_mobile_chart(df: pd.DataFrame, initial_chart_type: str = "temperature"):
+    def show_mobile_chart(df: pd.DataFrame, initial_chart_type: str = "temperature") -> None:
         """Mobil-optimalisert chart visning med forbedret datahåndtering"""
         if df.empty:
             st.info("Ingen data å vise")
@@ -577,7 +577,7 @@ class MobileLayout:
             st.info(f"Ingen {selected.lower()} data tilgjengelig")
 
     @staticmethod
-    def show_mobile_controls():
+    def show_mobile_controls() -> None:
         """Kompakte kontroller for mobil"""
         st.markdown("### Innstillinger")
 
@@ -594,7 +594,7 @@ class MobileLayout:
                 st.rerun()
 
     @staticmethod
-    def show_mobile_footer():
+    def show_mobile_footer() -> None:
         """Kompakt footer med essential info"""
         st.markdown("---")
         st.markdown("""
@@ -647,7 +647,7 @@ class MobileLayout:
         }
 
     @staticmethod
-    def show_data_quality_indicator(df: pd.DataFrame):
+    def show_data_quality_indicator(df: pd.DataFrame) -> None:
         """Kompakt datakvalitetsindikator"""
         if df.empty:
             st.error("Ingen data")

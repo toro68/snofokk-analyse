@@ -11,6 +11,7 @@ Fire varslingskategorier for brøytemannskaper og hytteeiere:
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 # Legg til prosjektrot i path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -20,7 +21,7 @@ from datetime import UTC, datetime, timedelta
 
 import matplotlib.pyplot as plt
 import pandas as pd
-import pydeck as pdk
+import pydeck as pdk  # type: ignore[import-untyped]
 import streamlit as st
 
 from src.analyzers import (
@@ -144,7 +145,7 @@ def render_compact_risk_card(title: str, result: AnalysisResult, confidence: int
         st.caption(f"Forbehold: {result.caveat}")
 
 
-def render_risk_details(result):
+def render_risk_details(result: Any) -> None:
     """Vis detaljer for et analyseresultat i tabber."""
     st.markdown(f"**{result.risk_level.norwegian.upper()}** – {result.message}")
 
@@ -159,13 +160,13 @@ def render_risk_details(result):
         st.caption(f"Forbehold: {result.caveat}")
 
 
-def render_key_metrics(df):
+def render_key_metrics(df: pd.DataFrame | None) -> None:
     """Render current weather metrics."""
     if df is None or df.empty:
         st.info("Ingen værdata tilgjengelig")
         return
 
-    def _to_float(value) -> float | None:
+    def _to_float(value: Any) -> float | None:
         try:
             if value is None or pd.isna(value):
                 return None
@@ -268,12 +269,12 @@ def get_data_quality_metrics(
     df: pd.DataFrame,
     selected_start_utc: datetime,
     selected_end_utc: datetime,
-) -> dict[str, object]:
+) -> dict[str, Any]:
     """Beregn datakvalitet for valgt tidsperiode."""
     if df is None or df.empty:
         return {"valid": False}
 
-    times = pd.to_datetime(df.get("reference_time"), errors="coerce", utc=True).dropna()
+    times = pd.to_datetime(df.get("reference_time") or pd.Series(dtype=object), errors="coerce", utc=True).dropna()
     if times.empty:
         return {"valid": False}
 
@@ -317,7 +318,7 @@ def _decrease_risk(level: RiskLevel) -> RiskLevel:
 
 def apply_data_quality_guard(
     results: dict[str, AnalysisResult],
-    quality: dict[str, object],
+    quality: dict[str, Any],
 ) -> tuple[dict[str, AnalysisResult], str | None]:
     """Nedjuster risikopresentasjon når datakvalitet er lav."""
     if not quality.get("valid", False):
@@ -364,7 +365,7 @@ def apply_data_quality_guard(
         return adjusted, "Datakvalitet kritisk lav: varsler settes til ukjent nivå."
 
     if warning_mode:
-        adjusted: dict[str, AnalysisResult] = {}
+        adjusted = {}
         for name, result in results.items():
             new_level = _decrease_risk(result.risk_level)
             if new_level != result.risk_level:
@@ -401,7 +402,7 @@ def apply_alert_stability(
         previous_changed_at_str = previous.get("changed_at")
 
         previous_level = result.risk_level
-        if previous_level_name in RiskLevel.__members__:
+        if previous_level_name is not None and previous_level_name in RiskLevel.__members__:
             previous_level = RiskLevel[previous_level_name]
 
         previous_changed_at = reference_time_utc
@@ -516,7 +517,7 @@ def render_alert_overview(results: dict[str, AnalysisResult]) -> None:
 
 def _calculate_confidence(
     result: AnalysisResult,
-    quality_metrics: dict[str, object],
+    quality_metrics: dict[str, Any],
     suppress_alerts: bool,
 ) -> int:
     """Beregn enkel usikkerhetsscore (0-100) per varsel."""
@@ -550,7 +551,7 @@ def _calculate_confidence(
 
 def _compute_confidence_map(
     results: dict[str, AnalysisResult],
-    quality_metrics: dict[str, object],
+    quality_metrics: dict[str, Any],
     suppress_alerts: bool,
 ) -> dict[str, int]:
     return {
@@ -614,14 +615,14 @@ def render_operational_kpis() -> None:
         return
 
     total = len(recent)
-    high_share = float((recent.get("risk_level") == "HIGH").sum()) / total * 100 if "risk_level" in recent.columns else 0.0
+    high_share = float((recent["risk_level"] == "HIGH").sum()) / total * 100 if "risk_level" in recent.columns else 0.0
     suppressed_share = (
-        pd.to_numeric(recent.get("suppressed_by_maintenance"), errors="coerce").fillna(0).astype(int).clip(0, 1).mean() * 100
+        pd.to_numeric(recent["suppressed_by_maintenance"], errors="coerce").fillna(0).astype(int).clip(0, 1).mean() * 100
         if "suppressed_by_maintenance" in recent.columns
         else 0.0
     )
 
-    maint_hours = pd.to_numeric(recent.get("maintenance_hours_since"), errors="coerce")
+    maint_hours = pd.to_numeric(recent["maintenance_hours_since"] if "maintenance_hours_since" in recent.columns else pd.Series(dtype=float), errors="coerce")
     tp_proxy = int((maint_hours <= 6).sum())
     fp_proxy = int(((maint_hours > 24) | maint_hours.isna()).sum())
     precision_proxy = (tp_proxy / (tp_proxy + fp_proxy) * 100) if (tp_proxy + fp_proxy) > 0 else 0.0
@@ -693,9 +694,9 @@ def render_forecast_section() -> None:
         st.info("Ingen prognosedata tilgjengelig akkurat nå.")
         return
 
-    temp_series = pd.to_numeric(forecast_df.get("air_temperature"), errors="coerce")
-    wind_series = pd.to_numeric(forecast_df.get("wind_speed"), errors="coerce")
-    precip_series = pd.to_numeric(forecast_df.get("precipitation_1h"), errors="coerce").fillna(0)
+    temp_series = pd.to_numeric(forecast_df.get("air_temperature"), errors="coerce")  # type: ignore[call-overload]
+    wind_series = pd.to_numeric(forecast_df.get("wind_speed"), errors="coerce")  # type: ignore[call-overload]
+    precip_series = pd.to_numeric(forecast_df.get("precipitation_1h"), errors="coerce").fillna(0)  # type: ignore[call-overload]
 
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -840,7 +841,7 @@ def fetch_weather_period_cached(start_iso: str, end_iso: str) -> pd.DataFrame:
     return weather_data.df
 
 
-def main():
+def main() -> None:
     """Main app function."""
 
     # Header
@@ -1282,7 +1283,7 @@ def main():
 
 
 @st.cache_data(ttl=settings.netatmo.cache_ttl_seconds)
-def fetch_netatmo_stations():
+def fetch_netatmo_stations() -> list[dict[str, Any]]:
     """Hent Netatmo-stasjoner (cached).
 
     Viktig: `st.cache_data` krever at returverdien kan serialiseres.
@@ -1316,8 +1317,7 @@ def get_netatmo_client() -> NetatmoClient:
     return NetatmoClient()
 
 
-def render_netatmo_map():
-    """Render Netatmo temperaturkart - alltid synlig med interaktive data."""
+def render_netatmo_map() -> None:
 
     st.subheader("Temperaturkart")
 
@@ -1364,7 +1364,7 @@ def render_netatmo_map():
         alt = s.altitude
 
         # Fargekode basert på temperatur (RGB)
-        r, g, b = get_temp_rgb(temp)
+        r, g, b = get_temp_rgb(temp or 0.0)
 
         map_data.append({
             "lat": s.lat,
@@ -1455,7 +1455,7 @@ def render_netatmo_map():
         )
 
     # Temperaturstatistikk under kartet
-    temps = [s.temperature for s in temp_stations]
+    temps: list[float] = [s.temperature for s in temp_stations if s.temperature is not None]
     avg_temp = sum(temps) / len(temps)
     min_temp = min(temps)
     max_temp = max(temps)
@@ -1505,7 +1505,7 @@ def get_cached_plowing_info() -> PlowingInfo:
     return get_plowing_info()
 
 
-def estimate_snow_limit(stations) -> dict:
+def estimate_snow_limit(stations: list) -> dict[str, Any]:
     """
     Estimer snøgrense basert på temperaturprofil fra værstasjoner.
 
@@ -1582,7 +1582,7 @@ def estimate_snow_limit(stations) -> dict:
     }
 
 
-def render_snow_limit_info(snow_limit: dict, high_stations, low_stations):
+def render_snow_limit_info(snow_limit: dict[str, Any], high_stations: list, low_stations: list) -> None:
     """Render snøgrense-info som en informasjonsboks."""
 
     col1, col2 = st.columns([2, 1])

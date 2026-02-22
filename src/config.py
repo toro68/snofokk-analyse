@@ -39,7 +39,7 @@ def get_secret(key: str, default: str = "") -> str:
         if secrets is not None:
             try:
                 if key in secrets:
-                    return secrets[key]
+                    return str(secrets[key])
             except (StreamlitSecretNotFoundError, StreamlitAPIException):
                 # Ingen secrets.toml konfigurert (typisk i test/lokal miljø)
                 pass

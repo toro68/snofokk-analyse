@@ -276,4 +276,4 @@ class SlapsAnalyzer(BaseAnalyzer):
             return False
 
         # Synkende hvis siste temp er lavere enn snitt
-        return temps.iloc[-1] < temps.mean()
+        return bool(temps.iloc[-1] < temps.mean())

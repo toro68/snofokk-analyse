@@ -354,7 +354,7 @@ def _save_cache(
         tmp_path.replace(CACHE_FILE)
 
         return {
-            'cached_at': datetime.fromisoformat(cache_payload['cached_at']),
+            'cached_at': datetime.fromisoformat(str(cache_payload['cached_at'])),
             'all_timestamps': merged_limited,
             'last_plowing': merged_limited[0] if merged_limited else None,
             'last_event_type': last_event_type,
