@@ -8,8 +8,8 @@ Fire varslingskategorier for brøytemannskaper og hytteeiere:
 4. Glatte veier - Is, rimfrost, regn på snø
 """
 
-import sys
 import json
+import sys
 from pathlib import Path
 
 # Legg til prosjektrot i path for imports
@@ -23,7 +23,6 @@ import pandas as pd
 import pydeck as pdk
 import streamlit as st
 
-from src.logging_config import configure_logging
 from src.analyzers import (
     AnalysisResult,
     FreshSnowAnalyzer,
@@ -32,18 +31,19 @@ from src.analyzers import (
     SlipperyRoadAnalyzer,
     SnowdriftAnalyzer,
 )
-from src.config import get_secret, settings
 from src.components.smoreguide import generate_wax_recommendation, get_sources_section_markdown
+from src.config import get_secret, settings
 from src.forecast_client import ForecastClient, ForecastClientError
 from src.frost_client import FrostAPIError, FrostClient
+from src.logging_config import configure_logging
 from src.netatmo_client import NetatmoClient, NetatmoStation
+from src.operational_logger import log_medium_high_alerts
 from src.plowing_service import (
     PlowingInfo,
     get_maintenance_suppress_hours,
     get_plowing_info,
     should_suppress_alerts,
 )
-from src.operational_logger import log_medium_high_alerts
 from src.visualizations import WeatherPlots
 
 configure_logging()

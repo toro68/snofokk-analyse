@@ -15,7 +15,6 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import streamlit as st
 
-from src.logging_config import configure_logging
 from src.analyzers import RiskLevel, SlipperyRoadAnalyzer, SnowdriftAnalyzer
 from src.components.smoreguide import (
     generate_wax_recommendation,
@@ -23,6 +22,7 @@ from src.components.smoreguide import (
 )
 from src.config import settings
 from src.frost_client import FrostAPIError, FrostClient
+from src.logging_config import configure_logging
 from src.visualizations import WeatherPlots
 
 

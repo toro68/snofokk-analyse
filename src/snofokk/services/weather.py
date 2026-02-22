@@ -8,9 +8,10 @@ import numpy as np
 import pandas as pd
 import requests
 
+from src.config import settings as core_settings
+
 from ..config import settings
 from ..models import WeatherData
-from src.config import settings as core_settings
 
 logger = logging.getLogger(__name__)
 

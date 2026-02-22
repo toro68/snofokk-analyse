@@ -231,7 +231,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
         if surface_temp is not None and dew_point is not None:
             frost_risk = (
                 surface_temp <= thresholds.surface_temp_freeze
-                    and abs(temp - dew_point) < thresholds.rimfrost_dewpoint_delta_max
+                and abs(temp - dew_point) < thresholds.rimfrost_dewpoint_delta_max
                 and (humidity is None or humidity >= thresholds.rimfrost_humidity_min)
                 and (wind is None or wind <= thresholds.rimfrost_wind_max)
             )
@@ -364,7 +364,7 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
         if frost_risk:
             return AnalysisResult(
                 risk_level=RiskLevel.LOW,
-                message=f"Rimfrost-forhold mulig, men ingen regn – lav is-risiko",
+                message="Rimfrost-forhold mulig, men ingen regn – lav is-risiko",
                 scenario="Rimfrost",
                 factors=factors,
                 details=details

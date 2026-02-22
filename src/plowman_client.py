@@ -19,8 +19,7 @@ from datetime import UTC, datetime, timedelta
 
 import requests
 
-from src.config import get_secret
-from src.config import settings
+from src.config import get_secret, settings
 
 logger = logging.getLogger(__name__)
 

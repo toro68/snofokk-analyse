@@ -24,9 +24,9 @@ class _MissingAiohttpClientError(Exception):
 AIOHTTP_CLIENT_ERROR = aiohttp.ClientError if aiohttp is not None else _MissingAiohttpClientError
 
 # Add src to Python path
-sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from snofokk.config import settings
+from snofokk.config import settings  # noqa: E402
 
 
 @dataclass
@@ -315,7 +315,7 @@ class EnhancedWeatherService:
                     print(f"API-feil {response.status} for elementer: {elements[:3]}...")
                     return {}
 
-        except (asyncio.TimeoutError, ValueError, AIOHTTP_CLIENT_ERROR) as e:
+        except (TimeoutError, ValueError, AIOHTTP_CLIENT_ERROR) as e:
             print(f"Feil ved henting av {elements[:3]}...: {e}")
             return {}
 
@@ -600,7 +600,7 @@ async def test_enhanced_service():
 
         print("\nUtvidet værservice fungerer!")
 
-    except (asyncio.TimeoutError, ValueError, RuntimeError) as e:
+    except (TimeoutError, ValueError, RuntimeError) as e:
         print(f"Feil under testing: {e}")
 
 

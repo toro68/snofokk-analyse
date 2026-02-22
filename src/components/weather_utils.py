@@ -1,9 +1,8 @@
 """
 Fallback og utility funksjoner for mobil weather app
 """
-from typing import Any
-
 from datetime import timedelta
+from typing import Any
 
 import pandas as pd
 

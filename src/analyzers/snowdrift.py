@@ -380,8 +380,8 @@ class SnowdriftAnalyzer(BaseAnalyzer):
                 )
 
         # ML-kriterier (vindkjøling-basert)
-        if (wind_chill <= thresholds.wind_chill_critical and
-            wind >= thresholds.wind_speed_critical):
+        if (wind_chill <= thresholds.wind_chill_critical
+                and wind >= thresholds.wind_speed_critical):
             return AnalysisResult(
                 risk_level=RiskLevel.HIGH,
                 message=f"Høy snøfokk-risiko! Vindkjøling {wind_chill:.1f}°C, vind {wind:.1f} m/s",
@@ -390,8 +390,8 @@ class SnowdriftAnalyzer(BaseAnalyzer):
                 details={**details, "method": "ML-basert"}
             )
 
-        if (wind_chill <= thresholds.wind_chill_warning and
-            wind >= thresholds.wind_speed_warning):
+        if (wind_chill <= thresholds.wind_chill_warning
+                and wind >= thresholds.wind_speed_warning):
             return AnalysisResult(
                 risk_level=RiskLevel.MEDIUM,
                 message=f"Moderat snøfokk-risiko. Vindkjøling {wind_chill:.1f}°C, vind {wind:.1f} m/s",

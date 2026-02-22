@@ -8,14 +8,14 @@ from functools import lru_cache
 
 import pandas as pd
 import streamlit as st
-
-from src.config import settings
 from tenacity import (
     retry,
     retry_if_exception_type,
     stop_after_attempt,
     wait_exponential,
 )
+
+from src.config import settings
 
 
 class HistoricalWeatherService:
