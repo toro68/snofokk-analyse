@@ -276,7 +276,8 @@ def get_data_quality_metrics(
     if df is None or df.empty:
         return {"valid": False}
 
-    times = pd.to_datetime(df.get("reference_time") or pd.Series(dtype=object), errors="coerce", utc=True).dropna()
+    ref_col = df["reference_time"] if "reference_time" in df.columns else pd.Series(dtype=object)
+    times = pd.to_datetime(ref_col, errors="coerce", utc=True).dropna()
     if times.empty:
         return {"valid": False}
 
