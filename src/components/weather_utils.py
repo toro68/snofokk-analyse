@@ -171,7 +171,11 @@ def simple_slippery_analysis(temp: float, surface_temp: float | None = None,
                 factors.append(f"Moderat fuktighet ({humidity:.0f}%)")
         else:
             # Ingen fuktighetsmåling
-            if th.slippery_temp_near_freezing_min_c <= analysis_temp <= th.slippery_temp_near_freezing_max_c:
+            if (
+                th.slippery_temp_near_freezing_min_c
+                <= analysis_temp
+                <= th.slippery_temp_near_freezing_max_c
+            ):
                 risk_level = 'medium'
                 message = 'Moderat glattføre-risiko'
                 confidence = th.slippery_confidence_medium_no_humidity

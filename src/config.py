@@ -6,6 +6,7 @@ Støtter både lokal utvikling (.env) og Streamlit Cloud (secrets).
 """
 
 import os
+from datetime import datetime
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import ClassVar
@@ -20,6 +21,18 @@ try:
 except ImportError:
     pass  # dotenv ikke installert
 
+try:
+    import streamlit as st
+    from streamlit.errors import StreamlitAPIException, StreamlitSecretNotFoundError
+except (ImportError, ModuleNotFoundError):
+    st = None
+
+    class StreamlitAPIException(Exception):
+        """Fallback når streamlit ikke er installert."""
+
+    class StreamlitSecretNotFoundError(Exception):
+        """Fallback når streamlit ikke er installert."""
+
 
 def get_secret(key: str, default: str = "") -> str:
     """
@@ -32,9 +45,6 @@ def get_secret(key: str, default: str = "") -> str:
     """
     # Prøv Streamlit secrets først
     try:
-        import streamlit as st
-        from streamlit.errors import StreamlitAPIException, StreamlitSecretNotFoundError
-
         secrets = getattr(st, "secrets", None)
         if secrets is not None:
             try:
@@ -142,7 +152,9 @@ class SnowdriftThresholds:
     temperature_max: float = -0.5       # Må være frost (nær frysepunkt)
     snow_depth_min_cm: float = 3.0      # Minimum snødekke (spesifikasjon ≥3 cm)
     fresh_snow_threshold: float = 0.3   # cm/h for nysnø
-    wind_transport_snow_change_threshold_cm_per_h: float = -0.2  # cm/h (negativ endring indikerer vindtransport)
+    wind_transport_snow_change_threshold_cm_per_h: float = (
+        -0.2
+    )  # cm/h (negativ endring indikerer vindtransport)
     # Snøfokk er et akutt fenomen; vi evaluerer maksimum risiko over et kortere vindu enn
     # f.eks. slaps/nysnø for å fange perioder som kan blokkere vei raskt.
     interval_hours: int = 6             # Evaluer maksimum risiko siste N timer
@@ -174,7 +186,9 @@ class SlipperyRoadThresholds:
     # Historisk observert snittdifferanse (luft - bakke).
     # NB: Ikke brukt direkte i logikken nå; beholdes som dokumentasjon/kalibreringskontekst.
     air_surface_diff_avg: float = 2.1
-    surface_air_diff_notice_min_c: float = 2.0  # Når vi viser "bakke kaldere enn luft" som egen faktor
+    surface_air_diff_notice_min_c: float = (
+        2.0
+    )  # Når vi viser "bakke kaldere enn luft" som egen faktor
 
     # Andre terskler
     snow_depth_min_cm: float = 5.0
@@ -183,7 +197,8 @@ class SlipperyRoadThresholds:
     # På vårføre kan det være bar vei selv om stasjonen måler snø i terrenget.
     rain_on_snow_surface_temp_max_c: float = 0.5
 
-    # Kuldeperiode før mildvær/regn øker sannsynlighet for snøkappe/kompakt underlag som kan bli glatt.
+    # Kuldeperiode før mildvær/regn øker sannsynlighet for
+    # snøkappe/kompakt underlag som kan bli glatt.
     # Brukes som fallback når `surface_temperature` er mild eller mangler.
     rain_on_snow_recent_cold_hours: int = 12
     rain_on_snow_recent_surface_temp_freeze_max_c: float = 0.0
@@ -368,7 +383,8 @@ class SlapsThresholds:
     # Nedbør
     precipitation_min: float = 1.0      # mm/t (øyeblikksindikator)
     precipitation_heavy: float = 5.0    # mm/t (øyeblikksindikator)
-    # Akkumulert nedbør (historisk kalibrert som 12t-terskler; vinduet styres av `precipitation_accum_hours`)
+    # Akkumulert nedbør (historisk kalibrert som 12t-terskler;
+    # vinduet styres av `precipitation_accum_hours`)
     precipitation_12h_min: float = 7.0
     precipitation_12h_heavy: float = 12.0
 
@@ -970,7 +986,9 @@ class Settings:
     scripts: ScriptAnalysisThresholds = field(default_factory=ScriptAnalysisThresholds)
 
     fallback: FallbackAnalysisThresholds = field(default_factory=FallbackAnalysisThresholds)
-    chart_risk_timeline: ChartRiskTimelineThresholds = field(default_factory=ChartRiskTimelineThresholds)
+    chart_risk_timeline: ChartRiskTimelineThresholds = field(
+        default_factory=ChartRiskTimelineThresholds
+    )
     enhanced_weather: EnhancedWeatherHeuristics = field(default_factory=EnhancedWeatherHeuristics)
 
     # Sesongmåneder
@@ -978,7 +996,6 @@ class Settings:
 
     def is_winter(self) -> bool:
         """Sjekk om det er vintersesong."""
-        from datetime import datetime
         return datetime.now().month in self.WINTER_MONTHS
 
     def validate(self) -> tuple[bool, str]:
