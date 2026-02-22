@@ -1098,15 +1098,14 @@ def main() -> None:
     status_title, status_msg, overall_risk = get_overall_status(results)
 
     # Vis kun banner når det faktisk er noe å reagere på.
-    # Ved normale forhold lar vi "Varsler nå" tale for seg.
+    # Ved normale forhold (LOW) vises ingen banner – brukeren vurderer selv.
     if overall_risk == RiskLevel.HIGH:
         st.error(f"## {status_title}\n{status_msg}")
     elif overall_risk == RiskLevel.MEDIUM:
         st.warning(f"## {status_title}\n{status_msg}")
     elif overall_risk == RiskLevel.UNKNOWN:
         st.info(f"## {status_title}\n{status_msg}")
-    else:
-        st.success(f"## {status_title}\n{status_msg}")
+    # LOW: ingen banner – lar data tale for seg
 
     # Flyttet opp: Siste vedlikehold (erstatter tidligere "NORMALE FORHOLD"-banner)
     render_maintenance_top(plowing_info, suppress_alerts)
@@ -1122,9 +1121,6 @@ def main() -> None:
                 f"Varsler er midlertidig undertrykt av vedlikehold: {maintenance_reason}"
             )
 
-    st.divider()
-
-    render_recommended_actions(results, suppress_alerts, maintenance_reason, quality_note)
     st.divider()
 
     # Compact status summary
