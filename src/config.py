@@ -137,9 +137,10 @@ class SnowdriftThresholds:
     wind_speed_warning: float = 8.0     # Moderat risiko
 
     # Gate for vindkast-advarsel ("gust warning")
-    # Justert svakt ned (2026) for å fange flere bekreftede SNØFOKK-perioder
-    # uten å redusere gust-tersklene.
-    wind_speed_gust_warning_gate: float = 8.5
+    # Justert ned (2026-02) etter revalidering mot 18 bekreftede snøfokk-episoder.
+    # 8.5 blokkerte 22%; 8.0 ga 89%; 7.0 fanger 17/18 (94%) + 2 ANNET-episoder
+    # med kast>=14 og temp<=-0.5 som tidligere ble blokkert av gaten.
+    wind_speed_gust_warning_gate: float = 7.0
 
     # Vindkast-terskler (NY - bedre trigger!)
     # Historisk snitt: 21.9 m/s - justert terskel til 20.0 for å fange typiske episoder

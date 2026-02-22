@@ -40,7 +40,7 @@ Et norsk væranalysesystem for realistisk snøfokk- og glatt vei-risikovurdering
 
 - Aktiv app-entrypoint: `src/gullingen_app.py` (historisk referanse til `src/live_conditions_app.py` er utdatert).
 - Terskler justert konservativt i `src/config.py` etter datagjennomgang:
-  - `snowdrift.wind_speed_gust_warning_gate`: 9.0 → 8.5
+  - `snowdrift.wind_speed_gust_warning_gate`: 9.0 → 8.5 → 7.0 (revalidert 22. feb 2026: 7.0 fanger 94% av bekreftede episoder + 2 tidligere missede)
 - Prinsipp videre: warning-nivå kan finjusteres for recall, critical-nivå holdes konservativt.
 
 ## 🎯 **VALIDERTE VÆRELEMENTER: 15 KJERNEELEMENTER**
@@ -322,16 +322,9 @@ python scripts/analysis/revised_snowdrift_with_loose_snow.py
 # Investigate available snow quality data
 python scripts/analysis/investigate_snow_quality_data.py
 
-# Run Streamlit app (if available)
-streamlit run src/snofokk/app.py
+# Run Streamlit app
+streamlit run src/gullingen_app.py
 ```
-
-### Key Analysis Scripts
-
-- **`revised_snowdrift_with_loose_snow.py`**: Final realistic analysis with physical loose snow criteria
-- **`investigate_snow_quality_data.py`**: Investigates available parameters for loose snow assessment
-- **`realistic_snowdrift_analyzer.py`**: Basic realistic grouping without loose snow criteria
-- **`diagnose_snowdrift_data.py`**: Diagnostic tool for understanding data quality and distributions
 
 ## 🔧 Development
 
@@ -380,32 +373,26 @@ See documentation for creating `.plist` files for more robust scheduling.
 2. **FastAPI + Docker** (Full control)
 3. **Local server** (Internal use)
 
-## 🎯 REVOLUSJONERENDE ERKJENNELSER
+## Viktige funn fra dataanalyse
 
-### 💡 **Glatt Vei-Analyse:**
-1. ✅ **Regn-på-snø** er hovedproblemet - ikke rimfrost
-2. ✅ **Stabilt kaldt vær** = beste kjøreforhold på snø  
-3. ✅ **Temperaturoverganger** skaper farlige forhold
-4. ✅ **Snøfall fungerer som naturlig strøing**
-5. ✅ **Mars er verst** pga vårløsning og ustabile temperaturer
-6. ✅ **Rimfrost sjeldent problem** på snødekte fjellveier
-7. ✅ **99 realistiske perioder** vs 420 urealistiske (rimfrost-fokus)
+### Glatt vei
+- Regn-pa-sno er hovedproblemet, ikke rimfrost
+- Stabilt kaldt vaer gir gode kjoreforhold pa sno
+- Temperaturoverganger skaper farlige forhold
+- Snofall fungerer som naturlig stroing
+- Bakketemperatur er bedre indikator enn lufttemperatur for is
 
-### ❄️ **Snøfokk-Analyse:**
-1. ✅ **Snøfokk er MYE sjeldnere** enn tidligere antatt
-2. ✅ **Mildvær er den kritiske begrensende faktoren**
-3. ✅ **240 mildvær-perioder** ødelegger løssnø regelmessig
-4. ✅ **Høyere andel ekstreme episoder** når løssnø er tilstede
-5. ✅ **"Usynlig snøfokk"** er den vanligste typen
+### Snofokk
+- Snofokk er sjeldnere enn tidligere antatt (kun 5% av sesongen)
+- Mildvaer odelegger lossnoen og begrenser snofokk
+- Vindkast er bedre trigger enn snittvind (21.9 vs 10.3 m/s)
+- "Usynlig snofokk" (uten endring i malt snodybde) er den vanligste typen
 
-### 🔬 **Metodiske gjennombrudd:**
-- **Fysisk realisme** over teoretiske modeller
-- **Operasjonell relevans** over akademisk presisjon  
-- **Periode-definisjon** basert på faktisk varighets-krav
-- **Ekskludering** av beskyttende faktorer (snøfall for glatt vei)
-- **Inkludering** av begrensende faktorer (mildvær for snøfokk)
-
-> **"Dette er de mest realistiske analysene av norske vinterforhold!"**
+### Metodikk
+- Fysisk realisme over teoretiske modeller
+- Operasjonell relevans over akademisk presisjon
+- Terskler kalibrert mot 166 broytehistorikk-episoder (2022-2025)
+- Se `docs/terskler_og_validering.md` for detaljer
 
 ## 📝 License
 
