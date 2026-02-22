@@ -34,7 +34,14 @@
 
 Et norsk væranalysesystem for realistisk snøfokk- og glatt vei-risikovurdering basert på **empirisk validerte kriterier** og operasjonell relevans.
 
-**SISTE OPPDATERING**: 16. august 2025 - **FULLSTENDIG VALIDERING AV 19 VÆRELEMENTER**
+**SISTE OPPDATERING**: 22. februar 2026 - terskler revalidert mot `data/analyzed/broyting_weather_correlation_2025.csv` (166 hendelser)
+
+## Status 2026-02 (kort)
+
+- Aktiv app-entrypoint: `src/gullingen_app.py` (historisk referanse til `src/live_conditions_app.py` er utdatert).
+- Terskler justert konservativt i `src/config.py` etter datagjennomgang:
+  - `snowdrift.wind_speed_gust_warning_gate`: 9.0 → 8.5
+- Prinsipp videre: warning-nivå kan finjusteres for recall, critical-nivå holdes konservativt.
 
 ## 🎯 **VALIDERTE VÆRELEMENTER: 15 KJERNEELEMENTER**
 
@@ -73,7 +80,7 @@ Et norsk væranalysesystem for realistisk snøfokk- og glatt vei-risikovurdering
 
 ## 🌐 **LIVE VÆRAPP - PRODUKSJONSKLART**
 
-**Professional Live Conditions App**: `src/live_conditions_app.py`
+**Hovedapp**: `src/gullingen_app.py`
 - ✅ **Empirisk validert nedbørtype-klassifisering** (149 episoder)
 - ✅ **Vindblåst snø-deteksjon** med korrekte terskler
 - ✅ **Kombinert risikograf** (snøfokk + glattføre + slush)
@@ -90,8 +97,8 @@ Et norsk væranalysesystem for realistisk snøfokk- og glatt vei-risikovurdering
 ./activate_env.sh
 
 # Eller manuelt:
-source venv/bin/activate
-streamlit run src/live_conditions_app.py
+source .venv/bin/activate
+streamlit run src/gullingen_app.py
 ```
 
 ### Operasjonell logging (MEDIUM/HIGH)
@@ -126,8 +133,8 @@ For å nedjustere glattføre når veier er strødd/brøytet nylig:
 .\activate_env.ps1
 
 # Eller manuelt:
-venv\Scripts\Activate.ps1
-streamlit run src/live_conditions_app.py
+.venv\Scripts\Activate.ps1
+streamlit run src/gullingen_app.py
 ```
 
 ## 🎯 **EMPIRISK VALIDERTE KRITERIER**
