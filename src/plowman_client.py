@@ -94,7 +94,11 @@ class MaintenanceApiClient:
         """
         if not self.base_url:
             logger.info("MAINTENANCE_API_BASE_URL er ikke satt")
-            return MaintenanceFetchResult(payload=None, status_code=None, error="MAINTENANCE_API_BASE_URL er ikke satt")
+            return MaintenanceFetchResult(
+                payload=None,
+                status_code=None,
+                error="MAINTENANCE_API_BASE_URL er ikke satt",
+            )
 
         url = f"{self.base_url}/v1/maintenance/latest"
 
@@ -103,30 +107,52 @@ class MaintenanceApiClient:
             headers["Authorization"] = f"Bearer {self.token}"
 
         try:
-            r = self.session.get(url, headers=headers, timeout=settings.plowman.http_timeout_seconds)
+            r = self.session.get(
+                url,
+                headers=headers,
+                timeout=settings.plowman.http_timeout_seconds,
+            )
         except requests.RequestException as e:
             logger.warning("Vedlikeholds-API utilgjengelig: %s", e)
-            return MaintenanceFetchResult(payload=None, status_code=None, error=f"Vedlikeholds-API utilgjengelig: {e}")
+            return MaintenanceFetchResult(
+                payload=None,
+                status_code=None,
+                error=f"Vedlikeholds-API utilgjengelig: {e}",
+            )
 
         if r.status_code == 404:
-            return MaintenanceFetchResult(payload=None, status_code=404, error="Ingen vedlikehold registrert (404)")
+            return MaintenanceFetchResult(
+                payload=None,
+                status_code=404,
+                error="Ingen vedlikehold registrert (404)",
+            )
 
         if r.status_code in (401, 403):
             logger.warning("Vedlikeholds-API auth-feil (%s)", r.status_code)
             return MaintenanceFetchResult(
                 payload=None,
                 status_code=r.status_code,
-                error=f"Vedlikeholds-API: Unauthorized ({r.status_code}). Sjekk MAINTENANCE_API_TOKEN.",
+                error=(
+                    f"Vedlikeholds-API: Unauthorized ({r.status_code}). "
+                    "Sjekk MAINTENANCE_API_TOKEN."
+                ),
             )
 
         try:
             r.raise_for_status()
         except requests.HTTPError as e:
             logger.warning("Vedlikeholds-API HTTP-feil: %s", e)
-            return MaintenanceFetchResult(payload=None, status_code=r.status_code, error=f"Vedlikeholds-API HTTP-feil ({r.status_code})")
+            return MaintenanceFetchResult(
+                payload=None,
+                status_code=r.status_code,
+                error=f"Vedlikeholds-API HTTP-feil ({r.status_code})",
+            )
 
         try:
-            return MaintenanceFetchResult(payload=r.json(), status_code=r.status_code)
+            return MaintenanceFetchResult(
+                payload=r.json(),
+                status_code=r.status_code,
+            )
         except ValueError as e:
             logger.warning("Vedlikeholds-API returnerte ikke gyldig JSON: %s", e)
             # Inkluder start av response for debugging
@@ -134,10 +160,16 @@ class MaintenanceApiClient:
             return MaintenanceFetchResult(
                 payload=None,
                 status_code=r.status_code,
-                error=f"Vedlikeholds-API ({r.status_code}) returnerte ikke JSON. Response: {preview}"
+                error=(
+                    f"Vedlikeholds-API ({r.status_code}) returnerte ikke JSON. "
+                    f"Response: {preview}"
+                ),
             )
 
-    def get_last_maintenance_time(self, payload: dict | None = None) -> PlowingEvent | None:
+    def get_last_maintenance_time(
+        self,
+        payload: dict | None = None,
+    ) -> PlowingEvent | None:
         """Hent siste vedlikeholdstidspunkt som PlowingEvent.
 
         Args:
@@ -149,7 +181,11 @@ class MaintenanceApiClient:
         if not payload:
             # Viktig: Plowman share er ikke en stabil kilde for drift. Som default bruker vi
             # KUN vedlikeholds-API. Fallback kan eksplisitt slås på ved behov.
-            allow_fallback = (get_secret("ALLOW_PLOWMAN_FALLBACK", "false") or "").strip().lower() in {
+            allow_fallback = (
+                (get_secret("ALLOW_PLOWMAN_FALLBACK", "false") or "")
+                .strip()
+                .lower()
+            ) in {
                 "1",
                 "true",
                 "yes",
@@ -299,14 +335,23 @@ def _sanitize_base_url(value: str | None) -> str:
 
     cleaned = value.strip()
     # Fjern enkle quotes rundt verdien (vanlig i .env / secrets-copy)
-    if (cleaned.startswith('"') and cleaned.endswith('"')) or (cleaned.startswith("'") and cleaned.endswith("'")):
+    if (
+        (cleaned.startswith('"') and cleaned.endswith('"'))
+        or (cleaned.startswith("'") and cleaned.endswith("'"))
+    ):
         cleaned = cleaned[1:-1].strip()
 
     # Typiske placeholders som ikke skal forsøkes brukt
     lowered = cleaned.lower()
     if "<" in cleaned or ">" in cleaned:
         return ""
-    if lowered in {"din-host", "<din-host>", "<hosting-domene>", "<host>", "<base_url>"}:
+    if lowered in {
+        "din-host",
+        "<din-host>",
+        "<hosting-domene>",
+        "<host>",
+        "<base_url>",
+    }:
         return ""
 
     if not (cleaned.startswith("http://") or cleaned.startswith("https://")):

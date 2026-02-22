@@ -5,6 +5,8 @@ All konfigurasjon samlet på ett sted for enkel vedlikehold.
 Støtter både lokal utvikling (.env) og Streamlit Cloud (secrets).
 """
 
+# pylint: disable=too-many-lines,too-many-instance-attributes
+
 import os
 from datetime import datetime
 from dataclasses import dataclass, field

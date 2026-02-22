@@ -4,15 +4,18 @@ Hovedapplikasjon - Føreforhold Gullingen.
 Enkel og ren Streamlit entry point.
 """
 
+# pylint: disable=wrong-import-position
+
 import sys
+from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 # Legg til prosjektrot i path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from datetime import datetime
-
 import matplotlib.pyplot as plt
+import pandas as pd
 import streamlit as st
 
 from src.analyzers import RiskLevel, SlipperyRoadAnalyzer, SnowdriftAnalyzer
@@ -24,9 +27,6 @@ from src.config import settings
 from src.frost_client import FrostAPIError, FrostClient
 from src.logging_config import configure_logging
 from src.visualizations import WeatherPlots
-from typing import Any
-
-import pandas as pd
 
 
 def main() -> None:
@@ -50,7 +50,10 @@ def main() -> None:
 
     # Header
     st.title("Føreforhold – Gullingen")
-    st.caption(f"Stasjon: {settings.station.name} ({settings.station.station_id}) | {settings.station.altitude_m} moh")
+    st.caption(
+        f"Stasjon: {settings.station.name} ({settings.station.station_id}) "
+        f"| {settings.station.altitude_m} moh"
+    )
 
     # Sidebar
     with st.sidebar:
@@ -85,7 +88,8 @@ def main() -> None:
             - Stasjon: {settings.station.station_id} {settings.station.name}
 
             **Varslingskriterier:**
-            - Snøfokk: Vindkjøling < {settings.snowdrift.wind_chill_warning}°C + vind > {settings.snowdrift.wind_speed_warning} m/s
+                        - Snøfokk: Vindkjøling < {settings.snowdrift.wind_chill_warning}°C
+                            + vind > {settings.snowdrift.wind_speed_warning} m/s
             - Glattføre: Regn på snø, is-dannelse, rimfrost
             """)
 

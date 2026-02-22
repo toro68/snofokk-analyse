@@ -8,6 +8,8 @@ Fire varslingskategorier for brøytemannskaper og hytteeiere:
 4. Glatte veier - Is, rimfrost, regn på snø
 """
 
+# pylint: disable=too-many-lines,wrong-import-position,line-too-long
+
 import json
 import sys
 from pathlib import Path
@@ -1318,6 +1320,7 @@ def get_netatmo_client() -> NetatmoClient:
 
 
 def render_netatmo_map() -> None:
+    """Render temperaturkart for tilgjengelige Netatmo-stasjoner."""
 
     st.subheader("Temperaturkart")
 
