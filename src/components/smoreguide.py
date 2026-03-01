@@ -308,7 +308,13 @@ def generate_wax_recommendation(df: pd.DataFrame) -> WaxRecommendation | None:
         return None
 
     recent_precip = _recent_mean(df, "precipitation_1h", window=3)
-    new_snow_last_hours = _recent_increase(df, "surface_snow_thickness", lookback=6)
+    snow_freshness_score = _snow_freshness_score(
+        df,
+        lookback=6,
+        recent_precip=recent_precip,
+        effective_temp=effective_temp,
+        dew_point=dew_point,
+    )
 
     freeze_thaw = (
         air_temp is not None
@@ -317,7 +323,7 @@ def generate_wax_recommendation(df: pd.DataFrame) -> WaxRecommendation | None:
         and surface_temp < 0
     )
 
-    snow_is_new = bool(new_snow_last_hours)
+    snow_is_new = snow_freshness_score >= 3
 
     wet_snow = (
         (effective_temp >= 0.5)
@@ -337,6 +343,11 @@ def generate_wax_recommendation(df: pd.DataFrame) -> WaxRecommendation | None:
     }
 
     confidence = _confidence_from_metrics(metrics.values())
+    if -0.7 <= effective_temp <= 0.7:
+        confidence -= 0.10
+    if 1 <= snow_freshness_score <= 2:
+        confidence -= 0.10
+    confidence = max(0.35, confidence)
     factors: list[str] = []
 
     if humidity is not None:
@@ -346,12 +357,18 @@ def generate_wax_recommendation(df: pd.DataFrame) -> WaxRecommendation | None:
     if snow_depth is not None:
         factors.append(f"Snødybde {snow_depth:.0f} cm")
     if snow_is_new:
-        factors.append("Nysnø (indikasjon: økning siste timer)")
+        factors.append(f"Nysnø (indikasjonsscore {snow_freshness_score}/5)")
     else:
-        factors.append("Omdannet/gammel snø (ingen tydelig nysnø-økning)")
+        factors.append(f"Omdannet/gammel snø (indikasjonsscore {snow_freshness_score}/5)")
 
-    # Forenklet tommelfingerregel: klister når snøen er omdannet og forholdene er fuktige/nær null.
-    use_klister = (not snow_is_new) and (wet_snow or effective_temp >= -1.0 or freeze_thaw)
+    # Strammere tommelfingerregel: klister ved omdannet snø + tydelig våte signaler,
+    # eller ved klar fryse/tine-situasjon.
+    near_zero_with_precip = (
+        recent_precip is not None
+        and recent_precip >= 0.2
+        and effective_temp >= -0.3
+    )
+    use_klister = (not snow_is_new) and (freeze_thaw or (wet_snow and effective_temp >= -1.5) or near_zero_with_precip)
 
     if use_klister:
         klister = _select_klister(effective_temp)
@@ -404,13 +421,45 @@ def _recent_mean(df: pd.DataFrame, column: str, window: int = 3) -> float | None
     return float(tail.mean())
 
 
-def _recent_increase(df: pd.DataFrame, column: str, lookback: int) -> bool:
+def _snow_freshness_score(
+    df: pd.DataFrame,
+    *,
+    lookback: int,
+    recent_precip: float | None,
+    effective_temp: float,
+    dew_point: float | None,
+) -> int:
+    """Returner enkel nysnø-indikasjonsscore (0-5)."""
+    score = 0
+    column = "surface_snow_thickness"
+
     if column not in df.columns:
-        return False
+        return score
+
     subset = df[column].tail(lookback + 1).dropna()
     if subset.shape[0] < 2:
-        return False
-    return bool((subset.diff() > 0.5).any())
+        return score
+
+    net_increase = float(subset.iloc[-1] - subset.iloc[0])
+    positive_steps = int((subset.diff() > 0.3).sum())
+
+    if net_increase >= 1.0:
+        score += 2
+    elif net_increase >= 0.5:
+        score += 1
+
+    if positive_steps >= 2:
+        score += 1
+
+    # Støttesignal: nedbør i kulde/marginal kulde taler for faktisk nysnø.
+    if recent_precip is not None and recent_precip >= 0.3 and effective_temp <= 1.5:
+        score += 1
+
+    # Duggpunkt nær/under null støtter snø framfor regn.
+    if dew_point is not None and dew_point <= 0.5:
+        score += 1
+
+    return min(score, 5)
 
 
 def _confidence_from_metrics(values: Iterable[float | None]) -> float:
