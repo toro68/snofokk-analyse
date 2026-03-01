@@ -109,7 +109,7 @@ class NetatmoClient:
             "lat_sw": lat_sw,
             "lon_sw": lon_sw,
             "required_data": required_data,
-            "filter": 1
+            "filter": "true",
         }
 
         headers = {
