@@ -9,8 +9,10 @@ API-dokumentasjon: https://dev.netatmo.com/apidocumentation/weather
 
 import logging
 import os
+import re
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 import requests
@@ -18,6 +20,34 @@ import requests
 from src.config import get_secret, settings
 
 logger = logging.getLogger(__name__)
+
+
+def _persist_refresh_token(new_token: str) -> None:
+    """Lagre rotert NETATMO_REFRESH_TOKEN tilbake til .env-filen.
+
+    Netatmo roterer refresh_token ved hvert OAuth2-kall. Uten auto-lagring
+    vil neste restart av appen feile fordi den gamle token er ugyldig.
+    """
+    # Finn .env fra prosjektrot (to nivåer opp fra denne filen: src/ → root)
+    env_path = Path(__file__).parent.parent / ".env"
+    if not env_path.exists():
+        logger.warning("Netatmo: Ny refresh_token mottatt, men fant ikke .env (%s)", env_path)
+        return
+
+    try:
+        content = env_path.read_text(encoding="utf-8")
+        if "NETATMO_REFRESH_TOKEN=" in content:
+            updated = re.sub(
+                r"(?m)^NETATMO_REFRESH_TOKEN=.*$",
+                f"NETATMO_REFRESH_TOKEN={new_token}",
+                content,
+            )
+        else:
+            updated = content.rstrip("\n") + f"\nNETATMO_REFRESH_TOKEN={new_token}\n"
+        env_path.write_text(updated, encoding="utf-8")
+        logger.info("Netatmo: Ny refresh_token lagret automatisk til .env")
+    except OSError as exc:
+        logger.warning("Netatmo: Klarte ikke lagre ny refresh_token til .env: %s", exc)
 
 
 @dataclass
@@ -70,6 +100,7 @@ class NetatmoClient:
         self.client_id = str(raw_client_id).strip().strip('"').strip("'")
         self.client_secret = str(raw_client_secret).strip().strip('"').strip("'")
         self.access_token: str | None = (get_secret("NETATMO_ACCESS_TOKEN", "") or "").strip().strip('"').strip("'") or None
+        self.refresh_token: str | None = (get_secret("NETATMO_REFRESH_TOKEN", "") or "").strip().strip('"').strip("'") or None
         self.access_token_expires_at: datetime | None = None
         self.last_error: str | None = None
         self._session = requests.Session()
@@ -275,7 +306,12 @@ class NetatmoClient:
             self.last_error = "Mangler NETATMO_CLIENT_ID/NETATMO_CLIENT_SECRET"
             return False
 
-        refresh_token = (refresh_token or get_secret("NETATMO_REFRESH_TOKEN", "") or "").strip().strip('"').strip("'")
+        refresh_token = (
+            refresh_token
+            or self.refresh_token
+            or get_secret("NETATMO_REFRESH_TOKEN", "")
+            or ""
+        ).strip().strip('"').strip("'")
 
         if not refresh_token:
             logger.warning("Netatmo: Mangler NETATMO_REFRESH_TOKEN")
@@ -312,16 +348,15 @@ class NetatmoClient:
             except (TypeError, ValueError):
                 self.access_token_expires_at = None
 
-            # Lagre ny refresh_token for neste gang
+            # Lagre ny refresh_token for neste gang (Netatmo roterer token ved hvert kall)
             new_refresh = token_data.get("refresh_token")
             if new_refresh:
-                log_full_refresh = str(get_secret("NETATMO_LOG_NEW_REFRESH_TOKEN", "")).strip().lower() in {
+                self.refresh_token = str(new_refresh).strip()
+                persist_local = str(get_secret("NETATMO_PERSIST_REFRESH_TO_DOTENV", "")).strip().lower() in {
                     "1", "true", "yes", "on"
                 }
-                if log_full_refresh:
-                    logger.warning("Netatmo: Ny refresh_token: %s", new_refresh)
-                else:
-                    logger.info("Netatmo: Ny refresh_token mottatt (lagre denne!)")
+                if persist_local:
+                    _persist_refresh_token(self.refresh_token)
 
             logger.info("Netatmo: Autentisering vellykket")
             self.last_error = None
