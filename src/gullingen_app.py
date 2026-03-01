@@ -822,6 +822,7 @@ def render_maintenance_top(plowing_info: PlowingInfo, suppress_alerts: bool) -> 
     """Viser 'Siste vedlikehold' øverst og forklarer nullstilling av varsler."""
 
     suppress_hours = get_maintenance_suppress_hours()
+    suppress_hours_text = f"{suppress_hours:g} timer"
 
     if plowing_info.last_plowing:
         value = plowing_info.formatted_time
@@ -836,11 +837,11 @@ def render_maintenance_top(plowing_info: PlowingInfo, suppress_alerts: bool) -> 
         if suppress_alerts and plowing_info.hours_since is not None:
             remaining = max(0.0, suppress_hours - float(plowing_info.hours_since))
             details_parts.append(
-                f"Nullstilling etter ferdig brøyting/strøing: {suppress_hours:.1f}t (telles fra tidspunktet over, {remaining:.1f}t igjen)"
+                f"Nullstilling: {suppress_hours_text} fra siste brøyting ({remaining:.1f}t igjen)"
             )
         else:
             details_parts.append(
-                f"Nullstilling etter ferdig vedlikehold (brøyting/strøing): {suppress_hours:.1f}t (telles fra tidspunktet over)"
+                f"Nullstilling: {suppress_hours_text} fra siste brøyting"
             )
 
         if details_parts:
