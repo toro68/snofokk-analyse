@@ -1613,8 +1613,28 @@ def render_netatmo_map() -> None:
         if minutes is not None:
             st.caption(f"Siste datapunkt alder: ca {minutes} min")
 
-    # Temperaturstatistikk under kartet
-    temps: list[float] = [s.temperature for s in temp_stations if s.temperature is not None]
+    # Temperaturstatistikk under kartet (robust mot outliers, f.eks. innendørs sensor).
+    temps_all: list[float] = [float(s.temperature) for s in temp_stations if s.temperature is not None]
+
+    def _filter_temp_outliers(values: list[float]) -> list[float]:
+        if len(values) < 5:
+            return values
+        series = pd.Series(values, dtype="float64")
+        median = float(series.median())
+        abs_dev = (series - median).abs()
+        mad = float(abs_dev.median())
+        if mad < 1e-6:
+            # Fallback når MAD er ~0: behold målinger innen +/- 4°C fra median.
+            mask = abs_dev <= 4.0
+        else:
+            sigma = 1.4826 * mad
+            # Relativt romslig grense for lokal variasjon, men fjerner åpenbare innendørs-sensorer.
+            threshold = max(4.0, 3.0 * sigma)
+            mask = abs_dev <= threshold
+        filtered = series[mask].tolist()
+        return [float(v) for v in filtered] if filtered else values
+
+    temps = _filter_temp_outliers(temps_all)
     avg_temp = sum(temps) / len(temps)
     min_temp = min(temps)
     max_temp = max(temps)
@@ -1637,6 +1657,13 @@ def render_netatmo_map() -> None:
         st.metric("Varmest", f"{max_temp:.1f}°C")
     with col4:
         st.metric("Stasjoner", f"{len(temp_stations)}")
+
+    removed_outliers = len(temps_all) - len(temps)
+    if removed_outliers > 0:
+        st.caption(
+            f"Snittemp beregnet uten {removed_outliers} outlier(e) "
+            f"(bruker {len(temps)} av {len(temps_all)} temperaturmålinger)."
+        )
 
     # Snøgrense-info (sidebar-stil på siden)
     render_snow_limit_info(snow_limit, high_stations, low_stations)
