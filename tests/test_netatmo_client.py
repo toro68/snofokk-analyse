@@ -65,3 +65,35 @@ def test_get_public_data_retries_after_401() -> None:
     assert out == []
     assert client._session.get.call_count == 2  # noqa: SLF001
 
+
+def test_parse_public_data_accepts_dashboard_data_format() -> None:
+    client = NetatmoClient(client_id="id", client_secret="secret")
+    data = {
+        "body": {
+            "devices": [
+                {
+                    "_id": "private-1",
+                    "place": {
+                        "city": "Fjellbergsskardet",
+                        "location": [6.426, 59.392],
+                        "altitude": 607,
+                    },
+                    "dashboard_data": {
+                        "Temperature": -3.4,
+                        "Humidity": 91,
+                        "Pressure": 998.4,
+                        "time_utc": 1700000000,
+                    },
+                }
+            ]
+        }
+    }
+
+    stations = client._parse_public_data(data)  # noqa: SLF001
+    assert len(stations) == 1
+    s = stations[0]
+    assert s.station_id == "private-1"
+    assert s.temperature == -3.4
+    assert s.humidity == 91
+    assert s.pressure == 998.4
+    assert s.timestamp is not None

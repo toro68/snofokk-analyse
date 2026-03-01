@@ -1355,21 +1355,52 @@ def fetch_netatmo_stations() -> dict[str, Any]:
                         "rows": rows,
                         "error": None,
                         "auth_ok": True,
+                        "source": "public",
                         "radius_used_km": radius,
                         "radii_tried_km": unique_radii,
                     }
+
+            private_radius = unique_radii[-1]
+            private_stations = client.get_fjellbergsskardet_private(radius_km=private_radius)
+            private_rows: list[dict] = []
+            for s in private_stations:
+                private_rows.append({
+                    "station_id": s.station_id,
+                    "name": s.name,
+                    "lat": s.lat,
+                    "lon": s.lon,
+                    "altitude": s.altitude,
+                    "temperature": s.temperature,
+                    "humidity": s.humidity,
+                    "timestamp": s.timestamp.isoformat() if s.timestamp else None,
+                })
+            if private_rows:
+                return {
+                    "rows": private_rows,
+                    "error": None,
+                    "auth_ok": True,
+                    "source": "private",
+                    "radius_used_km": private_radius,
+                    "radii_tried_km": unique_radii,
+                }
 
             return {
                 "rows": [],
                 "error": None,
                 "auth_ok": True,
+                "source": "none",
                 "radius_used_km": unique_radii[-1],
                 "radii_tried_km": unique_radii,
             }
-        return {"rows": [], "error": client.last_error or "Ukjent autentiseringsfeil", "auth_ok": False}
+        return {
+            "rows": [],
+            "error": client.last_error or "Ukjent autentiseringsfeil",
+            "auth_ok": False,
+            "source": "none",
+        }
     except (RuntimeError, ValueError, TypeError, KeyError, OSError) as e:
         logger.warning("Netatmo feil: %s", e)
-        return {"rows": [], "error": f"Netatmo feil: {e}", "auth_ok": False}
+        return {"rows": [], "error": f"Netatmo feil: {e}", "auth_ok": False, "source": "none"}
 
 
 @st.cache_resource
@@ -1387,6 +1418,7 @@ def render_netatmo_map() -> None:
     cached_rows = cached.get("rows", [])
     cached_error = cached.get("error")
     auth_ok = bool(cached.get("auth_ok"))
+    source = str(cached.get("source") or "none")
     radii_tried = cached.get("radii_tried_km") or [int(settings.netatmo.search_radius_km)]
     radius_used = int(cached.get("radius_used_km") or radii_tried[-1])
 
@@ -1417,7 +1449,7 @@ def render_netatmo_map() -> None:
             st.info(f"Ingen Netatmo-data tilgjengelig ({cached_error}).")
         elif auth_ok:
             st.info(
-                f"Ingen offentlige Netatmo-stasjoner med data funnet "
+                f"Ingen Netatmo-stasjoner med data funnet "
                 f"innen {radius_used} km (søkt: {', '.join(str(r) for r in radii_tried)} km)."
             )
         else:
@@ -1506,6 +1538,11 @@ def render_netatmo_map() -> None:
     )
 
     st.pydeck_chart(deck, use_container_width=True)
+
+    if source == "private":
+        st.caption("Kilde: Private Netatmo-stasjoner (fallback)")
+    elif source == "public":
+        st.caption("Kilde: Offentlige Netatmo-stasjoner")
 
     # Vis når Netatmo-data sist ble oppdatert (nyttig ift. caching/TTL)
     latest_ts = None

@@ -168,6 +168,53 @@ class NetatmoClient:
             lon_sw=float(loc["lon"]) - delta
         )
 
+    def get_private_stations(self) -> list[NetatmoStation]:
+        """Hent private stasjoner (konto-eide) via getstationsdata."""
+        if not self.authenticate():
+            logger.warning("Netatmo: Ingen gyldig access_token - kan ikke hente private stasjoner")
+            return []
+
+        url = f"{self.BASE_URL}/getstationsdata"
+        headers = {"Authorization": f"Bearer {self.access_token}"}
+
+        try:
+            response = self._session.get(
+                url,
+                headers=headers,
+                timeout=settings.netatmo.http_timeout_seconds,
+            )
+            if response.status_code == 401:
+                logger.info("Netatmo: 401 fra getstationsdata - forsøker token-fornyelse")
+                if not self.authenticate():
+                    return []
+                headers["Authorization"] = f"Bearer {self.access_token}"
+                response = self._session.get(
+                    url,
+                    headers=headers,
+                    timeout=settings.netatmo.http_timeout_seconds,
+                )
+
+            response.raise_for_status()
+            data = response.json()
+            self.last_error = None
+            return self._parse_public_data(data)
+        except requests.exceptions.RequestException as e:
+            logger.error("Netatmo private stasjoner feilet: %s", e)
+            self.last_error = f"Netatmo private stasjoner feilet: {e}"
+            return []
+
+    def get_fjellbergsskardet_private(self, radius_km: float = 35.0) -> list[NetatmoStation]:
+        """Hent private stasjoner filtrert til området rundt Fjellbergsskardet."""
+        loc = self.FJELLBERGSSKARDET
+        stations = self.get_private_stations()
+        center_lat = float(loc["lat"])
+        center_lon = float(loc["lon"])
+
+        return [
+            station for station in stations
+            if self._distance_km(center_lat, center_lon, station.lat, station.lon) <= radius_km
+        ]
+
     def authenticate(self, refresh_token: str | None = None) -> bool:
         """
         Autentiser med Netatmo API.
@@ -309,6 +356,24 @@ class NetatmoClient:
                 altitude=int(place.get("altitude", 0) or 0),
             )
 
+            dashboard_data = item.get("dashboard_data", {})
+            if isinstance(dashboard_data, dict):
+                temp = dashboard_data.get("Temperature")
+                if temp is not None:
+                    station.temperature = temp
+                hum = dashboard_data.get("Humidity")
+                if hum is not None:
+                    station.humidity = hum
+                pressure = dashboard_data.get("Pressure")
+                if pressure is not None:
+                    station.pressure = pressure
+                time_utc = dashboard_data.get("time_utc")
+                if time_utc is not None:
+                    try:
+                        station.timestamp = datetime.fromtimestamp(int(time_utc), tz=UTC)
+                    except (TypeError, ValueError, OSError):
+                        station.timestamp = station.timestamp
+
             # Parse målinger fra ulike moduler
             for _module_id, module_data in measures.items():
                 if isinstance(module_data, dict):
@@ -362,9 +427,49 @@ class NetatmoClient:
                     if gust_strength is not None:
                         station.gust_strength = gust_strength
 
+            modules = item.get("modules", [])
+            if isinstance(modules, list):
+                for module in modules:
+                    if not isinstance(module, dict):
+                        continue
+                    module_dashboard = module.get("dashboard_data", {})
+                    if not isinstance(module_dashboard, dict):
+                        continue
+
+                    if station.temperature is None:
+                        module_temp = module_dashboard.get("Temperature")
+                        if module_temp is not None:
+                            station.temperature = module_temp
+                    if station.humidity is None:
+                        module_hum = module_dashboard.get("Humidity")
+                        if module_hum is not None:
+                            station.humidity = module_hum
+                    if station.pressure is None:
+                        module_pressure = module_dashboard.get("Pressure")
+                        if module_pressure is not None:
+                            station.pressure = module_pressure
+
+                    module_time = module_dashboard.get("time_utc")
+                    if module_time is not None:
+                        try:
+                            module_ts = datetime.fromtimestamp(int(module_time), tz=UTC)
+                            if station.timestamp is None or module_ts > station.timestamp:
+                                station.timestamp = module_ts
+                        except (TypeError, ValueError, OSError):
+                            pass
+
             stations.append(station)
 
         return stations
+
+    @staticmethod
+    def _distance_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+        """Grov avstandsestimat i km uten tunge trig-funksjoner."""
+        lat_scale = 111.0
+        lon_scale = 57.0  # ~cos(59.4) * 111
+        dx = (lon2 - lon1) * lon_scale
+        dy = (lat2 - lat1) * lat_scale
+        return (dx * dx + dy * dy) ** 0.5
 
 
 def test_netatmo() -> None:
