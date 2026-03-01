@@ -1331,20 +1331,41 @@ def fetch_netatmo_stations() -> dict[str, Any]:
     try:
         client = get_netatmo_client()
         if client.authenticate():
-            stations = client.get_fjellbergsskardet_area(radius_km=settings.netatmo.search_radius_km)
-            rows: list[dict] = []
-            for s in stations:
-                rows.append({
-                    "station_id": s.station_id,
-                    "name": s.name,
-                    "lat": s.lat,
-                    "lon": s.lon,
-                    "altitude": s.altitude,
-                    "temperature": s.temperature,
-                    "humidity": s.humidity,
-                    "timestamp": s.timestamp.isoformat() if s.timestamp else None,
-                })
-            return {"rows": rows, "error": None, "auth_ok": True}
+            base_radius = int(settings.netatmo.search_radius_km)
+            search_radii = [base_radius, 20, 35]
+            # Fjern duplikater, behold rekkefølge.
+            unique_radii = list(dict.fromkeys(search_radii))
+
+            for radius in unique_radii:
+                stations = client.get_fjellbergsskardet_area(radius_km=radius)
+                rows: list[dict] = []
+                for s in stations:
+                    rows.append({
+                        "station_id": s.station_id,
+                        "name": s.name,
+                        "lat": s.lat,
+                        "lon": s.lon,
+                        "altitude": s.altitude,
+                        "temperature": s.temperature,
+                        "humidity": s.humidity,
+                        "timestamp": s.timestamp.isoformat() if s.timestamp else None,
+                    })
+                if rows:
+                    return {
+                        "rows": rows,
+                        "error": None,
+                        "auth_ok": True,
+                        "radius_used_km": radius,
+                        "radii_tried_km": unique_radii,
+                    }
+
+            return {
+                "rows": [],
+                "error": None,
+                "auth_ok": True,
+                "radius_used_km": unique_radii[-1],
+                "radii_tried_km": unique_radii,
+            }
         return {"rows": [], "error": client.last_error or "Ukjent autentiseringsfeil", "auth_ok": False}
     except (RuntimeError, ValueError, TypeError, KeyError, OSError) as e:
         logger.warning("Netatmo feil: %s", e)
@@ -1366,6 +1387,8 @@ def render_netatmo_map() -> None:
     cached_rows = cached.get("rows", [])
     cached_error = cached.get("error")
     auth_ok = bool(cached.get("auth_ok"))
+    radii_tried = cached.get("radii_tried_km") or [int(settings.netatmo.search_radius_km)]
+    radius_used = int(cached.get("radius_used_km") or radii_tried[-1])
 
     stations: list[NetatmoStation] = []
     for r in cached_rows:
@@ -1393,7 +1416,10 @@ def render_netatmo_map() -> None:
         if cached_error:
             st.info(f"Ingen Netatmo-data tilgjengelig ({cached_error}).")
         elif auth_ok:
-            st.info("Ingen offentlige Netatmo-stasjoner med data funnet i området akkurat nå.")
+            st.info(
+                f"Ingen offentlige Netatmo-stasjoner med data funnet "
+                f"innen {radius_used} km (søkt: {', '.join(str(r) for r in radii_tried)} km)."
+            )
         else:
             st.info(
                 "Ingen Netatmo-data tilgjengelig. "
