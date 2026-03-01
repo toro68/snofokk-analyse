@@ -1332,23 +1332,40 @@ def fetch_netatmo_stations() -> dict[str, Any]:
     try:
         client = get_netatmo_client()
         if client.authenticate():
+            public_stations: list[NetatmoStation] = []
             private_stations: list[NetatmoStation] = []
+
+            # Offentlige stasjoner rundt Fjellbergsskardet (primær for temperaturkart med mange punkter)
+            try:
+                public_radius = max(int(settings.netatmo.search_radius_km), 35)
+                public_stations = client.get_fjellbergsskardet_area(radius_km=public_radius)
+            except (RuntimeError, ValueError, TypeError, KeyError, OSError):
+                public_stations = []
+
+            # Private konto-stasjoner (sekundær/fallback)
             if hasattr(client, "get_private_stations"):
                 private_stations = client.get_private_stations()
             elif hasattr(client, "get_fjellbergsskardet_private"):
                 private_stations = client.get_fjellbergsskardet_private(
-                    radius_km=int(settings.netatmo.search_radius_km)
+                    radius_km=max(int(settings.netatmo.search_radius_km), 35)
                 )
-            else:
-                return {
-                    "rows": [],
-                    "error": "Netatmo-klient mangler private stasjonsmetoder",
-                    "auth_ok": False,
-                    "source": "none",
-                }
+
+            combined: list[NetatmoStation] = []
+            seen: set[tuple[str, str, float, float]] = set()
+            for s in public_stations + private_stations:
+                key = (
+                    str(s.station_id or "").strip(),
+                    str(s.name or "").strip(),
+                    round(float(s.lat or 0.0), 6),
+                    round(float(s.lon or 0.0), 6),
+                )
+                if key in seen:
+                    continue
+                seen.add(key)
+                combined.append(s)
 
             rows: list[dict] = []
-            for s in private_stations:
+            for s in combined:
                 rows.append({
                     "station_id": s.station_id,
                     "name": s.name,
@@ -1360,11 +1377,18 @@ def fetch_netatmo_stations() -> dict[str, Any]:
                     "timestamp": s.timestamp.isoformat() if s.timestamp else None,
                 })
             if rows:
-                return {"rows": rows, "error": None, "auth_ok": True, "source": "private"}
+                logger.info(
+                    "Netatmo kartdata: public=%d private=%d combined=%d",
+                    len(public_stations),
+                    len(private_stations),
+                    len(rows),
+                )
+                source = "both" if public_stations and private_stations else ("public" if public_stations else "private")
+                return {"rows": rows, "error": None, "auth_ok": True, "source": source}
 
             if client.last_error:
                 return {"rows": [], "error": client.last_error, "auth_ok": False, "source": "none"}
-            return {"rows": [], "error": None, "auth_ok": True, "source": "private"}
+            return {"rows": [], "error": None, "auth_ok": True, "source": "none"}
         return {
             "rows": [],
             "error": client.last_error or "Ukjent autentiseringsfeil",
@@ -1532,6 +1556,10 @@ def render_netatmo_map() -> None:
 
     if source == "private":
         st.caption("Kilde: Private Netatmo-stasjoner")
+    elif source == "public":
+        st.caption("Kilde: Offentlige Netatmo-stasjoner")
+    elif source == "both":
+        st.caption("Kilde: Offentlige + private Netatmo-stasjoner")
     st.caption(f"Viser {len(temp_stations)} stasjon(er) med temperatur")
 
     # Vis når Netatmo-data sist ble oppdatert (nyttig ift. caching/TTL)
