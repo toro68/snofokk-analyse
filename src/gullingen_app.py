@@ -1305,9 +1305,6 @@ def main() -> None:
             | **Glatte veier** | Skjult frysefare | Luft {settings.slippery.hidden_freeze_air_min:.0f}-{settings.slippery.hidden_freeze_air_max:.0f}°C og bakke ≤ {settings.slippery.hidden_freeze_surface_max:.1f}°C |
             """)
 
-    # Smøreguide (under grafer for bedre kontekst)
-    render_wax_guide(df)
-
     # Footer
     st.divider()
     st.caption(
@@ -1317,6 +1314,9 @@ def main() -> None:
 
     # Netatmo temperaturkart
     render_netatmo_map()
+
+    # Smøreguide under temperaturkart
+    render_wax_guide(df)
 
     with st.expander("Operasjonelle KPI-er (admin)", expanded=False):
         render_operational_kpis()
