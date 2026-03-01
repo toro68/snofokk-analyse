@@ -15,7 +15,7 @@ from typing import Any
 
 import requests
 
-from src.config import settings
+from src.config import get_secret, settings
 
 logger = logging.getLogger(__name__)
 
@@ -65,8 +65,8 @@ class NetatmoClient:
             client_id: Netatmo app client ID (fra .env eller secrets)
             client_secret: Netatmo app client secret
         """
-        self.client_id = client_id or os.getenv("NETATMO_CLIENT_ID")
-        self.client_secret = client_secret or os.getenv("NETATMO_CLIENT_SECRET")
+        self.client_id = client_id or get_secret("NETATMO_CLIENT_ID", "")
+        self.client_secret = client_secret or get_secret("NETATMO_CLIENT_SECRET", "")
         self.access_token: str | None = None
         self.access_token_expires_at: datetime | None = None
         self._session = requests.Session()
@@ -94,8 +94,8 @@ class NetatmoClient:
         Returns:
             Liste med NetatmoStation-objekter
         """
-        if not self.access_token:
-            logger.warning("Netatmo: Ingen access_token - kan ikke hente data")
+        if not self.authenticate():
+            logger.warning("Netatmo: Ingen gyldig access_token - kan ikke hente data")
             return []
 
         url = f"{self.BASE_URL}/getpublicdata"
@@ -120,6 +120,19 @@ class NetatmoClient:
                 headers=headers,
                 timeout=settings.netatmo.http_timeout_seconds,
             )
+            if response.status_code == 401:
+                # Token kan være utløpt/revokert før lokal expiry-check.
+                logger.info("Netatmo: 401 fra getpublicdata - forsøker token-fornyelse")
+                if not self.authenticate():
+                    return []
+                headers["Authorization"] = f"Bearer {self.access_token}"
+                response = self._session.get(
+                    url,
+                    params=params,
+                    headers=headers,
+                    timeout=settings.netatmo.http_timeout_seconds,
+                )
+
             response.raise_for_status()
             data = response.json()
 
@@ -181,7 +194,7 @@ class NetatmoClient:
             logger.warning("Netatmo: Mangler client_id eller client_secret")
             return False
 
-        refresh_token = refresh_token or os.getenv("NETATMO_REFRESH_TOKEN")
+        refresh_token = refresh_token or get_secret("NETATMO_REFRESH_TOKEN", "")
 
         if not refresh_token:
             logger.warning("Netatmo: Mangler NETATMO_REFRESH_TOKEN")
@@ -233,18 +246,34 @@ class NetatmoClient:
         """Parse API-respons til NetatmoStation-objekter."""
         stations = []
 
-        body = data.get("body", [])
+        body_raw = data.get("body", [])
+        if isinstance(body_raw, dict):
+            # Netatmo kan returnere body som objekt med device-liste.
+            body = body_raw.get("devices") or body_raw.get("data") or []
+        elif isinstance(body_raw, list):
+            body = body_raw
+        else:
+            body = []
 
         for item in body:
             place = item.get("place", {})
             measures = item.get("measures", {})
+            location = place.get("location", [0, 0])
+            lon = 0.0
+            lat = 0.0
+            if isinstance(location, list) and len(location) >= 2:
+                try:
+                    lon = float(location[0])
+                    lat = float(location[1])
+                except (TypeError, ValueError):
+                    lon, lat = 0.0, 0.0
 
             station = NetatmoStation(
                 station_id=item.get("_id", ""),
                 name=place.get("city", "Ukjent"),
-                lat=place.get("location", [0, 0])[1],
-                lon=place.get("location", [0, 0])[0],
-                altitude=place.get("altitude", 0)
+                lat=lat,
+                lon=lon,
+                altitude=int(place.get("altitude", 0) or 0),
             )
 
             # Parse målinger fra ulike moduler
@@ -255,7 +284,11 @@ class NetatmoClient:
                     if res:
                         latest_time = max(res.keys())
                         values = res[latest_time]
+                        if not isinstance(values, list):
+                            values = [values]
                         types = module_data.get("type", [])
+                        if not isinstance(types, list):
+                            types = []
 
                         for i, data_type in enumerate(types):
                             if i < len(values):
@@ -284,6 +317,13 @@ class NetatmoClient:
                     wind_strength = module_data.get("wind_strength")
                     if wind_strength is not None:
                         station.wind_strength = wind_strength
+
+                    wind_angle = module_data.get("wind_angle")
+                    if wind_angle is not None:
+                        try:
+                            station.wind_angle = int(wind_angle)
+                        except (TypeError, ValueError):
+                            station.wind_angle = None
 
                     gust_strength = module_data.get("gust_strength")
                     if gust_strength is not None:
