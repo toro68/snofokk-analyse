@@ -1376,6 +1376,11 @@ def fetch_netatmo_stations() -> dict[str, Any]:
                     "humidity": s.humidity,
                     "timestamp": s.timestamp.isoformat() if s.timestamp else None,
                 })
+            diagnostics = {
+                "public_count": len(public_stations),
+                "private_count": len(private_stations),
+                "combined_count": len(rows),
+            }
             if rows:
                 logger.info(
                     "Netatmo kartdata: public=%d private=%d combined=%d",
@@ -1384,20 +1389,27 @@ def fetch_netatmo_stations() -> dict[str, Any]:
                     len(rows),
                 )
                 source = "both" if public_stations and private_stations else ("public" if public_stations else "private")
-                return {"rows": rows, "error": None, "auth_ok": True, "source": source}
+                return {"rows": rows, "error": None, "auth_ok": True, "source": source, "diagnostics": diagnostics}
 
             if client.last_error:
-                return {"rows": [], "error": client.last_error, "auth_ok": False, "source": "none"}
-            return {"rows": [], "error": None, "auth_ok": True, "source": "none"}
+                return {"rows": [], "error": client.last_error, "auth_ok": False, "source": "none", "diagnostics": diagnostics}
+            return {"rows": [], "error": None, "auth_ok": True, "source": "none", "diagnostics": diagnostics}
         return {
             "rows": [],
             "error": client.last_error or "Ukjent autentiseringsfeil",
             "auth_ok": False,
             "source": "none",
+            "diagnostics": {"public_count": 0, "private_count": 0, "combined_count": 0},
         }
     except (RuntimeError, ValueError, TypeError, KeyError, OSError) as e:
         logger.warning("Netatmo feil: %s", e)
-        return {"rows": [], "error": f"Netatmo feil: {e}", "auth_ok": False, "source": "none"}
+        return {
+            "rows": [],
+            "error": f"Netatmo feil: {e}",
+            "auth_ok": False,
+            "source": "none",
+            "diagnostics": {"public_count": 0, "private_count": 0, "combined_count": 0},
+        }
 
 
 @st.cache_resource
@@ -1422,6 +1434,7 @@ def render_netatmo_map() -> None:
     cached_error = cached.get("error")
     auth_ok = bool(cached.get("auth_ok"))
     source = str(cached.get("source") or "none")
+    diagnostics = cached.get("diagnostics") or {}
 
     stations: list[NetatmoStation] = []
     for r in cached_rows:
@@ -1586,6 +1599,19 @@ def render_netatmo_map() -> None:
             f"Sist oppdatert Netatmo: {latest_local.strftime('%d.%m %H:%M')} "
             f"(ca {minutes} min siden, cache 5 min)"
         )
+    else:
+        minutes = None
+
+    with st.expander("Netatmo diagnose", expanded=False):
+        st.caption(
+            f"Kilde: {source} | Public: {int(diagnostics.get('public_count', 0))} | "
+            f"Private: {int(diagnostics.get('private_count', 0))} | "
+            f"Kombinert: {int(diagnostics.get('combined_count', 0))} | "
+            f"Med temperatur: {len(temp_stations)}"
+        )
+        st.caption(f"Auth OK: {'ja' if auth_ok else 'nei'}")
+        if minutes is not None:
+            st.caption(f"Siste datapunkt alder: ca {minutes} min")
 
     # Temperaturstatistikk under kartet
     temps: list[float] = [s.temperature for s in temp_stations if s.temperature is not None]
