@@ -156,19 +156,19 @@ st.markdown("""
 def render_compact_risk_card(title: str, result: AnalysisResult, confidence: int | None = None) -> None:
     """Render a compact risk card."""
     if result.risk_level == RiskLevel.HIGH:
-        card_class = "alert-high"
+        card_style = "background:#fde7e9;color:#8b1e2d;border:1px solid #f3c6cc;"
     elif result.risk_level == RiskLevel.MEDIUM:
-        card_class = "alert-medium"
+        card_style = "background:#fff4db;color:#7a4b00;border:1px solid #f6e0ad;"
     elif result.risk_level == RiskLevel.UNKNOWN:
-        card_class = "alert-unknown"
+        card_style = "background:#e8eef7;color:#2a4b73;border:1px solid #d2def0;"
     else:
-        card_class = "alert-low"
+        card_style = "background:#e6f4ea;color:#0b6b2f;border:1px solid #cde8d4;"
 
     safe_title = html.escape(title)
     safe_message = html.escape(result.message or "")
     st.markdown(
         f"""
-        <div class="alert-card {card_class}">
+        <div class="alert-card" style="{card_style}">
           <span class="alert-card-title">{safe_title}:</span>
           <span class="alert-card-message">{safe_message}</span>
         </div>
