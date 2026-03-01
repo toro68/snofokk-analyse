@@ -1331,53 +1331,24 @@ def fetch_netatmo_stations() -> dict[str, Any]:
     try:
         client = get_netatmo_client()
         if client.authenticate():
-            base_radius = int(settings.netatmo.search_radius_km)
-            search_radii = [base_radius, 20, 35]
-            # Fjern duplikater, behold rekkefølge.
-            unique_radii = list(dict.fromkeys(search_radii))
-
-            for radius in unique_radii:
-                stations = client.get_fjellbergsskardet_area(radius_km=radius)
-                rows: list[dict] = []
-                for s in stations:
-                    rows.append({
-                        "station_id": s.station_id,
-                        "name": s.name,
-                        "lat": s.lat,
-                        "lon": s.lon,
-                        "altitude": s.altitude,
-                        "temperature": s.temperature,
-                        "humidity": s.humidity,
-                        "timestamp": s.timestamp.isoformat() if s.timestamp else None,
-                    })
-                if rows:
-                    return {
-                        "rows": rows,
-                        "error": None,
-                        "auth_ok": True,
-                        "source": "public",
-                        "radius_used_km": radius,
-                        "radii_tried_km": unique_radii,
-                    }
-
-            private_radius = unique_radii[-1]
             private_stations: list[NetatmoStation] = []
-            all_private_stations: list[NetatmoStation] = []
             if hasattr(client, "get_private_stations"):
-                all_private_stations = client.get_private_stations()
-            if all_private_stations:
-                center_lat = float(settings.netatmo.fjellberg_lat)
-                center_lon = float(settings.netatmo.fjellberg_lon)
-                lat_scale = 111.0
-                lon_scale = 57.0  # ~cos(59.4) * 111
-                for station in all_private_stations:
-                    dx = (station.lon - center_lon) * lon_scale
-                    dy = (station.lat - center_lat) * lat_scale
-                    if (dx * dx + dy * dy) ** 0.5 <= private_radius:
-                        private_stations.append(station)
-            private_rows: list[dict] = []
+                private_stations = client.get_private_stations()
+            elif hasattr(client, "get_fjellbergsskardet_private"):
+                private_stations = client.get_fjellbergsskardet_private(
+                    radius_km=int(settings.netatmo.search_radius_km)
+                )
+            else:
+                return {
+                    "rows": [],
+                    "error": "Netatmo-klient mangler private stasjonsmetoder",
+                    "auth_ok": False,
+                    "source": "none",
+                }
+
+            rows: list[dict] = []
             for s in private_stations:
-                private_rows.append({
+                rows.append({
                     "station_id": s.station_id,
                     "name": s.name,
                     "lat": s.lat,
@@ -1387,58 +1358,12 @@ def fetch_netatmo_stations() -> dict[str, Any]:
                     "humidity": s.humidity,
                     "timestamp": s.timestamp.isoformat() if s.timestamp else None,
                 })
-            if private_rows:
-                return {
-                    "rows": private_rows,
-                    "error": None,
-                    "auth_ok": True,
-                    "source": "private",
-                    "radius_used_km": private_radius,
-                    "radii_tried_km": unique_radii,
-                }
+            if rows:
+                return {"rows": rows, "error": None, "auth_ok": True, "source": "private"}
 
-            # Siste fallback: vis private stasjoner uansett avstand hvis vi har noen.
-            if all_private_stations:
-                fallback_rows: list[dict] = []
-                for s in all_private_stations:
-                    fallback_rows.append({
-                        "station_id": s.station_id,
-                        "name": s.name,
-                        "lat": s.lat,
-                        "lon": s.lon,
-                        "altitude": s.altitude,
-                        "temperature": s.temperature,
-                        "humidity": s.humidity,
-                        "timestamp": s.timestamp.isoformat() if s.timestamp else None,
-                    })
-                return {
-                    "rows": fallback_rows,
-                    "error": None,
-                    "auth_ok": True,
-                    "source": "private_anywhere",
-                    "radius_used_km": private_radius,
-                    "radii_tried_km": unique_radii,
-                }
-
-            # Hvis private kall feilet, vis feilen i UI i stedet for "ingen data".
             if client.last_error:
-                return {
-                    "rows": [],
-                    "error": client.last_error,
-                    "auth_ok": False,
-                    "source": "none",
-                    "radius_used_km": private_radius,
-                    "radii_tried_km": unique_radii,
-                }
-
-            return {
-                "rows": [],
-                "error": None,
-                "auth_ok": True,
-                "source": "none",
-                "radius_used_km": unique_radii[-1],
-                "radii_tried_km": unique_radii,
-            }
+                return {"rows": [], "error": client.last_error, "auth_ok": False, "source": "none"}
+            return {"rows": [], "error": None, "auth_ok": True, "source": "private"}
         return {
             "rows": [],
             "error": client.last_error or "Ukjent autentiseringsfeil",
@@ -1472,8 +1397,6 @@ def render_netatmo_map() -> None:
     cached_error = cached.get("error")
     auth_ok = bool(cached.get("auth_ok"))
     source = str(cached.get("source") or "none")
-    radii_tried = cached.get("radii_tried_km") or [int(settings.netatmo.search_radius_km)]
-    radius_used = int(cached.get("radius_used_km") or radii_tried[-1])
 
     stations: list[NetatmoStation] = []
     for r in cached_rows:
@@ -1501,10 +1424,7 @@ def render_netatmo_map() -> None:
         if cached_error:
             st.info(f"Ingen Netatmo-data tilgjengelig ({cached_error}).")
         elif auth_ok:
-            st.info(
-                f"Ingen Netatmo-stasjoner med data funnet "
-                f"innen {radius_used} km (søkt: {', '.join(str(r) for r in radii_tried)} km)."
-            )
+            st.info("Ingen private Netatmo-stasjoner med data tilgjengelig akkurat nå.")
         else:
             st.info(
                 "Ingen Netatmo-data tilgjengelig. "
@@ -1593,11 +1513,7 @@ def render_netatmo_map() -> None:
     st.pydeck_chart(deck, use_container_width=True)
 
     if source == "private":
-        st.caption("Kilde: Private Netatmo-stasjoner (fallback)")
-    elif source == "private_anywhere":
-        st.caption("Kilde: Private Netatmo-stasjoner (utenfor standard radius)")
-    elif source == "public":
-        st.caption("Kilde: Offentlige Netatmo-stasjoner")
+        st.caption("Kilde: Private Netatmo-stasjoner")
 
     # Vis når Netatmo-data sist ble oppdatert (nyttig ift. caching/TTL)
     latest_ts = None
