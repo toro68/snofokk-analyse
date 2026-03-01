@@ -196,6 +196,28 @@ class NetatmoClient:
 
             response.raise_for_status()
             data = response.json()
+            if isinstance(data, dict):
+                api_error = data.get("error")
+                if api_error:
+                    self.last_error = f"Netatmo getstationsdata-feil: {api_error}"
+                    logger.warning(self.last_error)
+                    return []
+
+                body = data.get("body")
+                if isinstance(body, dict):
+                    devices = body.get("devices")
+                    user = body.get("user", {})
+                    user_mail = ""
+                    if isinstance(user, dict):
+                        user_mail = str(user.get("mail", "")).strip()
+                    if isinstance(devices, list) and not devices:
+                        if user_mail:
+                            self.last_error = f"Ingen private Netatmo-enheter for konto: {user_mail}"
+                        else:
+                            self.last_error = "Ingen private Netatmo-enheter på kontoen"
+                        logger.info(self.last_error)
+                        return []
+
             self.last_error = None
             return self._parse_public_data(data)
         except requests.exceptions.RequestException as e:
