@@ -1281,7 +1281,7 @@ def main() -> None:
 
             st.dataframe(
                 df[available_cols].tail(24).sort_values('reference_time', ascending=False),
-                use_container_width=True,
+                width="stretch",
                 hide_index=True
             )
 
@@ -1510,7 +1510,7 @@ def render_netatmo_map() -> None:
         map_style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",  # Lyst kart
     )
 
-    st.pydeck_chart(deck, use_container_width=True)
+    st.pydeck_chart(deck, width="stretch")
 
     if source == "private":
         st.caption("Kilde: Private Netatmo-stasjoner")
@@ -1580,7 +1580,7 @@ def render_netatmo_map() -> None:
                 "temp_str": "Temp",
                 "hum_str": "Fukt"
             }),
-            use_container_width=True,
+            width="stretch",
             hide_index=True
         )
 
