@@ -1426,7 +1426,13 @@ def get_netatmo_client() -> NetatmoClient:
 def render_netatmo_map() -> None:
     """Render temperaturkart for tilgjengelige Netatmo-stasjoner."""
 
-    st.subheader("Temperaturkart")
+    col_title, col_btn = st.columns([4, 1])
+    with col_title:
+        st.subheader("Temperaturkart")
+    with col_btn:
+        if st.button("Oppdater", key="netatmo_refresh"):
+            fetch_netatmo_stations.clear()
+            st.rerun()
 
     cached = fetch_netatmo_stations()
     cached_rows = cached.get("rows", [])
