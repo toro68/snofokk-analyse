@@ -1344,11 +1344,11 @@ def fetch_netatmo_stations() -> dict[str, Any]:
                     "humidity": s.humidity,
                     "timestamp": s.timestamp.isoformat() if s.timestamp else None,
                 })
-            return {"rows": rows, "error": None}
-        return {"rows": [], "error": client.last_error or "Ukjent autentiseringsfeil"}
+            return {"rows": rows, "error": None, "auth_ok": True}
+        return {"rows": [], "error": client.last_error or "Ukjent autentiseringsfeil", "auth_ok": False}
     except (RuntimeError, ValueError, TypeError, KeyError, OSError) as e:
         logger.warning("Netatmo feil: %s", e)
-        return {"rows": [], "error": f"Netatmo feil: {e}"}
+        return {"rows": [], "error": f"Netatmo feil: {e}", "auth_ok": False}
 
 
 @st.cache_resource
@@ -1365,6 +1365,7 @@ def render_netatmo_map() -> None:
     cached = fetch_netatmo_stations()
     cached_rows = cached.get("rows", [])
     cached_error = cached.get("error")
+    auth_ok = bool(cached.get("auth_ok"))
 
     stations: list[NetatmoStation] = []
     for r in cached_rows:
@@ -1391,6 +1392,8 @@ def render_netatmo_map() -> None:
     if not stations:
         if cached_error:
             st.info(f"Ingen Netatmo-data tilgjengelig ({cached_error}).")
+        elif auth_ok:
+            st.info("Ingen offentlige Netatmo-stasjoner med data funnet i området akkurat nå.")
         else:
             st.info(
                 "Ingen Netatmo-data tilgjengelig. "
