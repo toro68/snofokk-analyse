@@ -1361,7 +1361,21 @@ def fetch_netatmo_stations() -> dict[str, Any]:
                     }
 
             private_radius = unique_radii[-1]
-            private_stations = client.get_fjellbergsskardet_private(radius_km=private_radius)
+            private_stations: list[NetatmoStation] = []
+            if hasattr(client, "get_fjellbergsskardet_private"):
+                private_stations = client.get_fjellbergsskardet_private(radius_km=private_radius)
+            elif hasattr(client, "get_private_stations"):
+                # Bakoverkompatibilitet: fallback hvis eldre NetatmoClient mangler område-metoden.
+                center_lat = float(settings.netatmo.fjellberg_lat)
+                center_lon = float(settings.netatmo.fjellberg_lon)
+                all_private = client.get_private_stations()
+                lat_scale = 111.0
+                lon_scale = 57.0  # ~cos(59.4) * 111
+                for station in all_private:
+                    dx = (station.lon - center_lon) * lon_scale
+                    dy = (station.lat - center_lat) * lat_scale
+                    if (dx * dx + dy * dy) ** 0.5 <= private_radius:
+                        private_stations.append(station)
             private_rows: list[dict] = []
             for s in private_stations:
                 private_rows.append({
