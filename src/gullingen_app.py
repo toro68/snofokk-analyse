@@ -45,7 +45,6 @@ from src.netatmo_client import NetatmoClient, NetatmoStation
 from src.operational_logger import log_medium_high_alerts
 from src.plowing_service import (
     PlowingInfo,
-    get_maintenance_suppress_hours,
     get_plowing_info,
     should_suppress_alerts,
 )
@@ -821,9 +820,6 @@ def render_wax_guide(df: pd.DataFrame) -> None:
 def render_maintenance_top(plowing_info: PlowingInfo, suppress_alerts: bool) -> None:
     """Viser 'Siste vedlikehold' øverst og forklarer nullstilling av varsler."""
 
-    suppress_hours = get_maintenance_suppress_hours()
-    suppress_hours_text = f"{suppress_hours:g} timer"
-
     if plowing_info.last_plowing:
         value = plowing_info.formatted_time
         # Vis work_types (f.eks. "skraping") i header, ikke event_type (f.eks. "SCRAPE")
@@ -835,16 +831,15 @@ def render_maintenance_top(plowing_info: PlowingInfo, suppress_alerts: bool) -> 
         details_parts: list[str] = []
         # Vis kun nullstillings-info, ikke redundant type/operatør
         if suppress_alerts and plowing_info.hours_since is not None:
-            remaining = max(0.0, suppress_hours - float(plowing_info.hours_since))
             details_parts.append(
                 f"Brøyting/skraping/strøing nuller ut værhendelsen. "
-                f"Nullstilling: {suppress_hours_text} ({remaining:.1f}t igjen). "
+                f"Teller fra siste brøyting: {float(plowing_info.hours_since):.1f}t siden. "
                 f"Varsler beregnes videre fra siste brøyting."
             )
         else:
             details_parts.append(
                 f"Brøyting/skraping/strøing nuller ut værhendelsen. "
-                f"Nullstilling: {suppress_hours_text}. "
+                f"Teller fra siste brøyting. "
                 f"Varsler beregnes videre fra siste brøyting."
             )
 
