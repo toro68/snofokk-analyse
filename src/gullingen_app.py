@@ -19,6 +19,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import logging
+import html
 from datetime import UTC, datetime, timedelta
 
 import matplotlib.pyplot as plt
@@ -110,20 +111,69 @@ st.markdown("""
             flex: 100% !important;
         }
     }
+
+    /* Varselkort */
+    .alert-card {
+        border-radius: 12px;
+        padding: 1rem 1.15rem;
+        margin: 0 0 0.35rem 0;
+        border: 1px solid transparent;
+    }
+    .alert-card-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin-right: 0.25rem;
+    }
+    .alert-card-message {
+        font-size: 1.05rem;
+        font-weight: 500;
+    }
+    .alert-low {
+        background: #e6f4ea;
+        color: #0b6b2f;
+        border-color: #cde8d4;
+    }
+    .alert-medium {
+        background: #fff4db;
+        color: #7a4b00;
+        border-color: #f6e0ad;
+    }
+    .alert-high {
+        background: #fde7e9;
+        color: #8b1e2d;
+        border-color: #f3c6cc;
+    }
+    .alert-unknown {
+        background: #e8eef7;
+        color: #2a4b73;
+        border-color: #d2def0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 
 def render_compact_risk_card(title: str, result: AnalysisResult, confidence: int | None = None) -> None:
-    """Render a compact risk card (Streamlit-native styling)."""
+    """Render a compact risk card."""
     if result.risk_level == RiskLevel.HIGH:
-        st.error(f"**{title}**: {result.message}")
+        card_class = "alert-high"
     elif result.risk_level == RiskLevel.MEDIUM:
-        st.warning(f"**{title}**: {result.message}")
+        card_class = "alert-medium"
     elif result.risk_level == RiskLevel.UNKNOWN:
-        st.info(f"**{title}**: {result.message}")
+        card_class = "alert-unknown"
     else:
-        st.success(f"**{title}**: {result.message}")
+        card_class = "alert-low"
+
+    safe_title = html.escape(title)
+    safe_message = html.escape(result.message or "")
+    st.markdown(
+        f"""
+        <div class="alert-card {card_class}">
+          <span class="alert-card-title">{safe_title}:</span>
+          <span class="alert-card-message">{safe_message}</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     # Keep it compact: optionally show scenario + up to 2 factors as a caption
     caption_parts: list[str] = []
@@ -1094,18 +1144,8 @@ def main() -> None:
 
     confidence_map = _compute_confidence_map(results, quality_metrics, suppress_alerts)
 
-    # Overall status banner
-    status_title, status_msg, overall_risk = get_overall_status(results)
-
-    # Vis kun banner når det faktisk er noe å reagere på.
-    # Ved normale forhold (LOW) vises ingen banner – brukeren vurderer selv.
-    if overall_risk == RiskLevel.HIGH:
-        st.error(f"## {status_title}\n{status_msg}")
-    elif overall_risk == RiskLevel.MEDIUM:
-        st.warning(f"## {status_title}\n{status_msg}")
-    elif overall_risk == RiskLevel.UNKNOWN:
-        st.info(f"## {status_title}\n{status_msg}")
-    # LOW: ingen banner – lar data tale for seg
+    # Ingen overordnet varselboks over kortene.
+    # Brukeren forholder seg til de fire kortene i "Varsler nå".
 
     # Flyttet opp: Siste vedlikehold (erstatter tidligere "NORMALE FORHOLD"-banner)
     render_maintenance_top(plowing_info, suppress_alerts)
@@ -1282,7 +1322,7 @@ def main() -> None:
 
 
 @st.cache_data(ttl=settings.netatmo.cache_ttl_seconds)
-def fetch_netatmo_stations() -> list[dict[str, Any]]:
+def fetch_netatmo_stations() -> dict[str, Any]:
     """Hent Netatmo-stasjoner (cached).
 
     Viktig: `st.cache_data` krever at returverdien kan serialiseres.
@@ -1304,10 +1344,11 @@ def fetch_netatmo_stations() -> list[dict[str, Any]]:
                     "humidity": s.humidity,
                     "timestamp": s.timestamp.isoformat() if s.timestamp else None,
                 })
-            return rows
+            return {"rows": rows, "error": None}
+        return {"rows": [], "error": client.last_error or "Ukjent autentiseringsfeil"}
     except (RuntimeError, ValueError, TypeError, KeyError, OSError) as e:
         logger.warning("Netatmo feil: %s", e)
-    return []
+        return {"rows": [], "error": f"Netatmo feil: {e}"}
 
 
 @st.cache_resource
@@ -1321,7 +1362,9 @@ def render_netatmo_map() -> None:
 
     st.subheader("Temperaturkart")
 
-    cached_rows = fetch_netatmo_stations()
+    cached = fetch_netatmo_stations()
+    cached_rows = cached.get("rows", [])
+    cached_error = cached.get("error")
 
     stations: list[NetatmoStation] = []
     for r in cached_rows:
@@ -1346,7 +1389,13 @@ def render_netatmo_map() -> None:
         )
 
     if not stations:
-        st.info("Ingen Netatmo-data tilgjengelig. Sjekk at NETATMO_REFRESH_TOKEN er satt.")
+        if cached_error:
+            st.info(f"Ingen Netatmo-data tilgjengelig ({cached_error}).")
+        else:
+            st.info(
+                "Ingen Netatmo-data tilgjengelig. "
+                "Sett NETATMO_ACCESS_TOKEN eller NETATMO_CLIENT_ID/NETATMO_CLIENT_SECRET/NETATMO_REFRESH_TOKEN."
+            )
         return
 
     # Filtrer stasjoner med temperatur

@@ -67,8 +67,9 @@ class NetatmoClient:
         """
         self.client_id = client_id or get_secret("NETATMO_CLIENT_ID", "")
         self.client_secret = client_secret or get_secret("NETATMO_CLIENT_SECRET", "")
-        self.access_token: str | None = None
+        self.access_token: str | None = (get_secret("NETATMO_ACCESS_TOKEN", "") or "").strip() or None
         self.access_token_expires_at: datetime | None = None
+        self.last_error: str | None = None
         self._session = requests.Session()
 
     def get_public_data(
@@ -140,6 +141,7 @@ class NetatmoClient:
 
         except requests.exceptions.RequestException as e:
             logger.error("Netatmo API-feil: %s", e)
+            self.last_error = f"Netatmo API-feil: {e}"
             return []
 
     def get_fjellbergsskardet_area(self, radius_km: float = 5.0) -> list[NetatmoStation]:
@@ -188,10 +190,18 @@ class NetatmoClient:
             now = datetime.now(tz=UTC)
             # Litt buffer for å unngå race rundt utløp
             if now < (self.access_token_expires_at - timedelta(seconds=60)):
+                self.last_error = None
                 return True
+
+        # Tillat statisk access token uten expiry metadata
+        # (nyttig i miljøer der refresh-token ikke brukes).
+        if self.access_token and self.access_token_expires_at is None:
+            self.last_error = None
+            return True
 
         if not self.client_id or not self.client_secret:
             logger.warning("Netatmo: Mangler client_id eller client_secret")
+            self.last_error = "Mangler NETATMO_CLIENT_ID/NETATMO_CLIENT_SECRET"
             return False
 
         refresh_token = refresh_token or get_secret("NETATMO_REFRESH_TOKEN", "")
@@ -199,6 +209,7 @@ class NetatmoClient:
         if not refresh_token:
             logger.warning("Netatmo: Mangler NETATMO_REFRESH_TOKEN")
             logger.info("Generer token på https://dev.netatmo.com/apps -> din app -> Token generator")
+            self.last_error = "Mangler NETATMO_REFRESH_TOKEN"
             return False
 
         url = "https://api.netatmo.com/oauth2/token"
@@ -236,10 +247,12 @@ class NetatmoClient:
                 logger.info("Netatmo: Ny refresh_token mottatt (lagre denne!)")
 
             logger.info("Netatmo: Autentisering vellykket")
+            self.last_error = None
             return True
 
         except requests.exceptions.RequestException as e:
             logger.error("Netatmo autentisering feilet: %s", e)
+            self.last_error = f"Netatmo autentisering feilet: {e}"
             return False
 
     def _parse_public_data(self, data: dict) -> list[NetatmoStation]:
