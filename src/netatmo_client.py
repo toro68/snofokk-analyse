@@ -315,7 +315,13 @@ class NetatmoClient:
             # Lagre ny refresh_token for neste gang
             new_refresh = token_data.get("refresh_token")
             if new_refresh:
-                logger.info("Netatmo: Ny refresh_token mottatt (lagre denne!)")
+                log_full_refresh = str(get_secret("NETATMO_LOG_NEW_REFRESH_TOKEN", "")).strip().lower() in {
+                    "1", "true", "yes", "on"
+                }
+                if log_full_refresh:
+                    logger.warning("Netatmo: Ny refresh_token: %s", new_refresh)
+                else:
+                    logger.info("Netatmo: Ny refresh_token mottatt (lagre denne!)")
 
             logger.info("Netatmo: Autentisering vellykket")
             self.last_error = None
