@@ -132,7 +132,7 @@ class WeatherPlots:
         if df_prepared is None or df_prepared.empty:
             return cls._empty_figure("Ingen data tilgjengelig")
 
-        fig, ax = plt.subplots(figsize=(6, 4))
+        fig, ax = plt.subplots(figsize=(8, 4.5))
         fig.suptitle(title, fontsize=12, fontweight='bold')
 
         viz = settings.viz
@@ -152,7 +152,7 @@ class WeatherPlots:
         if df_prepared is None or df_prepared.empty:
             return cls._empty_figure("Ingen data tilgjengelig")
 
-        fig, ax = plt.subplots(figsize=(6, 4))
+        fig, ax = plt.subplots(figsize=(8, 4.5))
         fig.suptitle(title, fontsize=12, fontweight='bold')
 
         viz = settings.viz
@@ -171,7 +171,7 @@ class WeatherPlots:
         if df_prepared is None or df_prepared.empty:
             return cls._empty_figure("Ingen data tilgjengelig")
 
-        fig, ax = plt.subplots(figsize=(6, 4))
+        fig, ax = plt.subplots(figsize=(8, 4.5))
         fig.suptitle(title, fontsize=12, fontweight='bold')
         viz = settings.viz
         cls._plot_temperature(ax, times, df_prepared, viz)
@@ -189,7 +189,7 @@ class WeatherPlots:
         if df_prepared is None or df_prepared.empty:
             return cls._empty_figure("Ingen data tilgjengelig")
 
-        fig, ax = plt.subplots(figsize=(6, 4))
+        fig, ax = plt.subplots(figsize=(8, 4.5))
         fig.suptitle(title, fontsize=12, fontweight='bold')
         viz = settings.viz
         cls._plot_wind(ax, times, df_prepared, viz)
@@ -208,7 +208,7 @@ class WeatherPlots:
         if df_prepared is None or df_prepared.empty:
             return cls._empty_figure("Ingen data tilgjengelig")
 
-        fig, ax = plt.subplots(figsize=(6, 4))
+        fig, ax = plt.subplots(figsize=(8, 4.5))
         fig.suptitle(title, fontsize=12, fontweight='bold')
         viz = settings.viz
         cls._plot_wind_direction(ax, times, df_prepared, viz)
@@ -227,7 +227,7 @@ class WeatherPlots:
         if df_prepared is None or df_prepared.empty:
             return cls._empty_figure("Ingen data tilgjengelig")
 
-        fig, ax = plt.subplots(figsize=(6, 4))
+        fig, ax = plt.subplots(figsize=(8, 4.5))
         fig.suptitle(title, fontsize=12, fontweight='bold')
         viz = settings.viz
         cls._plot_accumulated_precip(ax, times, df_prepared, viz)
@@ -607,6 +607,9 @@ class WeatherPlots:
         # Vis akkumulert nedbør siste 12 timer for slaps-vurdering
         accum_window = max(1, int(settings.slaps.precipitation_accum_hours))
         precip_accum = precip.rolling(window=accum_window, min_periods=1).sum()
+        scale = accum_window / 12.0
+        slaps_warning_threshold = settings.slaps.precipitation_12h_min * scale
+        slaps_heavy_threshold = settings.slaps.precipitation_12h_heavy * scale
         ax2 = ax.twinx()
         ax2.plot(
             times,
@@ -616,20 +619,20 @@ class WeatherPlots:
             label=f'Nedbør siste {accum_window}t',
         )
         ax2.axhline(
-            settings.slaps.precipitation_12h_min,
+            slaps_warning_threshold,
             color=viz.color_warning,
             linestyle=':',
             linewidth=1,
             alpha=0.8,
-            label=f"Slaps terskel ({settings.slaps.precipitation_12h_min:.0f} mm)",
+            label=f"Slaps terskel ({slaps_warning_threshold:.1f} mm)",
         )
         ax2.axhline(
-            settings.slaps.precipitation_12h_heavy,
+            slaps_heavy_threshold,
             color=viz.color_critical,
             linestyle='--',
             linewidth=1,
             alpha=0.8,
-            label=f"Kraftig nedbør ({settings.slaps.precipitation_12h_heavy:.0f} mm)",
+            label=f"Kraftig nedbør ({slaps_heavy_threshold:.1f} mm)",
         )
         ax2.set_ylabel(f'Nedbør {accum_window}t (mm)', color=viz.color_warning)
         ax2.tick_params(axis='y', labelcolor=viz.color_warning)

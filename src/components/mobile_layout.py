@@ -33,6 +33,19 @@ class MobileLayout:
                 lambda x: x * 100 if pd.notna(x) and x < settings.historical.snow_depth_conversion_cutoff_cm else x  # type: ignore[unreachable]
             )
 
+        # Normaliser nedbør til én mobil-kolonne (mm/time)
+        if 'precipitation_1h' not in df_prepared.columns:
+            for candidate in [
+                'sum(precipitation_amount PT1H)',
+                'precipitation_amount',
+                'precip_mm_h',
+            ]:
+                if candidate in df_prepared.columns:
+                    df_prepared['precipitation_1h'] = pd.to_numeric(
+                        df_prepared[candidate], errors='coerce'
+                    )
+                    break
+
         return df_prepared
 
     @staticmethod
@@ -561,14 +574,10 @@ class MobileLayout:
             # Bruk konsistent snødata
             st.line_chart(df_prepared.set_index('time')['surface_snow_thickness_cm'], height=300)
         elif selected_chart_type == "precipitation":
-            # Handle multiple possible precipitation column names
-            precip_cols = [col for col in df_prepared.columns if 'precipitation_amount' in col and col.startswith('sum(')]
-            if precip_cols:
-                # Create a renamed series to avoid Altair field name issues
-                precip_data = df_prepared[precip_cols[0]].copy()
+            if 'precipitation_1h' in df_prepared.columns:
                 precip_df = pd.DataFrame({
                     'time': df_prepared['time'],
-                    'precipitation': precip_data
+                    'precipitation': pd.to_numeric(df_prepared['precipitation_1h'], errors='coerce')
                 })
                 st.bar_chart(precip_df.set_index('time')['precipitation'], height=300)
             else:

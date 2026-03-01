@@ -516,17 +516,27 @@ class AdvancedCharts:
         # Kombinert risiko
         total_risk = snowdrift_risk + slippery_risk
 
-        # Fargekoding
-        colors = []
+        # Fargekoding + symboler (fargeblind-vennlig redundans)
+        colors: list[str] = []
+        symbols: list[str] = []
+        labels: list[str] = []
         for risk in total_risk:  # type: ignore[union-attr]
             if risk >= th.risk_red_min:
-                colors.append('red')
+                colors.append('#B2182B')
+                symbols.append('diamond')
+                labels.append('Kritisk')
             elif risk >= th.risk_orange_min:
-                colors.append('orange')
+                colors.append('#EF8A62')
+                symbols.append('square')
+                labels.append('Høy')
             elif risk >= th.risk_yellow_min:
-                colors.append('yellow')
+                colors.append('#FDDBC7')
+                symbols.append('circle')
+                labels.append('Moderat')
             else:
-                colors.append('green')
+                colors.append('#2166AC')
+                symbols.append('triangle-up')
+                labels.append('Lav')
 
         # Scatter plot med risiko-farger
         fig.add_trace(
@@ -536,19 +546,21 @@ class AdvancedCharts:
                 mode='markers',
                 marker={
                     "color": colors,
+                    "symbol": symbols,
                     "size": 8,
                     "line": {"width": 1, "color": 'black'}
                 },
                 name='Risiko-nivå',
-                hovertemplate='<b>Risiko: %{y}</b><br>Tid: %{x}<extra></extra>'
+                customdata=labels,
+                hovertemplate='<b>%{customdata}</b><br>Score: %{y}<br>Tid: %{x}<extra></extra>'
             )
         )
 
         # Risiko-soner
-        fig.add_hrect(y0=0, y1=th.band_green_max, fillcolor="green", opacity=0.1, annotation_text="Lav risiko")
-        fig.add_hrect(y0=th.band_green_max, y1=th.band_yellow_max, fillcolor="yellow", opacity=0.1, annotation_text="Moderat risiko")
-        fig.add_hrect(y0=th.band_yellow_max, y1=th.band_orange_max, fillcolor="orange", opacity=0.1, annotation_text="Høy risiko")
-        fig.add_hrect(y0=th.band_orange_max, y1=th.band_red_max, fillcolor="red", opacity=0.1, annotation_text="Kritisk risiko")
+        fig.add_hrect(y0=0, y1=th.band_green_max, fillcolor="#2166AC", opacity=0.08, annotation_text="Lav risiko")
+        fig.add_hrect(y0=th.band_green_max, y1=th.band_yellow_max, fillcolor="#FDDBC7", opacity=0.12, annotation_text="Moderat risiko")
+        fig.add_hrect(y0=th.band_yellow_max, y1=th.band_orange_max, fillcolor="#EF8A62", opacity=0.10, annotation_text="Høy risiko")
+        fig.add_hrect(y0=th.band_orange_max, y1=th.band_red_max, fillcolor="#B2182B", opacity=0.08, annotation_text="Kritisk risiko")
 
         fig.update_layout(
             title="Risiko-tidslinje (Snøfokk + Glattføre)",
