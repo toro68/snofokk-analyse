@@ -23,6 +23,13 @@ from src.config import get_secret, settings
 
 logger = logging.getLogger(__name__)
 
+_NORWEGIAN_WORK_TYPE_REPLACEMENTS: tuple[tuple[str, str], ...] = (
+    ("snobroyting", "snøbrøyting"),
+    ("tunbroyting", "tunbrøyting"),
+    ("broyting", "brøyting"),
+    ("stroing", "strøing"),
+)
+
 
 @dataclass
 class MaintenanceFetchResult:
@@ -315,11 +322,19 @@ def _coerce_str_list(value: object) -> list[str] | None:
         items: list[str] = []
         for v in value:
             if isinstance(v, str) and v.strip():
-                items.append(v.strip())
+                items.append(_normalize_work_type_text(v.strip()))
         return items or None
     if isinstance(value, str) and value.strip():
-        return [value.strip()]
+        return [_normalize_work_type_text(value.strip())]
     return None
+
+
+def _normalize_work_type_text(value: str) -> str:
+    """Normaliser ASCII-varianter av norske vedlikeholdstyper."""
+    text = value
+    for src, dst in _NORWEGIAN_WORK_TYPE_REPLACEMENTS:
+        text = re.sub(rf"\b{re.escape(src)}\b", dst, text, flags=re.IGNORECASE)
+    return text
 
 
 def _sanitize_base_url(value: str | None) -> str:

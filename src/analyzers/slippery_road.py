@@ -156,9 +156,9 @@ class SlipperyRoadAnalyzer(BaseAnalyzer):
             "temperature": round(temp, 1),
             "snow_depth": round(snow, 1),
             "precipitation": round(precip, 2) if precip else 0,
-            "surface_temp": round(surface_temp, 1) if surface_temp else None,
-            "dew_point": round(dew_point, 1) if dew_point else None,
-            "wind_speed": round(wind, 1) if wind else None,
+            "surface_temp": round(surface_temp, 1) if surface_temp is not None else None,
+            "dew_point": round(dew_point, 1) if dew_point is not None else None,
+            "wind_speed": round(wind, 1) if wind is not None else None,
         }
 
         # SCENARIO 0: Nysnø = naturlig strøing (lav risiko) - men kun ved kaldt vær

@@ -7,7 +7,7 @@ Kjører samme logikk som src/analyzers/* på historiske data for å:
 2. Sammenligne mot faktiske brøyteepisoder
 
 Usage:
-  venv/bin/python scripts/reports/validate_csv_thresholds.py \\
+  .venv/bin/python scripts/reports/validate_csv_thresholds.py \\
     --csv data/analyzed/enhanced_features_SN46220_2024-01-01_to_2024-03-31.csv \\
     --plowing data/analyzed/broyting_weather_correlation_2025.csv
 """

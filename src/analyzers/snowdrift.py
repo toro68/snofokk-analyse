@@ -152,8 +152,12 @@ class SnowdriftAnalyzer(BaseAnalyzer):
         - Mildvær (>0°C) smelter/kompakterer snøen
         """
         thresholds = settings.snowdrift
-        now = self._analysis_now(df)
-        last_24h = df[pd.to_datetime(df['reference_time']) >= (now - timedelta(hours=thresholds.loose_snow_lookback_hours))]
+        times = pd.to_datetime(df['reference_time'], utc=True, errors='coerce')
+        latest_time = times.max()
+        if pd.isna(latest_time):
+            latest_time = datetime.now(UTC)
+        cutoff = latest_time - timedelta(hours=thresholds.loose_snow_lookback_hours)
+        last_24h = df.loc[times >= cutoff]
 
         if 'air_temperature' not in last_24h.columns or last_24h.empty:
             return {"available": True, "reason": "Usikker - mangler temperaturdata"}

@@ -9,6 +9,7 @@ import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from functools import lru_cache
+from pathlib import Path
 
 import pandas as pd
 import requests
@@ -20,14 +21,23 @@ from tenacity import (
     wait_exponential,
 )
 
-from src.config import settings
+from src.config import get_secret, settings
 
 logger = logging.getLogger(__name__)
+
+CACHE_FILE = Path(__file__).parent.parent / "data" / "cache" / "frost_weather_cache.json"
+def _get_cache_max_age_hours() -> float:
+    try:
+        return float(get_secret("FROST_CACHE_MAX_AGE_HOURS", "12"))
+    except ValueError:
+        return 12.0
+
+
+CACHE_MAX_AGE_HOURS = _get_cache_max_age_hours()
 
 
 class FrostAPIError(Exception):
     """Custom exception for API-feil."""
-    pass
 
 
 class _FrostAPIRetryableError(Exception):
@@ -42,6 +52,8 @@ class WeatherData:
     start_time: datetime
     end_time: datetime
     elements_fetched: list[str]
+    source: str = "live"
+    cache_age_hours: float | None = None
 
     @property
     def is_empty(self) -> bool:
@@ -66,6 +78,7 @@ class WeatherData:
                 "end_time": self.end_time.isoformat(),
                 "record_count": self.record_count,
                 "elements": self.elements_fetched,
+                "source": self.source,
                 "exported_at": datetime.now(UTC).isoformat()
             },
             "observations": observations
@@ -159,19 +172,78 @@ class FrostClient:
 
         elements = elements or settings.station.all_elements()
 
-        df = self._fetch_observations(
-            start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            end_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            tuple(elements)
-        )
+        pt10m_elements = [e for e in elements if "PT10M" in e]
+        hourly_elements = [e for e in elements if e not in pt10m_elements]
 
-        return WeatherData(
+        try:
+            df_hourly = pd.DataFrame()
+            if hourly_elements:
+                df_hourly = self._fetch_observations(
+                    start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    end_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    tuple(hourly_elements),
+                    timeresolutions="PT1H"
+                )
+
+            df_10m = pd.DataFrame()
+            if pt10m_elements:
+                df_10m = self._fetch_observations(
+                    start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    end_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    tuple(pt10m_elements),
+                    timeresolutions="PT10M"
+                )
+
+            if not df_10m.empty:
+                df_10m = df_10m.copy()
+                df_10m["reference_time"] = pd.to_datetime(df_10m["reference_time"], utc=True, errors="coerce")
+                df_10m = df_10m.dropna(subset=["reference_time"])
+                df_10m["reference_hour"] = df_10m["reference_time"].dt.floor("H")
+
+                agg_cols = [c for c in df_10m.columns if c not in ("reference_time", "reference_hour")]
+                df_10m_hourly = (
+                    df_10m.sort_values("reference_time")
+                    .groupby("reference_hour")[agg_cols]
+                    .last()
+                    .reset_index()
+                    .rename(columns={"reference_hour": "reference_time"})
+                )
+
+                if df_hourly.empty:
+                    df = df_10m_hourly
+                else:
+                    df_hourly = df_hourly.copy()
+                    df_hourly["reference_time"] = pd.to_datetime(df_hourly["reference_time"], utc=True, errors="coerce")
+                    df = pd.merge(df_hourly, df_10m_hourly, on="reference_time", how="outer")
+                    df = df.sort_values("reference_time").drop_duplicates("reference_time").reset_index(drop=True)
+            else:
+                df = df_hourly
+        except FrostAPIError as exc:
+            cached = self._load_cache()
+            if cached and not cached.is_empty:
+                logger.warning("Frost API-feil (%s). Bruker cache %s", exc, CACHE_FILE)
+                return cached
+            raise
+        except (ValueError, TypeError, KeyError) as exc:
+            cached = self._load_cache()
+            if cached and not cached.is_empty:
+                logger.warning("Uventet feil (%s). Bruker cache %s", exc, CACHE_FILE)
+                return cached
+            raise
+
+        weather_data = WeatherData(
             df=df,
             station_id=self.station_id,
             start_time=start_time,
             end_time=end_time,
-            elements_fetched=elements
+            elements_fetched=elements,
+            source="live"
         )
+
+        if not weather_data.is_empty:
+            self._save_cache(weather_data)
+
+        return weather_data
 
     def fetch_available_elements(self) -> list[str]:
         """
@@ -231,7 +303,8 @@ class FrostClient:
         self,
         start_iso: str,
         end_iso: str,
-        elements: tuple[str, ...]
+        elements: tuple[str, ...],
+        timeresolutions: str = "PT1H"
     ) -> pd.DataFrame:
         """
         Hent observasjoner fra API (cached).
@@ -248,7 +321,7 @@ class FrostClient:
             'sources': self.station_id,
             'elements': ','.join(elements),
             'referencetime': f"{start_iso}/{end_iso}",
-            'timeresolutions': 'PT1H'
+            'timeresolutions': timeresolutions
         }
 
         logger.info("Henter data: %s, %s til %s", self.station_id, start_iso, end_iso)
@@ -270,6 +343,10 @@ class FrostClient:
                 # Ingen data for perioden - ikke en feil
                 logger.warning("Ingen data for perioden %s til %s", start_iso, end_iso)
                 return pd.DataFrame()
+            elif response.status_code == 429:
+                raise FrostAPIError("Rate limit fra Frost API (429)")
+            elif 500 <= response.status_code <= 599:
+                raise FrostAPIError(f"Serverfeil fra Frost API ({response.status_code})")
 
             response.raise_for_status()
 
@@ -324,3 +401,64 @@ class FrostClient:
         """Tøm API-cache."""
         self._fetch_observations.cache_clear()
         logger.info("Cache tømt")
+
+    def _save_cache(self, weather_data: WeatherData) -> None:
+        """Lagre siste vellykkede værdata til disk."""
+        try:
+            CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
+            weather_data.to_json(str(CACHE_FILE))
+        except (OSError, ValueError, TypeError) as exc:
+            logger.warning("Kunne ikke lagre cache: %s", exc)
+
+    def _load_cache(self, max_age_hours: float | None = None) -> WeatherData | None:
+        """Last cached værdata fra disk."""
+        try:
+            if not CACHE_FILE.exists():
+                return None
+
+            with open(CACHE_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            observations = data.get("observations", [])
+            if not observations:
+                return None
+
+            df = pd.DataFrame(observations)
+            if "reference_time" in df.columns:
+                df["reference_time"] = pd.to_datetime(df["reference_time"], utc=True, errors="coerce")
+                df = df.dropna(subset=["reference_time"])
+                df = df.sort_values("reference_time").drop_duplicates("reference_time").reset_index(drop=True)
+
+            if df.empty:
+                return None
+
+            metadata = data.get("metadata", {})
+            exported_at_raw = metadata.get("exported_at")
+            exported_at = pd.to_datetime(exported_at_raw, utc=True, errors="coerce")
+            if max_age_hours is None:
+                max_age_hours = CACHE_MAX_AGE_HOURS
+            cache_age_hours = None
+            if not pd.isna(exported_at):
+                cache_age_hours = (datetime.now(UTC) - exported_at.to_pydatetime()).total_seconds() / 3600
+                if cache_age_hours > max_age_hours:
+                    return None
+            start_ts = pd.to_datetime(metadata.get("start_time"), utc=True, errors="coerce")
+            end_ts = pd.to_datetime(metadata.get("end_time"), utc=True, errors="coerce")
+
+            start_time = start_ts.to_pydatetime() if not pd.isna(start_ts) else df["reference_time"].iloc[0].to_pydatetime()
+            end_time = end_ts.to_pydatetime() if not pd.isna(end_ts) else df["reference_time"].iloc[-1].to_pydatetime()
+
+            elements_fetched = metadata.get("elements") or [c for c in df.columns if c != "reference_time"]
+
+            return WeatherData(
+                df=df,
+                station_id=metadata.get("station_id", self.station_id),
+                start_time=start_time,
+                end_time=end_time,
+                elements_fetched=elements_fetched,
+                source="cache",
+                cache_age_hours=cache_age_hours,
+            )
+        except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+            logger.warning("Kunne ikke lese cache: %s", exc)
+            return None

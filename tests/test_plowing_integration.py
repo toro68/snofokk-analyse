@@ -101,6 +101,26 @@ class TestMaintenanceApiClient:
         assert event.work_types == ["skraping"]
 
     @patch('src.plowman_client.requests.Session.get')
+    def test_get_latest_normalizes_ascii_work_types(self, mock_get):
+        """ASCII-varianter av arbeidstyper skal vises med norsk stavemåte."""
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "event_id": "abc123",
+            "timestamp_utc": "2026-02-27T06:10:00.000Z",
+            "event_type": "SALT",
+            "status": "COMPLETED",
+            "work_types": ["stroing", "tunbroyting, fresing"],
+        }
+        mock_get.return_value = mock_response
+
+        client = MaintenanceApiClient(base_url="https://example.web.app", token="token")
+        event = client.get_last_maintenance_time()
+
+        assert event is not None
+        assert event.work_types == ["strøing", "tunbrøyting, fresing"]
+
+    @patch('src.plowman_client.requests.Session.get')
     def test_get_latest_prefers_completed_time(self, mock_get):
         """Vinduet for nullstilling skal telles fra ferdig vedlikehold."""
         mock_response = MagicMock()

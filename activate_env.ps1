@@ -4,16 +4,16 @@
 $ProjectDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 # Check if virtual environment exists
-if (-not (Test-Path "$ProjectDir\venv")) {
+if (-not (Test-Path "$ProjectDir\.venv")) {
     Write-Host "Virtual environment not found. Creating..."
     Set-Location $ProjectDir
-    python -m venv venv
+    python -m venv .venv
     Write-Host "Virtual environment created."
 }
 
 # Activate the virtual environment
 Write-Host "Activating virtual environment..."
-& "$ProjectDir\venv\Scripts\Activate.ps1"
+& "$ProjectDir\.venv\Scripts\Activate.ps1"
 
 # Install/update requirements
 if (Test-Path "$ProjectDir\requirements.txt") {

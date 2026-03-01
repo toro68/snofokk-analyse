@@ -249,9 +249,9 @@ Appen bruker nå **alle** relevante værdata for Gullingen og gir betydelig mer 
 - Installerte `streamlit-option-menu` som alternativ ikonbibliotek (tilgjengelig for fremtidig bruk)
 - Opprettholder profesjonell og ren design
 
-### ✅ **3. Automatisk venv-aktivering**
+### ✅ **3. Automatisk .venv-aktivering**
 - Opprettet `activate_env.sh` (Unix/macOS) og `activate_env.ps1` (Windows)
-- Opprettet `run_app.sh` for direkte app-kjøring med venv
+- Opprettet `run_app.sh` for direkte app-kjøring med .venv
 - Oppdatert `requirements.txt` med streamlit-option-menu
 - Lagt til tydelige instruksjoner i README
 
@@ -289,9 +289,9 @@ Appen bruker nå **alle** relevante værdata for Gullingen og gir betydelig mer 
 - **Kun 50% datautnyttelse**: Store forbedringspotensial identifisert
 
 ## Nye filer:
-- `activate_env.sh` - Automatisk venv setup og aktivering (Unix/macOS)
-- `activate_env.ps1` - Automatisk venv setup og aktivering (Windows)
-- `run_app.sh` - Direkte app-kjøring med venv aktivert
+- `activate_env.sh` - Automatisk .venv setup og aktivering (Unix/macOS)
+- `activate_env.ps1` - Automatisk .venv setup og aktivering (Windows)
+- `run_app.sh` - Direkte app-kjøring med .venv aktivert
 - `docs/gullingen_available_elements.md` - Komplett API-dokumentasjon
 - `docs/gullingen_elements_organized.json` - Strukturert elementdata
 - `docs/app_data_utilization_analysis.md` - Kritisk analyse av datautnyttelse
@@ -305,12 +305,12 @@ Appen bruker nå **alle** relevante værdata for Gullingen og gir betydelig mer 
 ./run_app.sh
 
 # Manuell aktivering
-source venv/bin/activate
+source .venv/bin/activate
 streamlit run src/live_conditions_app.py
 ```
 
 ## Resultatet:
 ✓ Cleaner, mer profesjonell live-app uten historisk støy
 ✓ Fokus på sanntidsdata og sesongbevisst analyse
-✓ Robust venv-håndtering for alle utviklere
+✓ Robust .venv-håndtering for alle utviklere
 ✓ Klar for eventuell fremtidig ikonbruk via streamlit-option-menu

@@ -5,16 +5,16 @@
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Check if virtual environment exists
-if [ ! -d "$PROJECT_DIR/venv" ]; then
+if [ ! -d "$PROJECT_DIR/.venv" ]; then
     echo "Virtual environment not found. Creating..."
     cd "$PROJECT_DIR"
-    python3 -m venv venv
+    python3 -m venv .venv
     echo "Virtual environment created."
 fi
 
 # Activate the virtual environment
 echo "Activating virtual environment..."
-source "$PROJECT_DIR/venv/bin/activate"
+source "$PROJECT_DIR/.venv/bin/activate"
 
 # Install/update requirements
 if [ -f "$PROJECT_DIR/requirements.txt" ]; then

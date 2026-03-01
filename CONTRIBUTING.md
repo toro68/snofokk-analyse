@@ -10,8 +10,8 @@
 
 2. **Set up Python environment**:
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # Windows: venv\Scripts\activate
+   python -m venv .venv
+   source .venv/bin/activate  # Windows: .venv\Scripts\activate
    pip install -r requirements.txt
    # Bruk requirements-lock.txt kun ved behov for helt identiske builds
    ```

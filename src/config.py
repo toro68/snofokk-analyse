@@ -137,10 +137,15 @@ class SnowdriftThresholds:
     wind_speed_warning: float = 8.0     # Moderat risiko
 
     # Gate for vindkast-advarsel ("gust warning")
-    # Justert ned (2026-02) etter revalidering mot 18 bekreftede snøfokk-episoder.
-    # 8.5 blokkerte 22%; 8.0 ga 89%; 7.0 fanger 17/18 (94%) + 2 ANNET-episoder
-    # med kast>=14 og temp<=-0.5 som tidligere ble blokkert av gaten.
+    # Navn forklarer bruken tydeligere enn "median".
+    # Re-kalibrert (historikk + nov 2025–feb 2026): 7 m/s ga klart bedre
+    # SNØFOKK-recall med liten økning i falsk-rate sammenlignet med 8 m/s.
     wind_speed_gust_warning_gate: float = 7.0
+
+    # Deprecated alias: beholdes for bakoverkompatibilitet.
+    # NB: Per nå er dette feltet ikke referert av koden i `src/`, men beholdes
+    # for eldre scripts/eksperimenter og som dokumentasjon på navnebyttet.
+    wind_speed_median: float = 8.0
 
     # Vindkast-terskler (NY - bedre trigger!)
     # Historisk snitt: 21.9 m/s - justert terskel til 20.0 for å fange typiske episoder
@@ -379,18 +384,17 @@ class SlapsThresholds:
     Slaps = tung blanding av snø og vann.
     """
     # Temperatur (kritisk område for slaps)
-    temp_min: float = -1.0              # Under dette: snø
-    # Hevet fra 2.0°C etter bekreftet episode 27. nov 2025 med snitt 3.8°C/topp 5.5°C.
-    # Over 4.0°C klassifiseres som smelting/regn (ikke slaps) med eget scenario-kall.
-    temp_max: float = 4.0
+    # Re-kalibrert med ny vinterperiode (nov 2025–feb 2026):
+    # slaps-episoder forekom ved mildere forhold enn tidligere antatt.
+    temp_min: float = 0.0               # Under dette: oftest snø/fast dekke, mindre slaps
+    temp_max: float = 4.0               # Slaps fortsatt relevant ved mildvær med regn på snø
     temp_optimal: float = 1.2           # Historisk snitt for slaps
 
     # Nedbør
     precipitation_min: float = 1.0      # mm/t (øyeblikksindikator)
     precipitation_heavy: float = 5.0    # mm/t (øyeblikksindikator)
-    # Akkumulert nedbør (historisk kalibrert som 12t-terskler;
-    # vinduet styres av `precipitation_accum_hours`)
-    precipitation_12h_min: float = 7.0
+    # Akkumulert nedbør (historisk kalibrert som 12t-terskler; vinduet styres av `precipitation_accum_hours`)
+    precipitation_12h_min: float = 5.0
     precipitation_12h_heavy: float = 12.0
 
     # Snødekke

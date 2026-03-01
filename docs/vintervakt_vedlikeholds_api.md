@@ -76,6 +76,7 @@ Eksempel `secrets.toml` lokalt:
 ```toml
 MAINTENANCE_API_BASE_URL = "https://example.web.app"
 MAINTENANCE_API_TOKEN = "<SETT_INN_TOKEN>"
+FROST_CACHE_MAX_AGE_HOURS = "12"
 ```
 
 ## Streamlit: HTTP-kall kun når appen lastes

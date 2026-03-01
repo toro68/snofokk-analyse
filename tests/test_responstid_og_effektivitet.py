@@ -28,7 +28,7 @@ class MaintenanceType(Enum):
     PLOWING = "broyting"
     SALTING = "stroing"
     HEAVY_PLOWING = "tunbroyting"
-    EMERGENCY = "nodbroyting"
+    EMERGENCY = "emergency"
 
 
 @dataclass

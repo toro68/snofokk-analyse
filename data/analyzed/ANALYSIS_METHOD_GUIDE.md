@@ -2,6 +2,12 @@
 
 Denne veiledningen dokumenterer hvordan analysene som ble kjørt 29. november 2025 ble gjennomført, og hvordan en senere (bedre) LLM bør reprodusere eller utvide dem. Fokus er å beskrive hele kjeden fra datagrunnlag til leveransefiler, med eksplisitte sjekkpunkter og filnavn.
 
+Status per **1. mars 2026**: Guiden er fortsatt gyldig som basis, men inneholder noen tall som må oppdateres dynamisk ved hver kjøring (ikke hardkodes i tekst).
+
+Oppdatert **1. mars 2026**:
+- Ny vedlikeholdsperiode (nov 2025-feb 2026) er analysert med separat arbeidstidsrapport.
+- Metodikken er utvidet med multi-label arbeidstyper (vei + tun i samme økt).
+
 ---
 
 ## 1. Datagrunnlag
@@ -55,7 +61,7 @@ Brøytedata reflekterer faktisk aktivitet, men er en ufullkommen proxy for behov
 
 4. **Ukedagsrutiner (tunbrøyting fredager)**
    - I brøyteloggen finnes et tydelig ukedagsmønster der fredager skiller seg ut med mange og lange turer.
-   - Per 13. des 2025 (166 unike hendelser): **Fredag = 27 hendelser**, median **19.3 km** og **~209 min** (fra `Rapport 2022-2025.csv`).
+   - Per 1. mars 2026 (166 unike hendelser, én `Dato`-rad uparsebar: `Totalt`): **Fredag = 44 hendelser**, median **18.05 km** og **~223 min**.
    - Tolkning: dette kan være rutine/tunbrøyting (planlagt “runde”) og ikke nødvendigvis direkte vær-drevet.
    - Konsekvens: når du kalibrerer terskler for “behov for brøyting/strøing”, må du ikke bruke ukritisk antall hendelser som fasit. Valider terskler primært mot værindikatorene, og bruk brøyting som støtte.
 
@@ -109,6 +115,14 @@ Filer generert denne datoen ligger i `data/analyzed/` og inkluderer:
 |-----|---------|--------|
 | `broyting_weather_correlation_2025.csv` | Rå sammenslått tabell (vær + brøyting) | Basis for videre korrelasjoner |
 | `maintenance_weather_analysis.json` | Oppsummering per vedlikeholdstype (snø, slaps, is, inspeksjon) | Grunnlag for terskelvalg |
+
+Tillegg per 1. mars 2026:
+
+| Fil | Innhold | Formål |
+|-----|---------|--------|
+| `arbeidstidsrapport_2025-11-01_til_2026-03-01.csv` | Vedlikeholdsøkter med arbeidstype | Ny driftsperiode |
+| `weather_SN46220_2025-11-01_to_2026-03-01_PT1H.csv` | Frost 1H for samme periode | Koblingsgrunnlag |
+| `weather_vs_broyting_arbeidstidsrapport_2025-11-01_til_2026-03-01_h12.csv` | Koblet vær + vedlikehold (12t) | Re-kalibrering/robusthet |
 
 ### Validering
 - Kryss-sjekk antall rader mot unike hendelser i `Rapport 2022-2025.csv` (per 13. des 2025: **166** unike).
@@ -202,6 +216,9 @@ Anbefalt praksis:
      - “Delayed response” vindu: 12t før → 6t etter
      Hvis terskelen kun “fungerer” i delayed-vindu, tyder det på kapasitetsforsinkelse og at terskelen i seg selv kan være riktig selv om loggtidspunkt er sent.
    - For glattføre: ikke krev at vedlikehold (strøing) finnes for å si at værterskler er riktige. Valider primært mot værindikatorer (surface_temperature, nedbør, duggpunkt) og bruk vedlikeholdshendelser kun som støtte.
+   - For tunbrøyting: håndter arbeidstyper som multi-label. Samme økt kan inneholde både tun- og veiarbeid.
+     - Bruk feltene `has_tun_component`, `has_road_component`, `is_pure_tun`, `event_relevant_for_thresholds`.
+     - Filtrer kun `is_pure_tun` fra terskelkalibrering for vei-risiko.
 5. **Visualisering**
    - Eksporter figur/CSV for alle scenarioer (f.eks. `matplotlib` + `df.plot()`), navngi med tidsstempel.
 
@@ -253,11 +270,22 @@ Snøfokk (SNØFOKK) skal ikke valideres med “vind alene”. Scriptet printer d
 - Kaldt nok (`air_temp_avg <= settings.snowdrift.temperature_max`)
 - Minimum snødekke (`snow_depth >= settings.snowdrift.snow_depth_min_cm`)
 - Vind-gate for å filtrere ut korte kast uten vedvarende vind (`wind_avg >= settings.snowdrift.wind_speed_gust_warning_gate`, anbefalt gate ~8 m/s)
+- Vind-gate for å filtrere ut korte kast uten vedvarende vind (`wind_avg >= settings.snowdrift.wind_speed_gust_warning_gate`).
+  Per 1. mars 2026 ble gate re-kalibrert fra 8.0 til 7.0 m/s.
 
 Per 13. des 2025 (dedupet `broyting_weather_correlation_2025.csv`) viser scriptet at:
 - `gust-only` advarsel (≥ 13 m/s) gir høy treffrate, men mange falske triggere.
 - En “gated” regel med `wind_avg >= 8 m/s` + frost + snødekke gir nesten samme treffrate for SNØFOKK, men langt lavere falsk trigger-rate.
 - En for streng vind-gate (f.eks. `wind_avg >= 12 m/s`) er for streng i event-data (mister mange SNØFOKK-episoder).
+
+Per 1. mars 2026 (historikk + ny periode nov 2025-feb 2026):
+- `wind_avg >= 7 m/s` ga bedre SNØFOKK-recall enn 8 m/s, med liten økning i falsk-rate.
+- `SLAPS` ble bedre fanget med mildere temperaturvindu og litt lavere 12t-nedbørterskel.
+- Oppdaterte config-verdier (se `src/config.py`):
+  - `settings.snowdrift.wind_speed_gust_warning_gate = 7.0`
+  - `settings.slaps.temp_min = 0.0`
+  - `settings.slaps.temp_max = 4.0`
+  - `settings.slaps.precipitation_12h_min = 5.0`
 
 Merk om navngivning i config:
 
@@ -372,3 +400,76 @@ Resultat 30. nov 2025:
 - Nysnø toppindikatorer: akkumulert nedbør, vindretning (SE-S), relativ fuktighet → samsvarer med tersklene i koden.
 
 ✅ Dette bekrefter at filene fra 29. november er konsistente og kan brukes som autoritativt grunnlag før vi justerer tersklene i `src/config.py`.
+
+---
+
+## 10. Re-analyse av datagrunnlag (1. mars 2026)
+
+Kort oppsummering av ny sanity-sjekk:
+
+- `broyting_weather_correlation_2025.csv`:
+  - 166 rader rått, **6 duplikater** på `(datetime, scenario)`, 163 etter dedupe.
+  - Periode: `2022-12-21 12:09:00` → `2025-04-22 09:05:00`.
+  - Mangler på nøkkelfelt: 0% for temp/nedbør/snø/duggpunkt/fukt, **1.2%** for `wind_avg` og `gust_max`.
+  - Scenariofordeling (dedupet): `ANNET 69`, `NYSNØ 33`, `SLAPS 24`, `FRYSEFARE 19`, `SNØFOKK 18`.
+- `Rapport 2022-2025.csv`:
+  - 167 rader rått, 166 unike hendelser (`Dato, Starttid, Sluttid, Rode`).
+  - 0% mangler på varighet og distanse etter parsing.
+  - p10/p50/p90:
+    - Varighet (min): `32.45 / 153.62 / 372.26`
+    - Distanse (km): `6.6 / 14.6 / 29.9`
+  - En enkel q10-basert inspeksjonsheuristikk gir ca **6.0%** inspeksjonskandidater.
+
+Tolkning:
+- Datagrunnlaget er godt nok for operativ validering av dagens terskler.
+- Datagrunnlaget er **ikke alene** sterkt nok for “aggressiv” rekalibrering uten ekstra robusthetstester, spesielt pga få `SNØFOKK`-hendelser og kjent driftsbias.
+
+---
+
+## 11. Forbedringer i ANALYSIS_METHOD_GUIDE (for bedre terskelgrunnlag)
+
+Disse punktene bør innføres som krav før terskler i `src/config.py` endres:
+
+1. **Gjør datakvalitet til obligatorisk gate**
+   - Hver analyse må produsere en “quality report” med:
+     - antall rå/dedupede rader,
+     - duplikater,
+     - mangler per nøkkelfelt,
+     - scenariofordeling.
+   - Avbryt terskelendring hvis kvalitetssjekk feiler (f.eks. manglende scenarier).
+
+2. **Bruk sesong-basert holdout-validering**
+   - Kalibrer terskler på eldre sesonger og valider på siste sesong.
+   - Unngå å evaluere på samme hendelser som ble brukt til tuning.
+
+3. **Mål robusthet med usikkerhet, ikke bare punktestimat**
+   - Rapporter TPR/FPR med bootstrap-intervaller for SNØFOKK/SLAPS/FRYSEFARE.
+   - Krav: endring må forbedre metrikker konsistent, ikke bare i ett uttrekk.
+
+4. **Skille mellom event-data og timeseriekrav**
+   - Event-CSV kan validere grove terskler.
+   - Tidsavhengige regler (f.eks. løssnø 24t lookback) må valideres på 1H Frost-timeserier.
+   - Dokumenter eksplisitt hvilken regel som er testet på hvilket datanivå.
+
+5. **Bias-korrigert score for beslutning**
+   - Rapporter resultater både:
+     - med alle hendelser,
+     - uten inspeksjonskandidater,
+     - med “delayed response”-vindu.
+   - Terskelendring godkjennes kun hvis forbedring holder i alle tre visninger.
+
+6. **Streng endringsprotokoll for terskler**
+   - Ved hver terskelendring må rapporten inkludere:
+     - gammel verdi, ny verdi, begrunnelse,
+     - effekt på TPR/FPR/alert-rate,
+     - hvilke scenarier som blir bedre/verre.
+   - Ingen terskelendring på grunnlag av enkelthendelser alene.
+
+7. **Hold tall dynamiske i dokumentasjon**
+   - Tall som scenariofordeling, fredagsmønster og duplikater skal genereres av script ved hver kjøring.
+   - Unngå hardkodede tall i guiden uten tidsstempel og kommando som kan reprodusere dem.
+
+8. **Tydelig skill mellom driftstype og værmekanisme**
+   - `strøing` kan bety både observert glattføre og forebyggende tiltak.
+   - `tunbrøyting` fredag er ofte planlagt ukesarbeid i private tun.
+   - Ikke bruk arbeidstype direkte som sannhetslabel uten kontekstfelt og multi-label håndtering.

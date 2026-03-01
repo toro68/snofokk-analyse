@@ -23,6 +23,36 @@ def _load_correlation_df() -> pd.DataFrame:
     return df
 
 
+def _apply_event_relevance_filter(df: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, int]]:
+    """Bruk event_relevant_for_thresholds hvis tilgjengelig.
+
+    Fallback: behold alle rader (bakoverkompatibelt med eldre CSV-er).
+    """
+    stats = {
+        "raw_rows": int(len(df)),
+        "excluded_not_relevant": 0,
+        "kept_rows": int(len(df)),
+    }
+
+    if "event_relevant_for_thresholds" not in df.columns:
+        return df, stats
+
+    flag = (
+        df["event_relevant_for_thresholds"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .map({"true": True, "false": False})
+    )
+    # Manglende/ukjent tolkes konservativt som relevant
+    relevant = flag.fillna(True)
+    filtered = df.loc[relevant].copy()
+
+    stats["excluded_not_relevant"] = int((~relevant).sum())
+    stats["kept_rows"] = int(len(filtered))
+    return filtered, stats
+
+
 def _load_plow_events() -> pd.DataFrame:
     plow = pd.read_csv(PLOWING_CSV, sep=";", encoding="utf-8")
     event_key = ["Dato", "Starttid", "Sluttid", "Rode"]
@@ -93,12 +123,22 @@ def main() -> None:
         raise SystemExit(f"Missing file: {PLOWING_CSV}")
 
     df_raw = _load_correlation_df()
+    df_filtered, relevance_stats = _apply_event_relevance_filter(df_raw)
     dup = df_raw.duplicated(subset=["datetime", "scenario"], keep=False)
-    df = df_raw.drop_duplicates(subset=["datetime", "scenario"]).copy()
+    dup_filtered = df_filtered.duplicated(subset=["datetime", "scenario"], keep=False)
+    df = df_filtered.drop_duplicates(subset=["datetime", "scenario"]).copy()
 
     _print_header("Correlation dataset")
     print("rows (raw):", len(df_raw))
+    if "event_relevant_for_thresholds" in df_raw.columns:
+        print(
+            "event_relevance filter:",
+            f"excluded={relevance_stats['excluded_not_relevant']}",
+            f"kept={relevance_stats['kept_rows']}",
+        )
     print("dup rows on (datetime, scenario):", int(dup.sum()))
+    if "event_relevant_for_thresholds" in df_raw.columns:
+        print("dup rows on (datetime, scenario) after relevance filter:", int(dup_filtered.sum()))
     print("rows (deduped):", len(df))
     print("scenario counts:", df["scenario"].value_counts().to_dict())
 

@@ -35,9 +35,14 @@ def _maintenance_keywords() -> set[str]:
     # Norsk + engelsk (API kan variere mellom systemer)
     return {
         "brøyting",
+        "broyting",
         "brøyte",
+        "broyte",
         "snøbrøyting",
         "plog",
+        "snobroyting",
+        "tunbrøyting",
+        "tunbroyting",
         "plow",
         "plowing",
         "snowplow",
@@ -52,6 +57,8 @@ def _maintenance_keywords() -> set[str]:
         "milling",
         "strø",
         "strøing",
+        "stro",
+        "stroing",
         "salt",
         "salting",
         "grit",

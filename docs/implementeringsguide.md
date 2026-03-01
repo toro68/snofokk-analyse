@@ -266,7 +266,7 @@ WEATHER_STATION=SN46220
 ### Kjøring
 ```bash
 # Aktiver miljø
-source venv/bin/activate
+source .venv/bin/activate
 
 # Start live app
 streamlit run src/live_conditions_app.py

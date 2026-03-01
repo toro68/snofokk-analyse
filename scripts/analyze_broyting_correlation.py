@@ -19,17 +19,27 @@ from __future__ import annotations
 import argparse
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+import re
+import sys
 
 import pandas as pd
 
-from src.config import settings
-
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = PROJECT_ROOT / "data"
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.config import settings
 
 DEFAULT_WEATHER_FILE = DATA_DIR / "analyzed" / "enhanced_features_SN46220_2024-01-01_to_2024-03-31.csv"
 DEFAULT_PLOWING_FILE = DATA_DIR / "analyzed" / "Rapport 2022-2025.csv"
+
+_WORK_TYPE_REPLACEMENTS: tuple[tuple[str, str], ...] = (
+    ("tunbroyting", "tunbrøyting"),
+    ("snobroyting", "snøbrøyting"),
+    ("broyting", "brøyting"),
+    ("stroing", "strøing"),
+)
 
 
 def parse_duration_to_minutes(duration_str: str) -> float | None:
@@ -105,32 +115,124 @@ def parse_norwegian_datetime_to_utc(date_str: str, time_str: str) -> datetime:
     return local_dt.replace(tzinfo=oslo_tz).astimezone(UTC)
 
 
-def load_plowing_data(path: Path) -> pd.DataFrame:
-    df = pd.read_csv(path, sep=";")
-    df = df[df["Dato"] != "Totalt"].copy()
+def parse_numeric_date_time_to_utc(date_str: str, time_str: str) -> datetime:
+    """Parse format som `27.2.2026` + `07:10` (lokal tid) og returner UTC."""
+    local_dt = datetime.strptime(f"{str(date_str).strip()} {str(time_str).strip()}", "%d.%m.%Y %H:%M")
+    try:
+        import zoneinfo
 
+        oslo_tz = zoneinfo.ZoneInfo("Europe/Oslo")
+    except Exception:
+        oslo_tz = None
+
+    if oslo_tz is None:
+        return local_dt.replace(tzinfo=UTC)
+    return local_dt.replace(tzinfo=oslo_tz).astimezone(UTC)
+
+
+def _normalize_work_text(value: str) -> str:
+    text = value
+    for src, dst in _WORK_TYPE_REPLACEMENTS:
+        text = re.sub(rf"\b{re.escape(src)}\b", dst, text, flags=re.IGNORECASE)
+    return text.strip()
+
+
+def _parse_work_types(value: object) -> list[str]:
+    if value is None:
+        return []
+    text = str(value).strip()
+    if not text or text.lower() == "nan":
+        return []
+    parts = [p.strip() for p in re.split(r"[,;/]", text) if p and p.strip()]
+    return [_normalize_work_text(p) for p in parts]
+
+
+def _read_plowing_csv(path: Path) -> pd.DataFrame:
+    """Les både semikolon- og komma-separerte brøyterapporter."""
+    # Historisk rapport: semikolon
+    try:
+        df = pd.read_csv(path, sep=";", encoding="utf-8", dtype=str)
+        if "Dato" in df.columns and "Starttid" in df.columns:
+            return df
+    except pd.errors.ParserError:
+        pass
+
+    # Arbeidstidsrapport: komma + BOM
+    return pd.read_csv(path, encoding="utf-8-sig", dtype=str)
+
+
+def load_plowing_data(path: Path) -> pd.DataFrame:
+    df = _read_plowing_csv(path)
+
+    # Filtrer totalsummer/rubrikker
+    if "Dato" in df.columns:
+        df = df[df["Dato"] != "Totalt"].copy()
+    if "Start dato" in df.columns:
+        df = df[df["Start dato"].astype(str).str.lower() != "totalt"].copy()
+
+    # Varighet
     if "Varighet" in df.columns:
         df["duration_minutes"] = df["Varighet"].apply(parse_duration_to_minutes)
+    elif "Timer i økt" in df.columns:
+        df["duration_minutes"] = pd.to_numeric(df["Timer i økt"], errors="coerce") * 60.0
     else:
         df["duration_minutes"] = None
 
+    # Distanse finnes i historisk rapport, men ikke i arbeidstidsrapport
     if "Distanse (km)" in df.columns:
         df["distance_km"] = df["Distanse (km)"].apply(parse_distance_km)
     else:
         df["distance_km"] = None
 
+    # Standardiser arbeidstype-felter
+    work_raw_col = None
+    if "Arbeidsøkt" in df.columns:
+        work_raw_col = "Arbeidsøkt"
+    elif "Arbeidstype" in df.columns:
+        work_raw_col = "Arbeidstype"
+
+    if work_raw_col:
+        df["work_type_raw"] = df[work_raw_col].astype(str).map(_normalize_work_text)
+    else:
+        df["work_type_raw"] = ""
+
+    df["work_types"] = df["work_type_raw"].apply(_parse_work_types)
+    df["has_tun_component"] = df["work_types"].apply(lambda items: any("tunbrøyting" in x.lower() for x in items))
+    df["has_road_component"] = df["work_types"].apply(
+        lambda items: any(
+            k in x.lower() for x in items for k in ("brøyting", "snøbrøyting", "skraping", "strøing", "fresing", "veikontroll")
+        )
+    )
+    df["is_pure_tun"] = df["has_tun_component"] & (~df["has_road_component"])
+    df["event_relevant_for_thresholds"] = ~df["is_pure_tun"]
+
+    # Parse starttid i begge formater
     start_times: list[datetime | None] = []
     for _, row in df.iterrows():
         try:
-            start_times.append(parse_norwegian_datetime_to_utc(row["Dato"], row["Starttid"]))
+            if "Dato" in df.columns and "Starttid" in df.columns:
+                start_times.append(parse_norwegian_datetime_to_utc(row["Dato"], row["Starttid"]))
+            elif "Start dato" in df.columns and "Start tid" in df.columns:
+                start_times.append(parse_numeric_date_time_to_utc(row["Start dato"], row["Start tid"]))
+            else:
+                start_times.append(None)
         except Exception:
             start_times.append(None)
 
     df["start_utc"] = start_times
     df = df.dropna(subset=["start_utc"]).copy()
 
-    # Unike (samme starttid kan finnes flere ganger per rode/enhet)
-    df = df.drop_duplicates(subset=["start_utc", "Rode", "Enhet"]).copy()
+    # Unike rader per format
+    dedupe_keys = ["start_utc"]
+    if "Rode" in df.columns:
+        dedupe_keys.append("Rode")
+    if "Enhet" in df.columns:
+        dedupe_keys.append("Enhet")
+    if "Operatør ID" in df.columns:
+        dedupe_keys.append("Operatør ID")
+    if "work_type_raw" in df.columns:
+        dedupe_keys.append("work_type_raw")
+    df = df.drop_duplicates(subset=dedupe_keys).copy()
     df = df.sort_values("start_utc")
     return df
 
@@ -236,6 +338,14 @@ def analyze_weather_vs_plowing(
             "dato": row.get("Dato"),
             "rode": row.get("Rode"),
             "enhet": row.get("Enhet"),
+            "operator_id": row.get("Operatør ID"),
+            "operator": row.get("Operatør"),
+            "work_type_raw": row.get("work_type_raw"),
+            "work_types": ",".join(row.get("work_types") or []),
+            "has_tun_component": bool(row.get("has_tun_component", False)),
+            "has_road_component": bool(row.get("has_road_component", False)),
+            "is_pure_tun": bool(row.get("is_pure_tun", False)),
+            "event_relevant_for_thresholds": bool(row.get("event_relevant_for_thresholds", True)),
             "start_utc": start_utc,
             "window_hours": hours,
             "duration_minutes": row.get("duration_minutes"),

@@ -43,6 +43,18 @@ Et norsk væranalysesystem for realistisk snøfokk- og glatt vei-risikovurdering
   - `snowdrift.wind_speed_gust_warning_gate`: 9.0 → 8.5 → 7.0 (revalidert 22. feb 2026: 7.0 fanger 94% av bekreftede episoder + 2 tidligere missede)
 - Prinsipp videre: warning-nivå kan finjusteres for recall, critical-nivå holdes konservativt.
 
+## Siste kalibrering (1. mars 2026)
+
+- Terskler er revalidert mot:
+  - historisk datasett (`data/analyzed/broyting_weather_correlation_2025.csv`)
+  - ny driftsperiode (`data/analyzed/arbeidstidsrapport_2025-11-01_til_2026-03-01.csv`) koblet mot Frost 1H.
+- Arbeidstyper behandles som multi-label i analyse (vei + tun kan skje i samme økt).
+- Kun `src/config.py` er autoritativ kilde for tallverdier (`settings.*`).
+
+Metodikk og validering:
+- `docs/terskler_og_validering.md`
+- `data/analyzed/ANALYSIS_METHOD_GUIDE.md`
+
 ## 🎯 **VALIDERTE VÆRELEMENTER: 15 KJERNEELEMENTER**
 
 **Basert på UTVIDET analyse av 19 kritiske elementer testet mot faktiske brøytehendelser på Gullingen (SN46220):**
@@ -80,7 +92,7 @@ Et norsk væranalysesystem for realistisk snøfokk- og glatt vei-risikovurdering
 
 ## 🌐 **LIVE VÆRAPP - PRODUKSJONSKLART**
 
-**Hovedapp**: `src/gullingen_app.py`
+**Hovedapp (Streamlit)**: `src/gullingen_app.py` (entry point via `app.py`)
 - ✅ **Empirisk validert nedbørtype-klassifisering** (149 episoder)
 - ✅ **Vindblåst snø-deteksjon** med korrekte terskler
 - ✅ **Kombinert risikograf** (snøfokk + glattføre + slush)
@@ -93,12 +105,12 @@ Et norsk væranalysesystem for realistisk snøfokk- og glatt vei-risikovurdering
 
 **Unix/macOS:**
 ```bash
-# Automatisk venv-aktivering og oppdatering
+# Automatisk .venv-aktivering og oppdatering
 ./activate_env.sh
 
 # Eller manuelt:
 source .venv/bin/activate
-streamlit run src/gullingen_app.py
+streamlit run app.py
 ```
 
 ### Operasjonell logging (MEDIUM/HIGH)
@@ -112,6 +124,7 @@ Styring via env/secrets:
 - `OPERATIONAL_LOG_ENABLED` (default: `true`)
 - `OPERATIONAL_LOG_PATH` (default: `data/logs/operational_alerts.csv`)
 - `OPERATIONAL_LOG_STATE_PATH` (default: `data/logs/operational_alerts_state.json`)
+- `FROST_CACHE_MAX_AGE_HOURS` (default: `12`) – maks alder på bufrede Frost-data ved fallback
 
 Stans farevarsel ved nylig vedlikehold (via vedlikeholds-endepunktet):
 - `MAINTENANCE_SUPPRESS_HOURS` (default: `3.0`) – hvis siste vedlikehold ser ut som brøyting/strøing og er nyere enn dette vinduet, settes alle kategorier til `LOW` (situasjonen «nullstilles» mens det brøytes/nylig er gjort).
@@ -129,12 +142,12 @@ For å nedjustere glattføre når veier er strødd/brøytet nylig:
 
 **Windows (PowerShell):**
 ```powershell
-# Automatisk venv-aktivering og oppdatering
+# Automatisk .venv-aktivering og oppdatering
 .\activate_env.ps1
 
 # Eller manuelt:
 .venv\Scripts\Activate.ps1
-streamlit run src/gullingen_app.py
+streamlit run app.py
 ```
 
 ## 🎯 **EMPIRISK VALIDERTE KRITERIER**
@@ -260,8 +273,8 @@ For snøfokk må **ALLE** følgende være oppfylt:
 **Arkivering fullført 12. august 2025** - Systemet er nå produksjonsklart med kun relevante filer.
 
 ### 🎯 **Aktive filer (hovedmappen):**
-- **`validert_glattfore_logikk.py`** - Empirisk validert hovedlogikk
-- **6 dokumentasjonsfiler** - Kun aktuelle MD-filer
+- **`app.py`** - Streamlit Cloud entry point (kaller hovedapp)
+- **`src/gullingen_app.py`** - Hovedapp (varsler + visualisering)
 - **Konfigurasjon** - `.aigenrc`, `requirements.txt`, aktivering-script
 
 ### 📂 **Organiserte mapper:**
@@ -298,8 +311,8 @@ archive/                # Arkiverte filer (gamle script + data)
 cd alarm-system
 
 # Create virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On macOS/Linux
+python3 -m venv .venv
+source .venv/bin/activate  # On macOS/Linux
 
 # Install dependencies
 pip install -r requirements.txt
@@ -323,7 +336,7 @@ python scripts/analysis/revised_snowdrift_with_loose_snow.py
 python scripts/analysis/investigate_snow_quality_data.py
 
 # Run Streamlit app
-streamlit run src/gullingen_app.py
+streamlit run app.py
 ```
 
 ## 🔧 Development
@@ -361,7 +374,7 @@ The old `weekly_weather_report_v2.py` is kept for compatibility, but the new ref
 crontab -e
 
 # Add line for Friday 8 AM
-0 8 * * 5 cd /path/to/alarm-system && /path/to/venv/bin/python scripts/reports/weekly_weather_report_v2_refactored.py
+0 8 * * 5 cd /path/to/alarm-system && /path/to/.venv/bin/python scripts/reports/weekly_weather_report_v2_refactored.py
 ```
 
 ### LaunchD (Recommended)

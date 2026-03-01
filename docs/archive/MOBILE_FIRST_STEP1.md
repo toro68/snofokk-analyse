@@ -103,7 +103,7 @@ Dette dokumentet beskriver Steg 1 av den mobile-first forbedringen av alarm-syst
 
 ### Manuell:
 ```bash
-source venv/bin/activate
+source .venv/bin/activate
 streamlit run src/mobile_weather_app.py --server.port 8501
 ```
 
