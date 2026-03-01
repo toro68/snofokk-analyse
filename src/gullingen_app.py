@@ -1362,16 +1362,15 @@ def fetch_netatmo_stations() -> dict[str, Any]:
 
             private_radius = unique_radii[-1]
             private_stations: list[NetatmoStation] = []
-            if hasattr(client, "get_fjellbergsskardet_private"):
-                private_stations = client.get_fjellbergsskardet_private(radius_km=private_radius)
-            elif hasattr(client, "get_private_stations"):
-                # Bakoverkompatibilitet: fallback hvis eldre NetatmoClient mangler område-metoden.
+            all_private_stations: list[NetatmoStation] = []
+            if hasattr(client, "get_private_stations"):
+                all_private_stations = client.get_private_stations()
+            if all_private_stations:
                 center_lat = float(settings.netatmo.fjellberg_lat)
                 center_lon = float(settings.netatmo.fjellberg_lon)
-                all_private = client.get_private_stations()
                 lat_scale = 111.0
                 lon_scale = 57.0  # ~cos(59.4) * 111
-                for station in all_private:
+                for station in all_private_stations:
                     dx = (station.lon - center_lon) * lon_scale
                     dy = (station.lat - center_lat) * lat_scale
                     if (dx * dx + dy * dy) ** 0.5 <= private_radius:
@@ -1394,6 +1393,40 @@ def fetch_netatmo_stations() -> dict[str, Any]:
                     "error": None,
                     "auth_ok": True,
                     "source": "private",
+                    "radius_used_km": private_radius,
+                    "radii_tried_km": unique_radii,
+                }
+
+            # Siste fallback: vis private stasjoner uansett avstand hvis vi har noen.
+            if all_private_stations:
+                fallback_rows: list[dict] = []
+                for s in all_private_stations:
+                    fallback_rows.append({
+                        "station_id": s.station_id,
+                        "name": s.name,
+                        "lat": s.lat,
+                        "lon": s.lon,
+                        "altitude": s.altitude,
+                        "temperature": s.temperature,
+                        "humidity": s.humidity,
+                        "timestamp": s.timestamp.isoformat() if s.timestamp else None,
+                    })
+                return {
+                    "rows": fallback_rows,
+                    "error": None,
+                    "auth_ok": True,
+                    "source": "private_anywhere",
+                    "radius_used_km": private_radius,
+                    "radii_tried_km": unique_radii,
+                }
+
+            # Hvis private kall feilet, vis feilen i UI i stedet for "ingen data".
+            if client.last_error:
+                return {
+                    "rows": [],
+                    "error": client.last_error,
+                    "auth_ok": False,
+                    "source": "none",
                     "radius_used_km": private_radius,
                     "radii_tried_km": unique_radii,
                 }
@@ -1561,6 +1594,8 @@ def render_netatmo_map() -> None:
 
     if source == "private":
         st.caption("Kilde: Private Netatmo-stasjoner (fallback)")
+    elif source == "private_anywhere":
+        st.caption("Kilde: Private Netatmo-stasjoner (utenfor standard radius)")
     elif source == "public":
         st.caption("Kilde: Offentlige Netatmo-stasjoner")
 
