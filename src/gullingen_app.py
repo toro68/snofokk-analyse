@@ -837,11 +837,15 @@ def render_maintenance_top(plowing_info: PlowingInfo, suppress_alerts: bool) -> 
         if suppress_alerts and plowing_info.hours_since is not None:
             remaining = max(0.0, suppress_hours - float(plowing_info.hours_since))
             details_parts.append(
-                f"Nullstilling: {suppress_hours_text} fra siste brøyting ({remaining:.1f}t igjen)"
+                f"Brøyting/skraping/strøing nuller ut værhendelsen. "
+                f"Nullstilling: {suppress_hours_text} ({remaining:.1f}t igjen). "
+                f"Varsler beregnes videre fra siste brøyting."
             )
         else:
             details_parts.append(
-                f"Nullstilling: {suppress_hours_text} fra siste brøyting"
+                f"Brøyting/skraping/strøing nuller ut værhendelsen. "
+                f"Nullstilling: {suppress_hours_text}. "
+                f"Varsler beregnes videre fra siste brøyting."
             )
 
         if details_parts:
