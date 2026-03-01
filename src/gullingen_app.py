@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import logging
 import html
+import math
 from datetime import UTC, datetime, timedelta
 
 import matplotlib.pyplot as plt
@@ -1441,17 +1442,34 @@ def render_netatmo_map() -> None:
 
     # Lag DataFrame for kart med alle data
     map_data = []
+    coord_seen: dict[tuple[float, float], int] = {}
     for s in temp_stations:
         temp = s.temperature
         hum = s.humidity
         alt = s.altitude
 
+        # Flere private moduler kan dele identisk koordinat.
+        # Gi små, deterministiske offset slik at punktene ikke tegnes oppå hverandre.
+        base_lat = float(s.lat)
+        base_lon = float(s.lon)
+        key = (round(base_lat, 6), round(base_lon, 6))
+        idx = coord_seen.get(key, 0)
+        coord_seen[key] = idx + 1
+
+        plot_lat = base_lat
+        plot_lon = base_lon
+        if idx > 0:
+            angle = idx * 2.399963229728653  # Golden angle
+            radius_deg = 0.00018 * ((idx + 2) / 2.0)  # ca 20-50m
+            plot_lat = base_lat + (radius_deg * math.sin(angle))
+            plot_lon = base_lon + (radius_deg * math.cos(angle))
+
         # Fargekode basert på temperatur (RGB)
         r, g, b = get_temp_rgb(temp or 0.0)
 
         map_data.append({
-            "lat": s.lat,
-            "lon": s.lon,
+            "lat": plot_lat,
+            "lon": plot_lon,
             "name": s.name or "Netatmo",
             "altitude": alt,
             "temperature": temp,
@@ -1514,6 +1532,7 @@ def render_netatmo_map() -> None:
 
     if source == "private":
         st.caption("Kilde: Private Netatmo-stasjoner")
+    st.caption(f"Viser {len(temp_stations)} stasjon(er) med temperatur")
 
     # Vis når Netatmo-data sist ble oppdatert (nyttig ift. caching/TTL)
     latest_ts = None
