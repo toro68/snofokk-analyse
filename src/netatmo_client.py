@@ -65,9 +65,11 @@ class NetatmoClient:
             client_id: Netatmo app client ID (fra .env eller secrets)
             client_secret: Netatmo app client secret
         """
-        self.client_id = client_id or get_secret("NETATMO_CLIENT_ID", "")
-        self.client_secret = client_secret or get_secret("NETATMO_CLIENT_SECRET", "")
-        self.access_token: str | None = (get_secret("NETATMO_ACCESS_TOKEN", "") or "").strip() or None
+        raw_client_id = client_id if client_id is not None else get_secret("NETATMO_CLIENT_ID", "")
+        raw_client_secret = client_secret if client_secret is not None else get_secret("NETATMO_CLIENT_SECRET", "")
+        self.client_id = str(raw_client_id).strip().strip('"').strip("'")
+        self.client_secret = str(raw_client_secret).strip().strip('"').strip("'")
+        self.access_token: str | None = (get_secret("NETATMO_ACCESS_TOKEN", "") or "").strip().strip('"').strip("'") or None
         self.access_token_expires_at: datetime | None = None
         self.last_error: str | None = None
         self._session = requests.Session()
@@ -204,7 +206,7 @@ class NetatmoClient:
             self.last_error = "Mangler NETATMO_CLIENT_ID/NETATMO_CLIENT_SECRET"
             return False
 
-        refresh_token = refresh_token or get_secret("NETATMO_REFRESH_TOKEN", "")
+        refresh_token = (refresh_token or get_secret("NETATMO_REFRESH_TOKEN", "") or "").strip().strip('"').strip("'")
 
         if not refresh_token:
             logger.warning("Netatmo: Mangler NETATMO_REFRESH_TOKEN")
@@ -251,8 +253,26 @@ class NetatmoClient:
             return True
 
         except requests.exceptions.RequestException as e:
-            logger.error("Netatmo autentisering feilet: %s", e)
-            self.last_error = f"Netatmo autentisering feilet: {e}"
+            details = ""
+            if isinstance(e, requests.exceptions.HTTPError) and e.response is not None:
+                try:
+                    payload = e.response.json()
+                    if isinstance(payload, dict):
+                        err = str(payload.get("error", "")).strip()
+                        desc = str(payload.get("error_description", "")).strip()
+                        if err and desc:
+                            details = f"{err}: {desc}"
+                        else:
+                            details = err or desc
+                except (ValueError, TypeError):
+                    details = (e.response.text or "").strip()[:200]
+
+            if details:
+                logger.error("Netatmo autentisering feilet: %s (%s)", e, details)
+                self.last_error = f"Netatmo autentisering feilet: {details}"
+            else:
+                logger.error("Netatmo autentisering feilet: %s", e)
+                self.last_error = f"Netatmo autentisering feilet: {e}"
             return False
 
     def _parse_public_data(self, data: dict) -> list[NetatmoStation]:
