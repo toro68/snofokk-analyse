@@ -81,7 +81,7 @@ def _app_version() -> str | None:
 
 # Page config
 st.set_page_config(
-    page_title="Føreforhold – Gullingen",
+    page_title="Føreforhold Gullingen og Fjellbergsskardet",
     page_icon="\u2745",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -826,7 +826,7 @@ def render_maintenance_top(plowing_info: PlowingInfo, suppress_alerts: bool) -> 
         if plowing_info.last_work_types:
             value = f"{value} – {', '.join(plowing_info.last_work_types)}"
 
-        st.metric("Siste vedlikehold", value)
+        st.metric("Siste vedlikehold i Fjellbergsskardet Hyttegrend", value)
 
         details_parts: list[str] = []
         # Vis kun nullstillings-info, ikke redundant type/operatør
@@ -846,7 +846,7 @@ def render_maintenance_top(plowing_info: PlowingInfo, suppress_alerts: bool) -> 
         if details_parts:
             st.caption(" | ".join(details_parts))
     else:
-        st.metric("Siste vedlikehold", "Ingen registrert")
+        st.metric("Siste vedlikehold i Fjellbergsskardet Hyttegrend", "Ingen registrert")
         if plowing_info.error:
             st.caption(plowing_info.error)
 
@@ -899,7 +899,7 @@ def main() -> None:
     """Main app function."""
 
     # Header
-    st.markdown("# Føreforhold Gullingen")
+    st.markdown("# Føreforhold Gullingen og Fjellbergsskardet")
     st.caption(f"{settings.station.name} ({settings.station.altitude_m} moh)")
 
     # Validate config
@@ -998,7 +998,7 @@ def main() -> None:
         # Info-seksjon
         with st.expander("Om appen", expanded=False):
             st.markdown(f"""
-            ### Føreforhold Gullingen
+            ### Føreforhold Gullingen og Fjellbergsskardet
 
             Varslingssystem for **brøytemannskaper** og **hytteeiere**
             ved Fjellbergsskardet Hyttegrend på Gullingen.
