@@ -26,6 +26,31 @@ from src.plowing_service import PlowingInfo
 logger = logging.getLogger(__name__)
 
 
+OPERATIONAL_LOG_FIELDS = [
+    "logged_at_utc",
+    "reference_time_utc",
+    "analyzer",
+    "risk_level",
+    "message",
+    "air_temperature",
+    "surface_temperature",
+    "wind_speed",
+    "wind_gust",
+    "precipitation_1h",
+    "surface_snow_thickness",
+    "maintenance_last_utc",
+    "maintenance_hours_since",
+    "maintenance_source",
+    "maintenance_event_type",
+    "maintenance_work_types",
+    "maintenance_operator_id",
+    "maintenance_error",
+    "suppressed_by_maintenance",
+    "suppression_reason",
+    "quality_guard_note",
+]
+
+
 def _parse_bool(value: str | None, default: bool = False) -> bool:
     if value is None:
         return default
@@ -94,6 +119,20 @@ def _save_state(path: Path, state: dict[str, str]) -> None:
         logger.warning("Operational logger: failed to save state: %s", e)
 
 
+def _ensure_log_file(path: Path) -> None:
+    """Opprett tom CSV med header slik at KPI-panelet alltid har et stabilt grunnlag."""
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if path.exists() and path.stat().st_size > 0:
+            return
+
+        with open(path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=OPERATIONAL_LOG_FIELDS)
+            writer.writeheader()
+    except (OSError, csv.Error, TypeError, ValueError) as e:
+        logger.warning("Operational logger: failed to bootstrap csv: %s", e)
+
+
 def _prune_state(state: dict[str, str], keep_for: timedelta) -> dict[str, str]:
     cutoff = datetime.now(UTC) - keep_for
     pruned: dict[str, str] = {}
@@ -140,6 +179,7 @@ def log_medium_high_alerts(
 
     log_path = _default_log_path()
     state_path = _default_state_path()
+    _ensure_log_file(log_path)
 
     reference_time_utc = _latest_reference_time_utc(df)
     reference_time_iso = reference_time_utc.isoformat().replace("+00:00", "Z") if reference_time_utc else ""
@@ -231,12 +271,12 @@ def log_medium_high_alerts(
         return
 
     try:
-        log_path.parent.mkdir(parents=True, exist_ok=True)
         file_exists = log_path.exists()
+        file_has_content = file_exists and log_path.stat().st_size > 0
 
         with open(log_path, "a", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=list(rows_to_append[0].keys()))
-            if not file_exists:
+            writer = csv.DictWriter(f, fieldnames=OPERATIONAL_LOG_FIELDS)
+            if not file_has_content:
                 writer.writeheader()
             writer.writerows(rows_to_append)
 

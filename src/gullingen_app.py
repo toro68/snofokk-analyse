@@ -660,6 +660,21 @@ def render_operational_kpis() -> None:
     """Vis KPI-panel for operasjonelle varsler (proxy-mål)."""
     st.subheader("Operasjonelle KPI-er (14 dager)")
 
+    def _render_empty_state(message: str, caption: str | None = None) -> None:
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Varsler (14d)", "0")
+        with col2:
+            st.metric("Høy-andel", "0%")
+        with col3:
+            st.metric("Presisjon (proxy)", "0%")
+        with col4:
+            st.metric("Recall (proxy)", "0%")
+
+        st.info(message)
+        if caption:
+            st.caption(caption)
+
     root = Path(__file__).parent.parent
     log_rel = get_secret("OPERATIONAL_LOG_PATH", "data/logs/operational_alerts.csv")
     state_rel = get_secret("OPERATIONAL_LOG_STATE_PATH", "data/logs/operational_alerts_state.json")
@@ -683,10 +698,11 @@ def render_operational_kpis() -> None:
             except (OSError, ValueError, TypeError):
                 state_entries = 0
 
-        st.info("Ingen operasjonell logg tilgjengelig ennå.")
-        st.caption(
-            f"Forventer logg på: {log_rel}. "
-            "CSV opprettes først når minst ett MEDIUM/HIGH-varsel logges."
+        _render_empty_state(
+            "Ingen MEDIUM/HIGH-varsler logget ennå.",
+            (
+                f"Forventer logg på: {log_rel}. Panelet viser 0-verdier til første relevante varsel logges."
+            ),
         )
         if state_entries > 0:
             st.caption(f"Det finnes dedupliseringsstate med {state_entries} nøkler i {state_rel}.")
@@ -695,11 +711,18 @@ def render_operational_kpis() -> None:
     try:
         df = pd.read_csv(log_path)
     except (OSError, ValueError, pd.errors.EmptyDataError):
-        st.info("Kunne ikke lese operasjonell logg.")
+        _render_empty_state("Kunne ikke lese operasjonell logg.")
         return
 
-    if df.empty or "logged_at_utc" not in df.columns:
-        st.info("Operasjonell logg mangler data for KPI-beregning.")
+    if "logged_at_utc" not in df.columns:
+        _render_empty_state("Operasjonell logg mangler nødvendige kolonner for KPI-beregning.")
+        return
+
+    if df.empty:
+        _render_empty_state(
+            "Ingen MEDIUM/HIGH-varsler logget ennå.",
+            "Loggeren er initialisert og vil fylle KPI-panelet når første relevante varsel oppstår.",
+        )
         return
 
     logged = pd.to_datetime(df["logged_at_utc"], errors="coerce", utc=True)
@@ -707,7 +730,7 @@ def render_operational_kpis() -> None:
     recent = df.loc[recent_mask].copy()
 
     if recent.empty:
-        st.info("Ingen varsler logget siste 14 dager.")
+        _render_empty_state("Ingen varsler logget siste 14 dager.")
         return
 
     total = len(recent)
@@ -983,9 +1006,9 @@ def render_maintenance_top(plowing_info: PlowingInfo, suppress_alerts: bool) -> 
             )
         else:
             details_parts.append(
-                f"Brøyting/skraping/strøing nuller ut værhendelsen. "
-                f"Teller fra siste brøyting. "
-                f"Varsler beregnes videre fra siste brøyting."
+                "Brøyting/skraping/strøing nuller ut værhendelsen. "
+                "Teller fra siste brøyting. "
+                "Varsler beregnes videre fra siste brøyting."
             )
 
         if details_parts:
