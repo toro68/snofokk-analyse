@@ -152,6 +152,49 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
+def _set_period_hours(local_now: datetime, hours: int) -> None:
+    """Oppdater valgt periode til siste N timer."""
+    st.session_state["period_end_local"] = local_now.replace(second=0, microsecond=0)
+    st.session_state["period_start_local"] = (
+        local_now - timedelta(hours=hours)
+    ).replace(second=0, microsecond=0)
+
+
+def _set_period_days(local_now: datetime, days: int) -> None:
+    """Oppdater valgt periode til siste N dager."""
+    st.session_state["period_end_local"] = local_now.replace(second=0, microsecond=0)
+    st.session_state["period_start_local"] = (
+        local_now - timedelta(days=days)
+    ).replace(second=0, microsecond=0)
+
+
+def render_period_quick_actions(local_now: datetime) -> None:
+    """Vis hurtigvalg i hovedflaten slik at de er synlige også på mobil."""
+    st.subheader("Hurtigvalg")
+    st.caption("Bytt periode med ett trykk. Avanserte dato- og tidsvalg ligger i sidepanelet.")
+
+    quick1, quick2, quick3, quick4 = st.columns(4)
+    if quick1.button("6t", key="main_quick_6h", width="stretch"):
+        _set_period_hours(local_now, 6)
+        st.rerun()
+    if quick2.button("24t", key="main_quick_24h", width="stretch"):
+        _set_period_hours(local_now, 24)
+        st.rerun()
+    if quick3.button("72t", key="main_quick_72h", width="stretch"):
+        _set_period_hours(local_now, 72)
+        st.rerun()
+    if quick4.button("7d", key="main_quick_7d", width="stretch"):
+        _set_period_days(local_now, 7)
+        st.rerun()
+
+    start_local = st.session_state.get("period_start_local")
+    end_local = st.session_state.get("period_end_local")
+    if isinstance(start_local, datetime) and isinstance(end_local, datetime):
+        st.caption(
+            f"Viser nå: {start_local.strftime('%d.%m %H:%M')}–{end_local.strftime('%d.%m %H:%M')}"
+        )
+
+
 def render_compact_risk_card(title: str, result: AnalysisResult, confidence: int | None = None) -> None:
     """Render a compact risk card."""
     if result.risk_level == RiskLevel.HIGH:
@@ -771,6 +814,108 @@ def render_forecast_section() -> None:
     st.caption(f"Kilde: MET Locationforecast (kompakt prognose, horisont {horizon_hours}t)")
 
 
+def render_weather_graphs(df: pd.DataFrame) -> None:
+    """Vis forenklet grafoppsett med færre faner og tydeligere grupperinger."""
+    st.subheader("Værgrafer")
+    summary_tab, temp_tab, wind_tab, detail_tab = st.tabs([
+        "Snø og nedbør",
+        "Temperatur",
+        "Vind",
+        "Detaljer",
+    ])
+
+    with summary_tab:
+        col1, col2 = st.columns(2)
+        with col1:
+            fig = WeatherPlots.create_snow_depth_plot(df)
+            st.pyplot(fig)
+            st.caption(f"Nysnø vises som endring siste {settings.fresh_snow.lookback_hours} timer")
+            plt.close(fig)
+        with col2:
+            slaps_precip_scale = max(settings.slaps.precipitation_accum_hours, 1) / 12.0
+            slaps_precip_threshold = settings.slaps.precipitation_12h_min * slaps_precip_scale
+            fig = WeatherPlots.create_precip_plot(df)
+            st.pyplot(fig)
+            st.caption(
+                f"{settings.slaps.precipitation_accum_hours}t akkumulert linje og slaps-terskel "
+                f"({slaps_precip_threshold:.1f} mm)"
+            )
+            plt.close(fig)
+
+    with temp_tab:
+        col1, col2 = st.columns(2)
+        with col1:
+            fig = WeatherPlots.create_temperature_plot(df)
+            st.pyplot(fig)
+            st.caption(f"Duggpunkt < {settings.fresh_snow.dew_point_max:.0f}°C: Nedbør faller som snø")
+            plt.close(fig)
+        with col2:
+            fig = WeatherPlots.create_wind_chill_plot(df)
+            st.pyplot(fig)
+            st.caption(
+                f"Vindkjøling advarsel/kritisk: {settings.snowdrift.wind_chill_warning:.0f}°C / "
+                f"{settings.snowdrift.wind_chill_critical:.0f}°C"
+            )
+            plt.close(fig)
+
+    with wind_tab:
+        col1, col2 = st.columns(2)
+        with col1:
+            fig = WeatherPlots.create_wind_plot(df)
+            st.pyplot(fig)
+            st.caption(
+                f"Markering når vindkast overstiger {settings.snowdrift.wind_gust_warning:.0f} m/s"
+            )
+            plt.close(fig)
+        with col2:
+            fig = WeatherPlots.create_wind_direction_plot(df)
+            st.pyplot(fig)
+            st.caption(
+                f"SE-S ({settings.snowdrift.critical_wind_dir_min:.0f}-{settings.snowdrift.critical_wind_dir_max:.0f}°) "
+                "er kritisk retning for snøfokk"
+            )
+            plt.close(fig)
+
+    with detail_tab:
+        col1, col2 = st.columns(2)
+        with col1:
+            fig = WeatherPlots.create_accumulated_precip_plot(df)
+            st.pyplot(fig)
+            st.caption("Total nedbør i valgt periode")
+            plt.close(fig)
+        with col2:
+            display_cols = [
+                'reference_time', 'air_temperature', 'surface_temperature',
+                'wind_speed', 'max_wind_gust', 'surface_snow_thickness',
+                'precipitation_1h', 'dew_point_temperature'
+            ]
+            available_cols = [c for c in display_cols if c in df.columns]
+            st.dataframe(
+                df[available_cols].tail(24).sort_values('reference_time', ascending=False),
+                use_container_width=True,
+                hide_index=True,
+            )
+
+        slaps_precip_scale = max(settings.slaps.precipitation_accum_hours, 1) / 12.0
+        slaps_precip_threshold = settings.slaps.precipitation_12h_min * slaps_precip_scale
+        with st.expander("Terskler", expanded=False):
+            st.markdown(f"""
+            ### Validerte terskler (2025)
+
+            | Kategori | Kriterium | Terskel |
+            |----------|-----------|---------|
+            | **Nysnø** | Snøøkning {settings.fresh_snow.lookback_hours}t | Våt: ≥ {settings.fresh_snow.snow_increase_warning:.0f} / {settings.fresh_snow.snow_increase_critical:.0f} cm, Tørr: ≥ {settings.fresh_snow.snow_increase_warning_dry:.0f} / {settings.fresh_snow.snow_increase_critical_dry:.0f} cm |
+            | **Nysnø** | Duggpunkt | < {settings.fresh_snow.dew_point_max:.0f}°C (snø) |
+            | **Nysnø** | Fallback nedbør (6t, ved vind) | Våt: ≥ {settings.fresh_snow.precipitation_6h_warning_mm:.0f} / {settings.fresh_snow.precipitation_6h_critical_mm:.0f} mm, Tørr: ≥ {settings.fresh_snow.precipitation_6h_warning_mm_dry:.0f} / {settings.fresh_snow.precipitation_6h_critical_mm_dry:.0f} mm |
+            | **Snøfokk** | Vindkast | ≥ {settings.snowdrift.wind_gust_warning:.0f} m/s (advarsel) / ≥ {settings.snowdrift.wind_gust_critical:.0f} m/s (kritisk) |
+            | **Snøfokk** | Vindkjøling | ≤ {settings.snowdrift.wind_chill_warning:.0f}°C (advarsel) / ≤ {settings.snowdrift.wind_chill_critical:.0f}°C (kritisk) |
+            | **Slaps** | Temperatur | {settings.slaps.temp_min:.0f} til {settings.slaps.temp_max:.0f}°C |
+            | **Slaps** | Nedbør ({settings.slaps.precipitation_accum_hours}t) | ≥ {slaps_precip_threshold:.1f} mm |
+            | **Glatte veier** | Bakketemperatur | ≤ {settings.slippery.surface_temp_freeze:.0f}°C |
+            | **Glatte veier** | Skjult frysefare | Luft {settings.slippery.hidden_freeze_air_min:.0f}-{settings.slippery.hidden_freeze_air_max:.0f}°C og bakke ≤ {settings.slippery.hidden_freeze_surface_max:.1f}°C |
+            """)
+
+
 def render_wax_guide(df: pd.DataFrame) -> None:
     """Vis en kompakt smøreguide under værdata."""
 
@@ -902,6 +1047,9 @@ def main() -> None:
     st.markdown("# Føreforhold Gullingen og Fjellbergsskardet")
     st.caption(f"{settings.station.name} ({settings.station.altitude_m} moh)")
 
+    local_now = datetime.now().astimezone()
+    local_tz = local_now.tzinfo or UTC
+
     # Validate config
     valid, msg = settings.validate()
     if not valid:
@@ -916,9 +1064,6 @@ def main() -> None:
         if version:
             st.caption(f"Versjon: {version}")
 
-        local_now = datetime.now().astimezone()
-        local_tz = local_now.tzinfo or UTC
-
         if "period_start_local" not in st.session_state:
             st.session_state["period_start_local"] = (
                 local_now - timedelta(hours=settings.dashboard.default_period_hours)
@@ -929,20 +1074,16 @@ def main() -> None:
         st.caption("Hurtigvalg")
         quick1, quick2, quick3, quick4 = st.columns(4)
         if quick1.button("6t", width='stretch'):
-            st.session_state["period_end_local"] = local_now.replace(second=0, microsecond=0)
-            st.session_state["period_start_local"] = (local_now - timedelta(hours=6)).replace(second=0, microsecond=0)
+            _set_period_hours(local_now, 6)
             st.rerun()
         if quick2.button("24t", width='stretch'):
-            st.session_state["period_end_local"] = local_now.replace(second=0, microsecond=0)
-            st.session_state["period_start_local"] = (local_now - timedelta(hours=24)).replace(second=0, microsecond=0)
+            _set_period_hours(local_now, 24)
             st.rerun()
         if quick3.button("72t", width='stretch'):
-            st.session_state["period_end_local"] = local_now.replace(second=0, microsecond=0)
-            st.session_state["period_start_local"] = (local_now - timedelta(hours=72)).replace(second=0, microsecond=0)
+            _set_period_hours(local_now, 72)
             st.rerun()
         if quick4.button("7d", width='stretch'):
-            st.session_state["period_end_local"] = local_now.replace(second=0, microsecond=0)
-            st.session_state["period_start_local"] = (local_now - timedelta(days=7)).replace(second=0, microsecond=0)
+            _set_period_days(local_now, 7)
             st.rerun()
 
         st.divider()
@@ -1050,6 +1191,9 @@ def main() -> None:
         - Planlegg ekstra tid
         - Vinterdekk påkrevd
         """)
+
+    render_period_quick_actions(local_now)
+    st.divider()
 
     # Fetch data
     selected_start_utc = st.session_state["period_start_local"].astimezone(UTC)
@@ -1204,106 +1348,15 @@ def main() -> None:
     render_forecast_section()
     st.divider()
 
-    st.subheader("Værgrafer")
-    snow_tab, precip_tab, temp_tab, wind_tab, wind_chill_tab, wind_dir_tab = st.tabs([
-        "Snødybde",
-        "Nedbør",
-        "Temperatur",
-        "Vindstyrke",
-        "Vindkjøling",
-        "Vindretning",
-    ])
+    render_weather_graphs(df)
 
-    with snow_tab:
-        fig = WeatherPlots.create_snow_depth_plot(df)
-        st.pyplot(fig)
-        st.caption(f"Nysnø vises som endring siste {settings.fresh_snow.lookback_hours} timer")
-        plt.close(fig)
+    st.divider()
 
-    with precip_tab:
-        slaps_precip_scale = max(settings.slaps.precipitation_accum_hours, 1) / 12.0
-        slaps_precip_threshold = settings.slaps.precipitation_12h_min * slaps_precip_scale
-        col1, col2 = st.columns(2)
-        with col1:
-            fig = WeatherPlots.create_precip_plot(df)
-            st.pyplot(fig)
-            st.caption(
-                f"{settings.slaps.precipitation_accum_hours}t akkumulert linje og slaps-terskel "
-                f"({slaps_precip_threshold:.1f} mm)"
-            )
-            plt.close(fig)
-        with col2:
-            fig = WeatherPlots.create_accumulated_precip_plot(df)
-            st.pyplot(fig)
-            st.caption("Total nedbør i valgt periode")
-            plt.close(fig)
+    # Netatmo temperaturkart flyttes opp før footer for å være synlig i normal lese-rekkefølge.
+    render_netatmo_map()
 
-    with temp_tab:
-        fig = WeatherPlots.create_temperature_plot(df)
-        st.pyplot(fig)
-        st.caption(f"Duggpunkt < {settings.fresh_snow.dew_point_max:.0f}°C: Nedbør faller som snø")
-        plt.close(fig)
-
-    with wind_tab:
-        fig = WeatherPlots.create_wind_plot(df)
-        st.pyplot(fig)
-        st.caption(
-            f"Markering når vindkast overstiger {settings.snowdrift.wind_gust_warning:.0f} m/s"
-        )
-        plt.close(fig)
-
-    with wind_chill_tab:
-        fig = WeatherPlots.create_wind_chill_plot(df)
-        st.pyplot(fig)
-        st.caption(
-            f"Vindkjøling advarsel/kritisk: {settings.snowdrift.wind_chill_warning:.0f}°C / "
-            f"{settings.snowdrift.wind_chill_critical:.0f}°C"
-        )
-        plt.close(fig)
-
-    with wind_dir_tab:
-        fig = WeatherPlots.create_wind_direction_plot(df)
-        st.pyplot(fig)
-        st.caption(
-            f"SE-S ({settings.snowdrift.critical_wind_dir_min:.0f}-{settings.snowdrift.critical_wind_dir_max:.0f}°) er kritisk retning for snøfokk"
-        )
-        plt.close(fig)
-
-    # Detailed data (collapsed by default)
-    with st.expander("Værhistorikk og detaljer", expanded=False):
-        tab1, tab2 = st.tabs(["Rådata", "Terskler"])
-
-        with tab1:
-            # Show recent data
-            display_cols = ['reference_time', 'air_temperature', 'surface_temperature',
-                           'wind_speed', 'max_wind_gust', 'surface_snow_thickness',
-                           'precipitation_1h', 'dew_point_temperature']
-            available_cols = [c for c in display_cols if c in df.columns]
-
-            st.dataframe(
-                df[available_cols].tail(24).sort_values('reference_time', ascending=False),
-                width="stretch",
-                hide_index=True
-            )
-
-        with tab2:
-            slaps_precip_scale = max(settings.slaps.precipitation_accum_hours, 1) / 12.0
-            slaps_precip_threshold = settings.slaps.precipitation_12h_min * slaps_precip_scale
-            st.markdown(f"""
-            ### Validerte terskler (2025)
-
-            | Kategori | Kriterium | Terskel |
-            |----------|-----------|---------|
-            | **Nysnø** | Snøøkning {settings.fresh_snow.lookback_hours}t | Våt: ≥ {settings.fresh_snow.snow_increase_warning:.0f} / {settings.fresh_snow.snow_increase_critical:.0f} cm, Tørr: ≥ {settings.fresh_snow.snow_increase_warning_dry:.0f} / {settings.fresh_snow.snow_increase_critical_dry:.0f} cm |
-            | **Nysnø** | Duggpunkt | < {settings.fresh_snow.dew_point_max:.0f}°C (snø) |
-            | **Nysnø** | Fallback nedbør (6t, ved vind) | Våt: ≥ {settings.fresh_snow.precipitation_6h_warning_mm:.0f} / {settings.fresh_snow.precipitation_6h_critical_mm:.0f} mm, Tørr: ≥ {settings.fresh_snow.precipitation_6h_warning_mm_dry:.0f} / {settings.fresh_snow.precipitation_6h_critical_mm_dry:.0f} mm |
-            | **Snøfokk** | Vindkast | ≥ {settings.snowdrift.wind_gust_warning:.0f} m/s (advarsel) / ≥ {settings.snowdrift.wind_gust_critical:.0f} m/s (kritisk) |
-            | **Snøfokk** | Vindkjøling | ≤ {settings.snowdrift.wind_chill_warning:.0f}°C (advarsel) / ≤ {settings.snowdrift.wind_chill_critical:.0f}°C (kritisk) |
-            | **Slaps** | Temperatur | {settings.slaps.temp_min:.0f} til {settings.slaps.temp_max:.0f}°C |
-            | **Slaps** | Nedbør ({settings.slaps.precipitation_accum_hours}t) | ≥ {slaps_precip_threshold:.1f} mm |
-            | **Glatte veier** | Bakketemperatur | ≤ {settings.slippery.surface_temp_freeze:.0f}°C |
-            | **Glatte veier** | Skjult frysefare | Luft {settings.slippery.hidden_freeze_air_min:.0f}-{settings.slippery.hidden_freeze_air_max:.0f}°C og bakke ≤ {settings.slippery.hidden_freeze_surface_max:.1f}°C |
-            """)
+    # Smøreguide under temperaturkart for bedre kontekst.
+    render_wax_guide(df)
 
     # Footer
     st.divider()
@@ -1311,13 +1364,6 @@ def main() -> None:
         f"Data: {len(df)} målinger fra Meteorologisk institutt | "
         f"Stasjon: {settings.station.station_id} {settings.station.name}"
     )
-
-    # Netatmo temperaturkart
-    render_netatmo_map()
-
-    # Smøreguide under temperaturkart
-    render_wax_guide(df)
-
     with st.expander("Operasjonelle KPI-er (admin)", expanded=False):
         render_operational_kpis()
 

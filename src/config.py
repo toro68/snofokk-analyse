@@ -222,12 +222,14 @@ class SlipperyRoadThresholds:
     freezing_precip_critical_mm: float = 0.3
 
     # Skjult frysefare (luft > 0 men kald bakke) - strengere gating for å redusere støy.
-    # Kalibrert mot brøyte-/vær-kobling (`data/analyzed/broyting_weather_correlation_2025.csv`)
-    # for å øke treffrate uten å øke falske treff i evalueringssettet.
-    hidden_freeze_surface_max: float = -1.0
+    # Kalibrert mot brøyte-/vær-kobling (`data/analyzed/broyting_weather_correlation_2025.csv`).
+    # Hevet surface_max fra -1.0 til -0.1: episoder med bakke -0.05 til -0.98°C fanges nå.
+    # Hevet air_max fra 1.0 til 3.0: episoder med luft 2-4°C og bakke < 0°C fanges nå.
+    # Senket precip_12h_min fra 1.0 til 0.0: tørrfrost etter tining fanges nå.
+    hidden_freeze_surface_max: float = -0.1
     hidden_freeze_air_min: float = 0.0
-    hidden_freeze_air_max: float = 1.0
-    hidden_freeze_precip_12h_min: float = 1.0
+    hidden_freeze_air_max: float = 3.0
+    hidden_freeze_precip_12h_min: float = 0.0
 
     # Temperaturvindu for typiske "glatt føre"-situasjoner nær frysepunktet.
     near_freezing_temp_min: float = -1.0
@@ -268,9 +270,10 @@ class FreshSnowThresholds:
     # Tolkning av nivåer:
     # - warning: kan nærme seg brøytebehov
     # - critical: brøyting sannsynligvis nyttig/nødvendig
-    # Gap økt fra 1 cm (6/7) til 2 cm (5/7) for å redusere ustabil grenseklassifisering
-    # ved støy i snødybdemåling. Terskelen 5 cm er praktisk brøyterelevant for våt snø.
-    snow_increase_warning: float = 5.0    # våt snø
+    # Justert warning fra 5.0 til 4.0: snitt snødybdeendring ved NYSNØ-episoder er 4.34 cm,
+    # og 48% av episodene hadde endring < 5 cm (ofte pga vindtransport fra målepunktet).
+    # Critical beholdt på 7.0 (gap økt fra 1 cm til 3 cm - mer stabil klassifisering).
+    snow_increase_warning: float = 4.0    # våt snø
     snow_increase_critical: float = 7.0  # våt snø (typisk 6–7 cm)
 
     snow_increase_warning_dry: float = 8.0    # tørr lett snø (mindre sensitiv warning)
@@ -393,7 +396,9 @@ class SlapsThresholds:
     # Nedbør
     precipitation_min: float = 1.0      # mm/t (øyeblikksindikator)
     precipitation_heavy: float = 5.0    # mm/t (øyeblikksindikator)
-    # Akkumulert nedbør (historisk kalibrert som 12t-terskler; vinduet styres av `precipitation_accum_hours`)
+    # Akkumulert nedbør (historisk kalibrert som 12t-terskler;
+    # vinduet styres av `precipitation_accum_hours`)
+    # Senket fra 7.0 til 5.0: 8 av 26 bekreftet slaps-episoder hadde nedbør 5.2-6.8 mm.
     precipitation_12h_min: float = 5.0
     precipitation_12h_heavy: float = 12.0
 
