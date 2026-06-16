@@ -55,35 +55,77 @@ Metodikk og validering:
 - `docs/terskler_og_validering.md`
 - `data/analyzed/ANALYSIS_METHOD_GUIDE.md`
 
-## 🎯 **VALIDERTE VÆRELEMENTER: 15 KJERNEELEMENTER**
+### Reell terskelverifisering (2026-06-16)
 
-**Basert på UTVIDET analyse av 19 kritiske elementer testet mot faktiske brøytehendelser på Gullingen (SN46220):**
+Tersklene er uavhengig revalidert mot empiriske vær- og brøytedata. Sentralt
+prinsipp: **brøyting er reaktivt og ikke synkront med været** – derfor evalueres
+været i et 12-timers vindu *før* hver vedlikeholdsøkt, ikke på brøytetidspunktet.
+Brøyting brukes som støtteevidens for operasjonell relevans, ikke som synkron fasit.
 
-### ⭐ **KRITISKE ELEMENTER** (7 - må ha):
-1. `accumulated(precipitation_amount)` - Akkumulert nedbør (viktighet: 7468.9-7721.4)
-2. `wind_from_direction` - Vindretning (viktighet: 1582.1-2160.3)
-3. `max_wind_speed(wind_from_direction PT1H)` - Maks vind per retning (viktighet: 1555.9-1980.5)
-4. `surface_snow_thickness` - Snødybde (viktighet: 1381.0-1442.2)
-5. **`surface_temperature`** ✨ - Veioverflate-temperatur (viktighet: 1225.1-1226.8) - **REVOLUSJONERENDE**
-6. `air_temperature` - Lufttemperatur (viktighet: 1197.3-1209.6)
-7. **`sum(precipitation_amount PT10M)`** ✨ - 10-min nedbør (viktighet: 1037.7-1073.5) - **6x BEDRE OPPLØSNING**
+Verifisert mot 163 episoder (`broyting_weather_correlation_2025.csv`) som binære
+klassifikatorer (scenario vs. resten):
 
-### 🔥 **HØY PRIORITET** (5 - forbedrer presisjon betydelig):
-8. **`dew_point_temperature`** ✨ - Rimfrost-varsling (24 obs/dag) - **FROST-SPESIALIST**
-9. `relative_humidity` - Fuktighet (24 obs/dag)
-10. `sum(duration_of_precipitation PT1H)` - Nedbørsvarighet
-11. `wind_speed` - Vindhastighet (24 obs/dag)
-12. `sum(precipitation_amount PT1H)` - Timenedbør
+|Hendelse|Terskel (`settings.*`)|TPR|FPR|
+|---|---|---|---|
+|SNØFOKK|gust ≥ 14 + vind-gate ≥ 7 + frost + snø ≥ 3 cm|0.89|0.02|
+|SLAPS|precip₁₂ₕ ≥ 5 mm + temp ∈ [0, 4] °C|0.92|0.00|
+|FRYSEFARE|bakke < 0 °C + luft ∈ [0, 3] °C|0.89|0.13|
+|NYSNØ|snøøkning ≥ 4 cm eller precip ≥ 5 mm ved frost|0.76|0.11|
 
-### 📊 **MEDIUM PRIORITET** (3 - spesialiserte målinger):
-13. `max(wind_speed_of_gust PT1H)` - Vindkast (24 obs/dag)
-14. **`max(air_temperature PT1H)`** ✨ - Time-maksimum (24 obs/dag) - **TEMPERATUR-EKSTREMER**
-15. **`min(air_temperature PT1H)`** ✨ - Time-minimum (24 obs/dag) - **TEMPERATUR-EKSTREMER**
+Konklusjon: tersklene er empirisk konsistente; ingen endring anbefalt. SNØFOKK/SLAPS
+er svært godt kalibrert. NYSNØ/FRYSEFARE har lavere presisjon av iboende fysiske
+årsaker (vindtransport på snømåler; sikkerhetskritisk recall-prioritering), ikke
+feil terskelverdier. Full metodikk + reproduksjon: `docs/terskler_og_validering.md`.
 
-### 🚀 **KRITISKE GEVINSTER MED UTVIDEDE ELEMENTER**:
-- **`surface_temperature`**: 168 obs/dag (høyest frekvens!) = direkte måling av veioverflate for eksakt glattføre-risiko
-- **`sum(precipitation_amount PT10M)`**: 144 obs/dag = 6x bedre oppløsning for presis snøfall-timing
-- **`dew_point_temperature`**: Duggpunkt vs lufttemperatur = profesjonell rimfrost-prediksjon
+## 🎯 **VÆRELEMENTER: 11 HENTES I PRODUKSJON**
+
+> ⚠️ **VIKTIG FOR FREMTIDIGE GJENNOMGANGER (verifisert 2026-06-16):**
+> Elementlisten under stammer fra en **ML-feature-importance-analyse**. Den
+> rangeringen holder **ikke** når elementene testes som faktiske
+> terskel-/scenariodiskriminatorer. Appen henter bevisst kun **11 elementer**
+> (`StationConfig.CORE_ELEMENTS` + `EXTENDED_ELEMENTS` i `src/config.py`).
+>
+> SN46220 tilbyr 107 elementer (sjekk: `curl` mot
+> `observations/availableTimeSeries/v0.jsonld?sources=SN46220`). De tre
+> høyt rangerte elementene som **ikke** hentes ble empirisk testet mot alle 163
+> scenario-merkede episoder (12t-vindu før brøyting) og **forkastet** – ikke
+> gjenta denne undersøkelsen uten ny data:
+>
+> |Element|Hvorfor forkastet|
+> |---|---|
+> |`accumulated(precipitation_amount)`|Løpende akkumulator (monotont økende, reset-er); redundant med `sum(precipitation_amount PT1H)` som gir timesdeltaet direkte|
+> |`max_wind_speed(wind_from_direction PT1H)`|SNØFOKK-sektor TPR 0.72/FPR 0.42 – likt/dårligere enn `wind_from_direction` (0.78/0.43) som allerede hentes|
+> |`sum(duration_of_precipitation PT1H)`|Som tilleggsfilter på dagens precip-terskel **senker** recall (SLAPS 0.92→0.88) uten å redusere FPR (allerede 0.00)|
+>
+> Konklusjon: de 11 hentede elementene er tilstrekkelige; tersklene er allerede
+> godt validerte med dem. Se `docs/terskler_og_validering.md`.
+
+**Rangering nedenfor: historisk ML-feature-importance (ikke prioritet for innhenting). ✅ = hentes i `CORE_ELEMENTS`/`EXTENDED_ELEMENTS`; ❌ = tilgjengelig men forkastet (se boks over).**
+
+### ⭐ **KRITISKE ELEMENTER** (ML-viktighet):
+1. ❌ `accumulated(precipitation_amount)` - Akkumulert nedbør (viktighet: 7468.9-7721.4) — *forkastet, se boks*
+2. ✅ `wind_from_direction` - Vindretning (viktighet: 1582.1-2160.3)
+3. ❌ `max_wind_speed(wind_from_direction PT1H)` - Maks vind per retning (viktighet: 1555.9-1980.5) — *forkastet, se boks*
+4. ✅ `surface_snow_thickness` - Snødybde (viktighet: 1381.0-1442.2)
+5. ✅ **`surface_temperature`** ✨ - Veioverflate-temperatur (viktighet: 1225.1-1226.8) - **REVOLUSJONERENDE**
+6. ✅ `air_temperature` - Lufttemperatur (viktighet: 1197.3-1209.6)
+7. ❌ **`sum(precipitation_amount PT10M)`** - 10-min nedbør (viktighet: 1037.7-1073.5) — *tilgjengelig, men ikke i bruk; PT1H dekker behovet*
+
+### 🔥 **HØY PRIORITET** (ML-viktighet):
+8. ✅ **`dew_point_temperature`** ✨ - Rimfrost-varsling - **FROST-SPESIALIST**
+9. ✅ `relative_humidity` - Fuktighet
+10. ❌ `sum(duration_of_precipitation PT1H)` - Nedbørsvarighet — *forkastet, se boks*
+11. ✅ `wind_speed` - Vindhastighet
+12. ✅ `sum(precipitation_amount PT1H)` - Timenedbør
+
+### 📊 **MEDIUM PRIORITET** (ML-viktighet):
+13. ✅ `max(wind_speed_of_gust PT1H)` - Vindkast
+14. ✅ **`max(air_temperature PT1H)`** ✨ - Time-maksimum
+15. ✅ **`min(air_temperature PT1H)`** ✨ - Time-minimum
+
+### 🚀 **REELL NYTTE AV DE HENTEDE ELEMENTENE**:
+- **`surface_temperature`**: høy frekvens = direkte måling av veioverflate for eksakt glattføre-risiko
+- **`dew_point_temperature`**: Duggpunkt vs lufttemperatur = profesjonell rimfrost-prediksjon (snø vs regn)
 - **`max/min(air_temperature PT1H)`**: Fanger korte tineperioder og frostepisoder innen hver time
 
 **KRITISK**: Vinden kan blåse snøen vekk fra punktet under snøradaren - derfor er kombinasjonen av snødybde + vinddata + værradar essensiell.

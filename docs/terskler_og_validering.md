@@ -76,3 +76,86 @@ Følgende prosess ble brukt:
    - historisk dedupet datasett (2022-2025)
    - ny periode (nov 2025-feb 2026)
 5. Velge terskler som forbedrer recall uten stor økning i falske positiver.
+
+## Reell terskelverifisering (2026-06-16)
+
+Denne seksjonen dokumenterer en uavhengig revalidering av terskelverdiene mot
+empiriske vær- og brøytedata, og er skrevet slik at nyere språkmodeller kan
+reprodusere og etterprøve den.
+
+### Forutsetning: brøyting er IKKE synkron med værhendelser
+
+Vintervedlikehold er et **reaktivt** system (se README, «VINTERVEDLIKEHOLD:
+REAKTIVT SYSTEM»):
+
+- Snø/glattføre **oppstår først**, deretter brøytes/strøes det – ofte timer etter.
+- Ved langvarige hendelser kan vedlikehold pågå **under** hendelsen.
+- Fredager har planlagt tunbrøyting (akkumulert ukessnø), ikke nødvendigvis en
+  akutt veihendelse.
+
+Konsekvens for metodikk: vi evaluerer ikke været **på** brøytetidspunktet, men
+et **12-timers vindu før** hver vedlikeholdsøkt (`window_hours=12`). Brøyting
+brukes som *støtteevidens* for at en værhendelse var operasjonelt relevant, ikke
+som en synkron fasit.
+
+### Datagrunnlag for verifiseringen
+
+- Empirisk hovedsett: `data/analyzed/broyting_weather_correlation_2025.csv`
+  (163 dedupede episoder, 2022-12-21 → 2025-04-22), hver merket med `scenario`
+  ∈ {SNØFOKK, NYSNØ, SLAPS, FRYSEFARE, ANNET}.
+- Ny driftsperiode: `data/analyzed/weather_vs_broyting_arbeidstidsrapport_2025-11-01_til_2026-03-01_h12.csv`
+  (34 hendelsesrelevante økter).
+- Autoritativt valideringsscript: `scripts/validate_config_against_history.py`
+  (kjør: `python scripts/validate_config_against_history.py`).
+
+### Metode for verifiseringen
+
+1. For hvert scenario beregnes persentiler (p10/p50/p90) av de relevante
+   værmålene i 12t-vinduet før brøyting.
+2. Hver terskel i `src/config.py` sammenlignes mot scenariofordelingen den skal
+   fange.
+3. Tersklene evalueres som binære klassifikatorer (scenario X vs. resten), og vi
+   rapporterer TPR (recall) og FPR. ANNET regnes som negativ klasse.
+
+### Resultater (config-verdier per 2026-06-16)
+
+Verifisert mot 163-episode-settet:
+
+|Hendelse|Terskel (kilde i `settings.*`)|TPR|FPR|
+|---|---|---|---|
+|SNØFOKK|`snowdrift`: gust ≥ 14 + vind-gate ≥ 7 + temp ≤ −0.5 + snø ≥ 3|0.89 (16/18)|0.02 (3/145)|
+|SNØFOKK (critical)|`snowdrift`: gust ≥ 20 gated|0.67 (12/18)|0.01 (2/145)|
+|SLAPS|`slaps`: precip₁₂ₕ ≥ 5 mm + temp ∈ [0, 4] °C|0.92 (22/24)|0.00 (0/139)|
+|FRYSEFARE|`slippery`: bakke < 0 + luft ∈ [0, 3] °C (skjult frost)|0.89 (17/19)|0.13 (19/144)|
+|NYSNØ|`fresh_snow`: snøøkning ≥ 4 cm **eller** precip ≥ 5 mm ved frost|0.76 (25/33)|0.11 (14/130)|
+
+Empiriske persentiler som underbygger tersklene:
+
+- **SNØFOKK** gust p10/p50/p90 = 17.7 / 21.8 / 27.0 m/s → warning 14.0 ligger godt
+  under p10 (fanger alle), critical 20.0 ≈ p50 (fanger de kraftige). Bekreftet.
+- **SLAPS** precip p10/p50 = 6.1 / 9.2 mm, temp_avg ≈ 0.6 °C → terskel 5 mm /
+  [0,4] °C er korrekt plassert; FPR 0.00 viser at slaps-signaturen er distinkt.
+- **NYSNØ** precip p10/p50 = 2.7 / 7.3 mm, snøøkning p50 = 5.1 cm → terskelen er
+  rimelig, men recall begrenses av at vindtransport «spiser» snødybdeøkningen på
+  måleren (snøfall registreres ikke alltid som dybdeøkning). Dette er en
+  datagrunnlag-begrensning, ikke en feilkalibrering.
+- **FRYSEFARE** høyere FPR (0.13) er akseptert bevisst: skjult frost er
+  sikkerhetskritisk, og recall prioriteres over presisjon her.
+
+### Konklusjon på verifiseringen
+
+Tersklene i `src/config.py` er empirisk konsistente med vær-før-vedlikehold-data.
+SNØFOKK og SLAPS er svært godt kalibrert (høy TPR, lav FPR). NYSNØ og FRYSEFARE
+har lavere presisjon av iboende fysiske/datamessige årsaker, ikke pga. feil
+terskelverdier. Ingen terskelendring anbefalt på grunnlag av denne verifiseringen.
+
+### Reprodusér verifiseringen
+
+```bash
+python scripts/validate_config_against_history.py
+```
+
+Persentil- og TPR/FPR-tallene over kan reproduseres direkte fra
+`data/analyzed/broyting_weather_correlation_2025.csv` ved å dedupe på
+`(datetime, scenario)`, gruppere på `scenario`, og evaluere maskene i tabellen
+mot hver scenarioklasse.

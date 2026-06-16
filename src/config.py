@@ -8,8 +8,8 @@ Støtter både lokal utvikling (.env) og Streamlit Cloud (secrets).
 # pylint: disable=too-many-lines,too-many-instance-attributes
 
 import os
-from datetime import datetime
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 from typing import ClassVar
 
@@ -142,11 +142,6 @@ class SnowdriftThresholds:
     # SNØFOKK-recall med liten økning i falsk-rate sammenlignet med 8 m/s.
     wind_speed_gust_warning_gate: float = 7.0
 
-    # Deprecated alias: beholdes for bakoverkompatibilitet.
-    # NB: Per nå er dette feltet ikke referert av koden i `src/`, men beholdes
-    # for eldre scripts/eksperimenter og som dokumentasjon på navnebyttet.
-    wind_speed_median: float = 8.0
-
     # Vindkast-terskler (NY - bedre trigger!)
     # Historisk snitt: 21.9 m/s - justert terskel til 20.0 for å fange typiske episoder
     wind_gust_critical: float = 20.0    # Kritisk risiko (tidligere 22.0)
@@ -193,9 +188,6 @@ class SlipperyRoadThresholds:
 
     # Bakketemperatur (NY - kritisk for isdannelse)
     surface_temp_freeze: float = 0.0    # Is dannes når bakke < 0
-    # Historisk observert snittdifferanse (luft - bakke).
-    # NB: Ikke brukt direkte i logikken nå; beholdes som dokumentasjon/kalibreringskontekst.
-    air_surface_diff_avg: float = 2.1
     surface_air_diff_notice_min_c: float = (
         2.0
     )  # Når vi viser "bakke kaldere enn luft" som egen faktor
@@ -391,11 +383,8 @@ class SlapsThresholds:
     # slaps-episoder forekom ved mildere forhold enn tidligere antatt.
     temp_min: float = 0.0               # Under dette: oftest snø/fast dekke, mindre slaps
     temp_max: float = 4.0               # Slaps fortsatt relevant ved mildvær med regn på snø
-    temp_optimal: float = 1.2           # Historisk snitt for slaps
 
     # Nedbør
-    precipitation_min: float = 1.0      # mm/t (øyeblikksindikator)
-    precipitation_heavy: float = 5.0    # mm/t (øyeblikksindikator)
     # Akkumulert nedbør (historisk kalibrert som 12t-terskler;
     # vinduet styres av `precipitation_accum_hours`)
     # Senket fra 7.0 til 5.0: 8 av 26 bekreftet slaps-episoder hadde nedbør 5.2-6.8 mm.
@@ -492,6 +481,17 @@ class PlowingServiceConfig:
     recent_plowing_hours: float = 24.0
     cache_max_entries: int = 20
     default_max_cache_age_hours: int = 1
+
+    # Plausibilitetsguard for brøytestempler.
+    # future_tolerance: stempler lenger frem i tid enn dette forkastes (klokkeavvik/feil dato).
+    plausibility_future_tolerance_minutes: float = 60.0
+    # Funn 2: pings/segmenter fra ett brøyteløp ligger tett; stempler med
+    # innbyrdes avstand under dette kollapses til én hendelse (nyeste beholdes).
+    plausibility_cluster_window_minutes: float = 60.0
+    # Funn 1: et metadataløst stempel (uten event_type/work_types) som ligger så
+    # nært referansetiden regnes som et skrape-/render-artefakt fra share-fallback,
+    # ikke en reell vedlikeholdshendelse, og forkastes.
+    plausibility_metadata_artifact_window_hours: float = 12.0
 
     # Streamlit caching
     streamlit_cache_ttl_seconds: int = 900
