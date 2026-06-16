@@ -61,7 +61,10 @@ logger = logging.getLogger(__name__)
 def _app_version() -> str | None:
     """Best effort app-versjon for feilsøking (vises i sidebar)."""
 
-    env_sha = st.secrets.get("APP_GIT_SHA") if hasattr(st, "secrets") else None
+    # Bruk get_secret som trygt håndterer manglende secrets.toml. Direkte
+    # st.secrets.get(...) kaster StreamlitSecretNotFoundError lokalt uten
+    # secrets-fil, og krasjer da hele sidemenyen (inkl. datovelgeren).
+    env_sha = get_secret("APP_GIT_SHA", "")
     if env_sha:
         return str(env_sha)[:12]
 
@@ -163,6 +166,8 @@ def _set_period_hours(local_now: datetime, hours: int) -> None:
     st.session_state["period_start_local"] = (
         local_now - timedelta(hours=hours)
     ).replace(second=0, microsecond=0)
+    # Be sidemenyen synke datovelger-feltene fra kanonisk state ved neste rerun.
+    st.session_state["period_widgets_dirty"] = True
 
 
 def _set_period_days(local_now: datetime, days: int) -> None:
@@ -171,6 +176,7 @@ def _set_period_days(local_now: datetime, days: int) -> None:
     st.session_state["period_start_local"] = (
         local_now - timedelta(days=days)
     ).replace(second=0, microsecond=0)
+    st.session_state["period_widgets_dirty"] = True
 
 
 def render_period_quick_actions(local_now: datetime) -> None:
@@ -1120,31 +1126,46 @@ def main() -> None:
         min_date = (local_now - timedelta(days=settings.dashboard.max_period_days)).date()
         max_date = local_now.date()
 
-        # Merk: ingen `key=` på disse widgetene. Med en persistent key vil
-        # Streamlit ignorere `value=` på etterfølgende reruns og vise lagret
-        # widget-state, slik at hurtigvalg-knappene (som oppdaterer
-        # period_start_local/period_end_local) ikke slår gjennom i datofeltene.
-        # Uten key driver `value=` widgeten fra kanonisk state hver rerun.
+        # Datovelgerne styres utelukkende via session_state-keys (ingen `value=`).
+        # Grunn: med både `value=` og `key=` returnerer Streamlit `value`-
+        # argumentet på den kjøringen der "Oppdater" trykkes, ikke den lagrede
+        # key-verdien – da mister vi brukerens valg. Vi seeder derfor keyene én
+        # gang, og re-synker dem fra kanonisk state når hurtigvalg har endret
+        # perioden (`period_widgets_dirty`). Skriving til en widget-key er kun
+        # tillatt FØR widgeten instansieres i denne kjøringen.
+        if "period_start_date" not in st.session_state or st.session_state.pop(
+            "period_widgets_dirty", False
+        ):
+            st.session_state["period_start_date"] = active_start.date()
+            st.session_state["period_start_time"] = active_start.time()
+            st.session_state["period_end_date"] = active_end.date()
+            st.session_state["period_end_time"] = active_end.time()
+
+        # Klamp lagret startdato til gyldig vindu (kan ligge utenfor etter at
+        # max_date har rullet fremover en ny dag).
+        if st.session_state["period_start_date"] < min_date:
+            st.session_state["period_start_date"] = min_date
+
         start_date = st.date_input(
             "Startdato",
-            value=active_start.date(),
             min_value=min_date,
             max_value=max_date,
+            key="period_start_date",
         )
         start_time = st.time_input(
             "Starttid",
-            value=active_start.time(),
+            key="period_start_time",
         )
 
         end_date = st.date_input(
             "Sluttdato",
-            value=max(start_date, active_end.date()),
             min_value=start_date,
             max_value=max_date,
+            key="period_end_date",
         )
         end_time = st.time_input(
             "Slutttid",
-            value=active_end.time(),
+            key="period_end_time",
         )
 
         if st.button("Oppdater", width='stretch'):
@@ -1498,7 +1519,7 @@ def render_netatmo_map() -> None:
     with col_title:
         st.subheader("Temperaturkart")
     with col_btn:
-        if st.button("Oppdater", key="netatmo_refresh"):
+        if st.button("Oppdater kart", key="netatmo_refresh"):
             fetch_netatmo_stations.clear()
             st.rerun()
 
