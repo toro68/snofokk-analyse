@@ -6,7 +6,7 @@ Vindkjøling har 73.1% viktighet i modellen.
 """
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import pandas as pd
@@ -181,7 +181,12 @@ class SnowdriftAnalyzer(BaseAnalyzer):
 
     @staticmethod
     def _snow_change_over_window(df: pd.DataFrame) -> float:
-        """Beregn snøendring fra første til siste måling i vinduet."""
+        """Beregn snøendringsrate (cm/h) fra første til siste måling i vinduet.
+
+        Raten beregnes mot faktisk tidsspenn mellom målingene, ikke en antatt
+        timesoppløsning, slik at den kan sammenlignes direkte mot cm/h-tersklene
+        (fresh_snow_threshold, wind_transport_snow_change_threshold_cm_per_h).
+        """
         if 'surface_snow_thickness' not in df.columns or len(df) < 2:
             return 0.0
 
@@ -189,7 +194,16 @@ class SnowdriftAnalyzer(BaseAnalyzer):
         if len(snow) < 2:
             return 0.0
 
-        return float(snow.iloc[-1] - snow.iloc[0])
+        delta_cm = float(snow.iloc[-1] - snow.iloc[0])
+
+        if 'reference_time' not in df.columns:
+            return delta_cm
+        times = pd.to_datetime(df.loc[snow.index, 'reference_time'])
+        elapsed_hours = (times.iloc[-1] - times.iloc[0]).total_seconds() / 3600.0
+        if elapsed_hours <= 0:
+            return delta_cm
+
+        return delta_cm / elapsed_hours
 
     def _evaluate_snapshot(
         self,

@@ -25,6 +25,12 @@ from src.config import get_secret, settings
 
 logger = logging.getLogger(__name__)
 
+# Frost bruker -1 som sentinel for "snøfri/bar mark" i surface_snow_thickness.
+# Vi tolker dette som 0 cm snø slik at overgangen bar mark -> snø telles som ekte
+# akkumulering, og at sentinelen ikke lekker inn i snøendrings-beregninger som en
+# reell måling (-1 cm). Negative dybder ellers er ugyldige og settes til NaN.
+SNOW_DEPTH_SENTINEL_BARE_GROUND = -1.0
+
 CACHE_FILE = Path(__file__).parent.parent / "data" / "cache" / "frost_weather_cache.json"
 def _get_cache_max_age_hours() -> float:
     try:
@@ -392,9 +398,28 @@ class FrostClient:
         df = df.sort_values('reference_time')
         df = df.drop_duplicates('reference_time')
         df = df.reset_index(drop=True)
+        df = self._normalize_snow_depth(df)
 
         logger.info("Parset %d observasjoner med %d kolonner", len(df), len(df.columns))
 
+        return df
+
+    @staticmethod
+    def _normalize_snow_depth(df: pd.DataFrame) -> pd.DataFrame:
+        """Rens surface_snow_thickness: sentinel -1 -> 0 cm, andre negative -> NaN.
+
+        Felles chokepoint slik at alle konsumenter (analysatorer, KPI, plot) får
+        konsistent renset snødybde uavhengig av om data kom live eller fra cache.
+        """
+        if 'surface_snow_thickness' not in df.columns:
+            return df
+
+        snow = pd.to_numeric(df['surface_snow_thickness'], errors='coerce')
+        # Sentinel for bar mark -> 0 cm.
+        snow = snow.mask(snow == SNOW_DEPTH_SENTINEL_BARE_GROUND, 0.0)
+        # Resterende negative verdier er ugyldige målinger.
+        snow = snow.mask(snow < 0, pd.NA)
+        df['surface_snow_thickness'] = pd.to_numeric(snow, errors='coerce')
         return df
 
     def clear_cache(self) -> None:
@@ -416,7 +441,7 @@ class FrostClient:
             if not CACHE_FILE.exists():
                 return None
 
-            with open(CACHE_FILE, "r", encoding="utf-8") as f:
+            with open(CACHE_FILE, encoding="utf-8") as f:
                 data = json.load(f)
 
             observations = data.get("observations", [])
@@ -428,6 +453,8 @@ class FrostClient:
                 df["reference_time"] = pd.to_datetime(df["reference_time"], utc=True, errors="coerce")
                 df = df.dropna(subset=["reference_time"])
                 df = df.sort_values("reference_time").drop_duplicates("reference_time").reset_index(drop=True)
+
+            df = self._normalize_snow_depth(df)
 
             if df.empty:
                 return None
