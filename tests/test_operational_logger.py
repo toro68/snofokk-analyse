@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import csv
 from datetime import UTC, datetime
 
 import pandas as pd
 
-from src.operational_logger import OPERATIONAL_LOG_FIELDS, log_medium_high_alerts
+from src.operational_logger import (
+    OPERATIONAL_LOG_FIELDS,
+    _ensure_log_file,
+    log_medium_high_alerts,
+)
 from src.plowing_service import PlowingInfo
 
 
@@ -43,6 +48,32 @@ def test_operational_logger_bootstraps_csv_without_alert_rows(monkeypatch, tmp_p
     )
 
     assert log_path.exists()
-    content = log_path.read_text(encoding="utf-8").strip().splitlines()
-    assert len(content) == 1
-    assert content[0].split(",") == OPERATIONAL_LOG_FIELDS
+    with open(log_path, newline="", encoding="utf-8") as f:
+        rows = list(csv.reader(f))
+    assert len(rows) == 1
+    assert rows[0] == OPERATIONAL_LOG_FIELDS
+
+
+def test_ensure_log_file_migrates_outdated_header(tmp_path) -> None:
+    """En CSV skrevet med en eldre, smalere header skal migreres til full header
+    slik at etterfølgende append ikke gir kolonne-mismatch i pandas.read_csv."""
+    log_path = tmp_path / "operational_alerts.csv"
+
+    old_fields = OPERATIONAL_LOG_FIELDS[:-1]  # mangler nyeste kolonne (quality_guard_note)
+    with open(log_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=old_fields)
+        writer.writeheader()
+        writer.writerow(dict.fromkeys(old_fields, "x"))
+
+    _ensure_log_file(log_path)
+
+    with open(log_path, newline="", encoding="utf-8") as f:
+        rows = list(csv.reader(f))
+    assert rows[0] == OPERATIONAL_LOG_FIELDS
+    # Eksisterende rad bevares, manglende felt fylles tomt.
+    assert len(rows) == 2
+    assert rows[1][-1] == ""
+
+    # Filen kan nå leses uten ParserError.
+    df = pd.read_csv(log_path)
+    assert list(df.columns) == OPERATIONAL_LOG_FIELDS

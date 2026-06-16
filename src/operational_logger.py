@@ -13,6 +13,7 @@ from __future__ import annotations
 import csv
 import json
 import logging
+import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -120,15 +121,40 @@ def _save_state(path: Path, state: dict[str, str]) -> None:
 
 
 def _ensure_log_file(path: Path) -> None:
-    """Opprett tom CSV med header slik at KPI-panelet alltid har et stabilt grunnlag."""
+    """Sørg for at CSV-en finnes med gjeldende header (OPERATIONAL_LOG_FIELDS).
+
+    Tomme/manglende filer får en header, og filer skrevet med en eldre header
+    (skjemadrift, f.eks. før nye kolonner ble lagt til) migreres ved å lese inn
+    eksisterende rader og skrive dem på nytt med full kolonneliste. Dette hindrer
+    at append legger til rader med flere/færre felt enn headeren, noe som ellers
+    korrumperer filen for pandas.read_csv.
+    """
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        if path.exists() and path.stat().st_size > 0:
+
+        if not path.exists() or path.stat().st_size == 0:
+            with open(path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=OPERATIONAL_LOG_FIELDS)
+                writer.writeheader()
             return
 
-        with open(path, "w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=OPERATIONAL_LOG_FIELDS)
+        with open(path, newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            existing_header = reader.fieldnames or []
+            if existing_header == OPERATIONAL_LOG_FIELDS:
+                return
+            existing_rows = list(reader)
+
+        # Skjemadrift: skriv på nytt med gjeldende header. Ukjente felt i gamle
+        # rader droppes, manglende felt fylles med tom verdi.
+        tmp = path.with_suffix(".tmp")
+        with open(tmp, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=OPERATIONAL_LOG_FIELDS, extrasaction="ignore")
             writer.writeheader()
+            for row in existing_rows:
+                writer.writerow({field: row.get(field, "") for field in OPERATIONAL_LOG_FIELDS})
+        tmp.replace(path)
+        logger.info("Operational logger: migrated csv header from %s to current schema", existing_header)
     except (OSError, csv.Error, TypeError, ValueError) as e:
         logger.warning("Operational logger: failed to bootstrap csv: %s", e)
 
@@ -226,6 +252,7 @@ def log_medium_high_alerts(
     state = _prune_state(state, keep_for=timedelta(days=14))
 
     rows_to_append: list[dict[str, object]] = []
+    pending_keys: list[str] = []
 
     for analyzer_name, result in results.items():
         risk_level = getattr(result, "risk_level", None)
@@ -264,7 +291,7 @@ def log_medium_high_alerts(
                 "quality_guard_note": quality_guard_note,
             }
         )
-        state[dedupe_key] = logged_at_iso
+        pending_keys.append(dedupe_key)
 
     if not rows_to_append:
         _save_state(state_path, state)
@@ -279,13 +306,23 @@ def log_medium_high_alerts(
             if not file_has_content:
                 writer.writeheader()
             writer.writerows(rows_to_append)
-
-        _save_state(state_path, state)
-
-        logger.info(
-            "Operational logger: wrote %s rows to %s",
-            len(rows_to_append),
-            log_path,
-        )
+            # Sørg for at radene faktisk er på disk før dedupe-state oppdateres,
+            # slik at en krasj ikke kan etterlate state uten rader (eller motsatt).
+            f.flush()
+            os.fsync(f.fileno())
     except (OSError, csv.Error, TypeError, ValueError) as e:
+        # Skriving feilet: behold IKKE dedupe-nøklene, så varslene logges på nytt
+        # ved neste forsøk i stedet for å gå tapt.
         logger.warning("Operational logger: failed to write csv: %s", e)
+        return
+
+    # Først nå, når radene er trygt skrevet, persister vi dedupe-state.
+    for dedupe_key in pending_keys:
+        state[dedupe_key] = logged_at_iso
+    _save_state(state_path, state)
+
+    logger.info(
+        "Operational logger: wrote %s rows to %s",
+        len(rows_to_append),
+        log_path,
+    )

@@ -18,8 +18,8 @@ from typing import Any
 # Legg til prosjektrot i path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import logging
 import html
+import logging
 import math
 from datetime import UTC, datetime, timedelta
 
@@ -42,7 +42,12 @@ from src.forecast_client import ForecastClient, ForecastClientError
 from src.frost_client import FrostAPIError, FrostClient
 from src.logging_config import configure_logging
 from src.netatmo_client import NetatmoClient, NetatmoStation
-from src.operational_logger import log_medium_high_alerts
+from src.operational_logger import (
+    _default_log_path,
+    _default_state_path,
+    _parse_bool,
+    log_medium_high_alerts,
+)
 from src.plowing_service import (
     PlowingInfo,
     get_plowing_info,
@@ -660,28 +665,29 @@ def render_operational_kpis() -> None:
     """Vis KPI-panel for operasjonelle varsler (proxy-mål)."""
     st.subheader("Operasjonelle KPI-er (14 dager)")
 
-    def _render_empty_state(message: str, caption: str | None = None) -> None:
+    def _render_metrics(alerts: str, high_share: str, precision: str, recall: str) -> None:
         col1, col2, col3, col4 = st.columns(4)
         with col1:
-            st.metric("Varsler (14d)", "0")
+            st.metric("Varsler (14d)", alerts)
         with col2:
-            st.metric("Høy-andel", "0%")
+            st.metric("Høy-andel", high_share)
         with col3:
-            st.metric("Presisjon (proxy)", "0%")
+            st.metric("Presisjon (proxy)", precision)
         with col4:
-            st.metric("Recall (proxy)", "0%")
+            st.metric("Recall (proxy)", recall)
 
+    def _render_empty_state(message: str, caption: str | None = None) -> None:
+        _render_metrics("0", "0%", "0%", "0%")
         st.info(message)
         if caption:
             st.caption(caption)
 
-    root = Path(__file__).parent.parent
     log_rel = get_secret("OPERATIONAL_LOG_PATH", "data/logs/operational_alerts.csv")
     state_rel = get_secret("OPERATIONAL_LOG_STATE_PATH", "data/logs/operational_alerts_state.json")
-    enabled = str(get_secret("OPERATIONAL_LOG_ENABLED", "true")).strip().lower() in {"1", "true", "yes", "y", "on"}
+    enabled = _parse_bool(get_secret("OPERATIONAL_LOG_ENABLED", "true"), default=True)
 
-    log_path = (root / log_rel).resolve()
-    state_path = (root / state_rel).resolve()
+    log_path = _default_log_path()
+    state_path = _default_state_path()
 
     if not enabled:
         st.info("Operasjonell logging er slått av (OPERATIONAL_LOG_ENABLED=false).")
@@ -754,15 +760,12 @@ def render_operational_kpis() -> None:
     else:
         recall_proxy = 0.0
 
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric("Varsler (14d)", str(total))
-    with col2:
-        st.metric("Høy-andel", f"{high_share:.0f}%")
-    with col3:
-        st.metric("Presisjon (proxy)", f"{precision_proxy:.0f}%")
-    with col4:
-        st.metric("Recall (proxy)", f"{recall_proxy:.0f}%")
+    _render_metrics(
+        str(total),
+        f"{high_share:.0f}%",
+        f"{precision_proxy:.0f}%",
+        f"{recall_proxy:.0f}%",
+    )
 
     st.caption(
         f"Undertrykket andel: {suppressed_share:.0f}%. "
