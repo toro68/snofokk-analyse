@@ -214,9 +214,15 @@ class TestPlowingService:
 
     @patch('src.plowing_service.get_last_maintenance_result')
     def test_get_plowing_info_uses_plowman_client(self, mock_get_last):
-        """Tester at get_plowing_info bruker PlowmanClient."""
+        """Tester at get_plowing_info bruker PlowmanClient.
+
+        Et reelt vedlikeholds-API-event har metadata (event_type/work_types);
+        plausibilitetsguarden forkaster kun metadataløse stempler nær nå.
+        """
         mock_event = PlowingEvent(
-            timestamp=datetime.now(UTC) - timedelta(hours=5)
+            timestamp=datetime.now(UTC) - timedelta(hours=5),
+            event_type="brøyting",
+            work_types=["brøyting"],
         )
         mock_get_last.return_value = (mock_event, None)
 

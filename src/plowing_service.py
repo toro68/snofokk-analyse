@@ -8,7 +8,7 @@ for å justere varsler i appen.
 import json
 import logging
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from src.config import get_secret, settings
@@ -29,6 +29,83 @@ def _parse_ts_utc(value: str) -> datetime:
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=UTC)
     return dt
+
+
+def _drop_future_timestamps(
+    timestamps: list[datetime],
+    *,
+    now: datetime | None = None,
+) -> list[datetime]:
+    """Forkast stempler som ligger urimelig langt frem i tid.
+
+    Fanger Funn 1-tilfellet der share-fallback serialiserer "nå" som om det var
+    en brøyting (f.eks. midtsommer-stempler). En liten toleranse tillater normalt
+    klokkeavvik mellom API og oss.
+    """
+    ref = now or datetime.now(UTC)
+    tolerance = timedelta(
+        minutes=settings.plowing_service.plausibility_future_tolerance_minutes
+    )
+    cutoff = ref + tolerance
+
+    kept: list[datetime] = []
+    for ts in timestamps:
+        if ts > cutoff:
+            logger.warning(
+                "Brøytestempel %s ligger i fremtiden (> %s) – forkastes som usannsynlig",
+                ts.isoformat(),
+                cutoff.isoformat(),
+            )
+            continue
+        kept.append(ts)
+    return kept
+
+
+def _collapse_clustered_timestamps(timestamps: list[datetime]) -> list[datetime]:
+    """Kollaps stempler som ligger tett (ett brøyteløp) til én hendelse hver.
+
+    Fanger Funn 2: GPS-pings/vei-segmenter fra samme løp ligger minutter fra
+    hverandre og skal ikke telle som separate vedlikeholdshendelser. Beholder det
+    nyeste stempelet i hver klynge. Forventer synkende sortert input.
+    """
+    if not timestamps:
+        return []
+
+    window = timedelta(
+        minutes=settings.plowing_service.plausibility_cluster_window_minutes
+    )
+    ordered = sorted(timestamps, reverse=True)
+
+    collapsed: list[datetime] = [ordered[0]]
+    for ts in ordered[1:]:
+        if collapsed[-1] - ts < window:
+            # Samme løp som forrige (nyere) stempel – hopp over.
+            continue
+        collapsed.append(ts)
+    return collapsed
+
+
+def _is_metadata_artifact(
+    timestamp: datetime,
+    *,
+    has_metadata: bool,
+    now: datetime | None = None,
+) -> bool:
+    """True hvis et metadataløst stempel nær referansetiden ser ut som artefakt.
+
+    Live share-fallback returnerer stempler uten event_type/work_types. Når et
+    slikt metadataløst stempel i tillegg ligger svært nær "nå", er det med stor
+    sannsynlighet et render-/skrape-artefakt (Funn 1) snarere enn en reell
+    brøyting, og bør ikke overskrive siste kjente vedlikehold.
+    """
+    if has_metadata:
+        return False
+
+    ref = now or datetime.now(UTC)
+    window = timedelta(
+        hours=settings.plowing_service.plausibility_metadata_artifact_window_hours
+    )
+    return abs((ref - timestamp).total_seconds()) <= window.total_seconds()
 
 
 def _maintenance_keywords() -> set[str]:
@@ -216,6 +293,38 @@ def get_plowing_info(use_cache: bool = True, max_cache_age_hours: int | None = N
                 or (cache_data.get('last_event_type') if cache_data else None)
             )
 
+            # Plausibilitetsguard (Funn 1): et metadataløst stempel nær "nå" er
+            # sannsynligvis et render-/skrape-artefakt fra share-fallback, ikke en
+            # reell brøyting. Forkast det og behold cache fremfor å sette det som
+            # siste brøyting (som ellers ville gitt feil "tid siden brøyting").
+            if _is_metadata_artifact(new_timestamp, has_metadata=live_has_metadata, now=now):
+                logger.warning(
+                    "Live brøytestempel %s mangler metadata og ligger nær nå – "
+                    "forkastes som sannsynlig artefakt, beholder cache",
+                    new_timestamp.isoformat(),
+                )
+                if cache_data and cache_data['last_plowing']:
+                    last_plowing = cache_data['last_plowing']
+                    hours_since = (now - last_plowing).total_seconds() / 3600
+                    return PlowingInfo(
+                        last_plowing=last_plowing,
+                        hours_since=hours_since,
+                        is_recent=hours_since < RECENT_PLOWING_HOURS,
+                        all_timestamps=cache_data['all_timestamps'],
+                        source='cache',
+                        last_event_type=cache_data.get('last_event_type'),
+                        last_work_types=cache_data.get('last_work_types'),
+                        last_operator_id=cache_data.get('last_operator_id'),
+                    )
+                return PlowingInfo(
+                    last_plowing=None,
+                    hours_since=None,
+                    is_recent=False,
+                    all_timestamps=cache_data['all_timestamps'] if cache_data else [],
+                    source='none',
+                    error="Forkastet usannsynlig brøytestempel uten metadata",
+                )
+
             if newest_cached and new_timestamp < newest_cached:
                 if live_has_metadata and not cache_has_metadata:
                     logger.info(
@@ -314,7 +423,25 @@ def _load_cache() -> dict | None:
             # at den er inkludert i all_timestamps. _dedupe_and_sort rydder opp.
             stored_timestamps.append(_parse_ts_utc(raw['last_plowing']))
 
-        unique_sorted = _dedupe_and_sort(stored_timestamps)
+        # Plausibilitetsguard: rydd allerede lagret, korrupt data ved lasting.
+        # Fremtidsstempler forkastes (Funn 1), og tette pings kollapses (Funn 2).
+        guarded = _drop_future_timestamps(stored_timestamps)
+        guarded = _collapse_clustered_timestamps(guarded)
+        unique_sorted = _dedupe_and_sort(guarded)
+
+        # Funn 1 (allerede lagret artefakt): når cachen ikke har metadata og det
+        # nyeste stempelet ligger nær nå, er det sannsynligvis et share-fallback-
+        # artefakt (f.eks. midtsommer-stempel). Forkast slike ledende stempler.
+        cache_has_metadata = bool(raw.get('last_work_types') or raw.get('last_event_type'))
+        while unique_sorted and _is_metadata_artifact(
+            unique_sorted[0], has_metadata=cache_has_metadata
+        ):
+            logger.warning(
+                "Forkaster lagret brøytestempel %s uten metadata nær nå (sannsynlig artefakt)",
+                unique_sorted[0].isoformat(),
+            )
+            unique_sorted = unique_sorted[1:]
+
         last_plowing = unique_sorted[0] if unique_sorted else None
 
         return {
@@ -342,7 +469,11 @@ def _save_cache(
         CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
 
         existing = existing_cache['all_timestamps'] if existing_cache else []
-        merged = _dedupe_and_sort(existing + new_timestamps)
+        # Plausibilitetsguard før lagring: forkast fremtidsstempler (Funn 1) og
+        # kollaps tette pings fra samme løp (Funn 2).
+        guarded = _drop_future_timestamps(existing + new_timestamps)
+        guarded = _collapse_clustered_timestamps(guarded)
+        merged = _dedupe_and_sort(guarded)
         merged_limited = merged[:settings.plowing_service.cache_max_entries]
 
         cache_payload = {
