@@ -1120,17 +1120,20 @@ def main() -> None:
         min_date = (local_now - timedelta(days=settings.dashboard.max_period_days)).date()
         max_date = local_now.date()
 
+        # Merk: ingen `key=` på disse widgetene. Med en persistent key vil
+        # Streamlit ignorere `value=` på etterfølgende reruns og vise lagret
+        # widget-state, slik at hurtigvalg-knappene (som oppdaterer
+        # period_start_local/period_end_local) ikke slår gjennom i datofeltene.
+        # Uten key driver `value=` widgeten fra kanonisk state hver rerun.
         start_date = st.date_input(
             "Startdato",
             value=active_start.date(),
             min_value=min_date,
             max_value=max_date,
-            key="period_start_date"
         )
         start_time = st.time_input(
             "Starttid",
             value=active_start.time(),
-            key="period_start_time"
         )
 
         end_date = st.date_input(
@@ -1138,12 +1141,10 @@ def main() -> None:
             value=max(start_date, active_end.date()),
             min_value=start_date,
             max_value=max_date,
-            key="period_end_date"
         )
         end_time = st.time_input(
             "Slutttid",
             value=active_end.time(),
-            key="period_end_time"
         )
 
         if st.button("Oppdater", width='stretch'):
