@@ -1123,7 +1123,9 @@ def main() -> None:
         active_start = st.session_state["period_start_local"].astimezone(local_tz)
         active_end = st.session_state["period_end_local"].astimezone(local_tz)
 
-        min_date = (local_now - timedelta(days=settings.dashboard.max_period_days)).date()
+        # min_date styrer hvor langt BAKOVER man kan velge (historikk), ikke
+        # periodelengden. Lengden (max_period_days) valideres i Oppdater-knappen.
+        min_date = (local_now - timedelta(days=settings.dashboard.max_history_days)).date()
         max_date = local_now.date()
 
         # Datovelgerne styres utelukkende via session_state-keys (ingen `value=`).

@@ -431,8 +431,15 @@ class DashboardConfig:
     # Default valgt periode når appen åpnes
     default_period_hours: int = 24
 
-    # Maks periode brukeren kan velge i UI (ytelse/lesbarhet)
+    # Maks LENGDE på én valgt periode (ytelse/lesbarhet)
     max_period_days: int = 7
+
+    # Hvor langt BAKOVER i historikk datovelgeren tillater. Adskilt fra
+    # max_period_days: brukeren skal kunne velge et kort vindu hvor som helst i
+    # historikken (f.eks. en snøfokk-episode i 2024), ikke bare siste uke.
+    # Frost har timesdata for SN46220 fra 2018-02; ~3300 dager dekker hele
+    # tilgjengelige historikk med margin.
+    max_history_days: int = 3300
 
     # Varsel-stabilisering (anti-støy)
     alert_downgrade_hold_minutes: int = 30
