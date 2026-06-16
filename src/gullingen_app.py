@@ -924,7 +924,7 @@ def render_weather_graphs(df: pd.DataFrame) -> None:
             available_cols = [c for c in display_cols if c in df.columns]
             st.dataframe(
                 df[available_cols].tail(24).sort_values('reference_time', ascending=False),
-                use_container_width=True,
+                width='stretch',
                 hide_index=True,
             )
 
